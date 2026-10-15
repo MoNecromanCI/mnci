@@ -70,10 +70,14 @@ func TestConvertLegacyWorkspace(t *testing.T) {
 			t.Fatalf("%s must be gone after convert", gone)
 		}
 	}
-	// Nx itself may stay installed through @mnci/eslint-config (#155); the
-	// workspace no longer depends on it.
 	if root, _ := os.ReadFile(filepath.Join(w.dir, "package.json")); strings.Contains(string(root), `"nx"`) || strings.Contains(string(root), "@nx/") {
 		t.Fatalf("package.json still depends on Nx:\n%s", root)
+	}
+	// Nor is Nx installed, not even as @mnci/eslint-config's optional peer.
+	for _, gone := range []string{"node_modules/nx", "node_modules/@nx/eslint-plugin", "node_modules/@nx/devkit"} {
+		if _, err := os.Stat(filepath.Join(w.dir, filepath.FromSlash(gone))); err == nil {
+			t.Fatalf("%s is still installed after convert", gone)
+		}
 	}
 	config, _ := os.ReadFile(filepath.Join(w.dir, "mnci.toml"))
 	for _, want := range []string{`tag_prefix = "@legacy/kit@"`, "[projects.tool.release]", `asset_name = "go-app-{product}-{os}-{arch}.{ext}"`, "github_releases = true"} {

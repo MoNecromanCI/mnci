@@ -10,8 +10,9 @@ import (
 	"github.com/MoNecromanCI/mnci/apps/mnci/nxworkspace"
 )
 
-// nxPackages are the dependencies a converted workspace no longer needs.
-func nxPackage(name string) bool {
+// NxPackage reports whether a package belongs to Nx, so a converted
+// workspace no longer needs it.
+func NxPackage(name string) bool {
 	for _, prefix := range []string{"@nx/", "@nrwl/", "@nx-go/", "@monodon/", "@nxlv/", "@mnci/nx-"} {
 		if strings.HasPrefix(name, prefix) {
 			return true
@@ -84,7 +85,7 @@ func planNxRemoval(plan *Plan, w *nxworkspace.Workspace, files []string, read fu
 	var remove []string
 	for _, deps := range []map[string]string{w.RootPackage.DevDependencies, w.RootPackage.Dependencies} {
 		for name := range deps {
-			if nxPackage(name) {
+			if NxPackage(name) {
 				remove = append(remove, name)
 			}
 		}
@@ -92,7 +93,7 @@ func planNxRemoval(plan *Plan, w *nxworkspace.Workspace, files []string, read fu
 	sort.Strings(remove)
 	plan.RemoveDependencies = remove
 	for name := range w.RootPackage.Overrides {
-		if nxPackage(name) {
+		if NxPackage(name) {
 			plan.RemoveOverrides = append(plan.RemoveOverrides, name)
 		}
 	}
@@ -150,9 +151,6 @@ func planNxRemoval(plan *Plan, w *nxworkspace.Workspace, files []string, read fu
 		default:
 			plan.Add(Manual, "", f, "imports Nx ("+nxImport(text)+"), which convert removes; rewrite it without Nx")
 		}
-	}
-	if _, ok := w.RootPackage.DevDependencies["@mnci/eslint-config"]; ok {
-		plan.Add(Changed, "", "@mnci/eslint-config", "depends on @nx/eslint-plugin itself, so Nx stays installed as its dependency (unused by mnci) until @mnci/eslint-config drops it")
 	}
 	if w.Nx.NxCloudID != "" || w.Nx.NxCloudToken != "" {
 		plan.Add(Changed, "", "nx.json", "Nx Cloud is not used: mnci caches locally (.mnci/cache)")

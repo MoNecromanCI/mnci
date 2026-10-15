@@ -61,8 +61,10 @@ something that behaves differently.
 Then it removes `nx.json`, `.nx/`, every `project.json` of a converted project,
 the `nx` fields of `package.json` files, and the `nx`, `@nx/*`, `@nx-go/*` and
 old-mnci dependencies and overrides. It adds what the new scripts need
-(`esbuild`, `typescript-eslint`), runs `npm install`, and checks that `npm ci`
-accepts the lockfile.
+(`esbuild`, `typescript-eslint`), drops Nx's entries from `package-lock.json`
+(npm would otherwise keep `@nx/eslint-plugin`, an optional peer of
+`@mnci/eslint-config`, and with it Nx), runs `npm install`, and checks that
+`npm ci` accepts the lockfile.
 
 ## The old mnci
 

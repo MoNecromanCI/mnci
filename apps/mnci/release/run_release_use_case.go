@@ -34,6 +34,9 @@ func Execute(ctx context.Context, s *session.Session, plan Plan, opts Options) (
 	report := Report{DryRun: opts.DryRun, Started: time.Now().UTC(), Unchanged: plan.Unchanged, Results: []ReportResult{}}
 	defer func() { report.Finished = time.Now().UTC(); writeReport(s.Root, report) }()
 
+	if len(plan.Items) == 0 {
+		return report, nil
+	}
 	if !opts.DryRun {
 		if err := Preflight(s, plan); err != nil {
 			report.Error = err.Error()

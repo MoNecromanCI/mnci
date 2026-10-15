@@ -4,9 +4,9 @@ import (
 	"sort"
 
 	gop "github.com/MoNecromanCI/mnci/libs/plugin-go/plugin"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-conventions/eslint"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-conventions/jest"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-conventions/vitest"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/eslint"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/jest"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/vitest"
 	nodep "github.com/MoNecromanCI/mnci/libs/plugin-node/plugin"
 	pythonp "github.com/MoNecromanCI/mnci/libs/plugin-python/plugin"
 	slicesp "github.com/MoNecromanCI/mnci/libs/plugin-vertical-slices/plugin"

@@ -1,7 +1,7 @@
 package jest
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-conventions/tooling"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/tooling"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
 

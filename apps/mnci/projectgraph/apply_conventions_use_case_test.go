@@ -7,7 +7,7 @@ import (
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
 	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-conventions/jest"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/jest"
 	slicesp "github.com/MoNecromanCI/mnci/libs/plugin-vertical-slices/plugin"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"

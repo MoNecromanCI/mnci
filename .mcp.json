@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "mnci": {
+      "command": "npx",
+      "args": [
+        "mnci",
+        "mcp"
+      ]
+    }
+  }
+}

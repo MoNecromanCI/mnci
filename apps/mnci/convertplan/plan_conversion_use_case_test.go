@@ -58,6 +58,7 @@ func legacyWorkspace(t *testing.T) (*nxworkspace.Workspace, Input) {
 	kit := project("@legacy/kit", "packages/kit", "lib", []string{"package.json", "rollup.config.cjs"}, map[string]nxworkspace.Target{
 		"build":      target(t, `{"executor": "nx:run-commands", "options": {"cwd": "packages/kit", "command": "rollup -c rollup.config.cjs"}}`),
 		"test":       target(t, `{"executor": "nx:run-commands", "dependsOn": ["^build"], "options": {"cwd": "packages/kit", "command": "jest", "env": {"TS_NODE": "1"}, "passWithNoTests": true}}`),
+		"typecheck":  target(t, `{"executor": "nx:run-commands", "dependsOn": ["build", "^typecheck"], "options": {"cwd": "packages/kit", "command": "tsc --build tsconfig.json --emitDeclarationOnly"}}`),
 		"watch-deps": target(t, `{"executor": "nx:run-commands", "options": {"command": "npx nx watch"}}`),
 	})
 	kit.Package = &nxworkspace.PackageJSON{Name: "@legacy/kit", Module: "./dist/index.esm.js", Types: "./dist/src/index.d.ts"}
@@ -131,6 +132,12 @@ func TestPlanLegacyWorkspace(t *testing.T) {
 	}
 	if kit.Scripts["test"] != "jest --passWithNoTests" || plan.Config.Projects["kit"].Tasks["test"].Env["TS_NODE"] != "1" {
 		t.Fatalf("test script %q %+v", kit.Scripts["test"], plan.Config.Projects["kit"].Tasks["test"])
+	}
+	if tc := plan.Config.Projects["kit"].Tasks["typecheck"]; strings.Join(tc.DependsOn, ",") != "build,^typecheck" {
+		t.Fatalf("typecheck keeps running after the project's build: %+v", tc)
+	}
+	if test := plan.Config.Projects["kit"].Tasks["test"]; test.DependsOn != nil {
+		t.Fatalf("a bare ^build is the plugin's default: %+v", test)
 	}
 	if start := plan.Config.Projects["pykit"].Tasks["start"]; strings.Join(start.Command, " ") != "python main.py" {
 		t.Fatalf("python3 becomes the venv's python: %v", start.Command)

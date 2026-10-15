@@ -229,12 +229,13 @@ func dependsOn(t nxworkspace.Target) []string {
 	return out
 }
 
-// extraDependsOn is dependsOn when it names a target besides the usual
-// builds, which the plugins already depend on.
+// extraDependsOn is dependsOn unless it is only "^build", which the
+// plugins' tasks already depend on. Anything else is kept: a typecheck that
+// Nx ran after the project's own build must not race that build.
 func extraDependsOn(t nxworkspace.Target) []string {
 	deps := dependsOn(t)
 	for _, d := range deps {
-		if strings.TrimPrefix(d, "^") != "build" && d != "^typecheck" {
+		if d != "^build" {
 			return deps
 		}
 	}

@@ -13,25 +13,29 @@ const KeySchema = "mnci-task-key-v1"
 
 // FileDigest is one input file: workspace-relative path and content digest.
 type FileDigest struct {
-	Path, Digest string
+	Path   string `json:"path"`
+	Digest string `json:"digest"`
 }
 
 // KeyInputs is everything that can change a task's result.
+// Each cache entry keeps the inputs its key was computed from, so a later miss
+// can say what changed.
 type KeyInputs struct {
-	Task string
+	Task string `json:"task"`
 	// Command is the task's argv before placeholders are expanded, so the key
 	// does not depend on where the workspace is checked out.
-	Command []string
-	Env     map[string]string
-	Files   []FileDigest
+	Command []string          `json:"command"`
+	Env     map[string]string `json:"env,omitempty"`
+	Files   []FileDigest      `json:"files"`
 	// Upstream are digests of the sources of every project this one depends
 	// on, transitively, by project name.
-	Upstream map[string]string
-	// DepKeys are the keys of tasks this one depends on.
-	DepKeys  []string
-	Platform string
+	Upstream map[string]string `json:"upstream,omitempty"`
+	// Deps are the keys of the tasks this one depends on, by task id. Only
+	// the keys go into this key.
+	Deps     map[string]string `json:"deps,omitempty"`
+	Platform string            `json:"platform"`
 	// Tool is the version of mnci and of the plugin that defined the task.
-	Tool string
+	Tool string `json:"tool"`
 }
 
 // Key computes the cache key: a SHA-256 over a length-prefixed encoding of
@@ -73,7 +77,10 @@ func Key(in KeyInputs) string {
 		write(k)
 		write(in.Upstream[k])
 	}
-	deps := append([]string(nil), in.DepKeys...)
+	deps := make([]string, 0, len(in.Deps))
+	for _, k := range in.Deps {
+		deps = append(deps, k)
+	}
 	sort.Strings(deps)
 	section("deps", len(deps))
 	for _, d := range deps {

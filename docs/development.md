@@ -2,8 +2,9 @@
 
 ## Layout
 
-This repository was bootstrapped with the current, Nx-based mnci (issue #19)
-and is still built by it; the Go tool will take over its own build (#129).
+This repository was bootstrapped with the old, Nx-based mnci (#19) and
+converted with `mnci convert` (#129): it is an mnci workspace, built, tested and
+released by the mnci it contains.
 
 ```
 apps/mnci/              the CLI: the language-agnostic core, one package per slice
@@ -34,11 +35,13 @@ Core slices in `apps/mnci`:
 | `release` | plan and execute releases, `mnci release` |
 | `cipipeline` | pipeline model, renderers, `mnci ci` |
 | `scaffold` | `mnci new`, `mnci add` |
+| `nxworkspace`, `convertplan`, `convert` | read an Nx workspace, plan its conversion, apply it (`mnci convert`) |
+| `githubrelease` | GitHub Releases and their assets |
 | `doctor`, `explain`, `graphview` | inspection commands |
 | `session` | open a workspace for a command |
 | `gitclient` | every git call |
 | `commandline` | assemble the command tree |
-| `goldenpath` | the end-to-end test (build tag `e2e`) |
+| `goldenpath` | the end-to-end tests (build tag `e2e`): the golden path and converting Nx and old-mnci workspaces |
 
 ## Checks
 
@@ -52,7 +55,9 @@ node tools/go-slice-check.cjs apps/mnci libs/plugin-node libs/plugin-go libs/plu
 cd apps/mnci && go test -tags e2e -timeout 40m -v ./goldenpath
 ```
 
-`npm run build|test|lint` runs the same through the Nx workspace.
+`mnci run lint test build` runs the same through the workspace (lint includes
+the slice check), with the cache. Use the mnci you are working on:
+`go run ./apps/mnci run lint test build`.
 
 ## Building
 
@@ -60,12 +65,16 @@ cd apps/mnci && go test -tags e2e -timeout 40m -v ./goldenpath
 cd apps/mnci && go build -o ../../dist/dev/mnci .
 ```
 
-The release build (`nx run mnci:build-all`) stamps `main.version` and builds six
-static binaries (`CGO_ENABLED=0`, `-trimpath`).
+`mnci release` builds the release binaries: the Go plugin stamps `main.version`
+and builds six static binaries (`CGO_ENABLED=0`, `-trimpath`), as configured in
+`[projects.mnci.release]` of `mnci.toml`.
 
 ## Releasing mnci
 
-mnci itself is released by this repository's Nx pipeline: a conventional commit
-touching `apps/mnci` on `main` tags `mnci@<version>` and attaches
-`mnci_<version>_<os>_<arch>.zip` for six platforms to its GitHub Release, which
-is what `install.sh` downloads.
+mnci releases itself. The generated pipeline builds mnci from the commit (the
+`before-setup` slot of `.github/workflows/ci.yml`) and runs `mnci ci release` on
+`main`. A conventional commit touching `apps/mnci` (or a lib it bundles) tags
+`mnci@<version>` and attaches `mnci_<version>_<os>_<arch>.zip` for six platforms
+and `checksums.txt` to its GitHub Release, which is what `install.sh`
+downloads. `packages/plugin-sdk` releases as the Go module tag
+`packages/plugin-sdk/v<version>`.

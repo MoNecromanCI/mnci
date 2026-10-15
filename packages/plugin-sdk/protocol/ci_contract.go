@@ -29,6 +29,9 @@ type Toolchain struct {
 type Step struct {
 	Name    string   `json:"name"`
 	Command []string `json:"command"`
+	// Dir is the workspace-relative directory to run in; empty means the
+	// workspace root.
+	Dir string `json:"dir,omitempty"`
 	// Blocking false makes a failure a warning instead of an error.
 	Blocking bool `json:"blocking"`
 }

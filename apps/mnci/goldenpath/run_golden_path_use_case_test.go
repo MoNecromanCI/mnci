@@ -130,6 +130,13 @@ func TestGoldenPath(t *testing.T) {
 	w.mnci(true, "doctor")
 	w.mnci(true, "ci", "generate", "--check")
 
+	// The phases the generated pipeline runs, exactly as CI runs them.
+	for _, phase := range []string{"setup", "audit", "verify"} {
+		if out := w.mnci(true, "ci", phase); !strings.Contains(out, "mnci ci "+phase+" passed") {
+			t.Fatalf("ci %s:\n%s", phase, out)
+		}
+	}
+
 	// 5. Affected follows dependents and stays narrow.
 	w.git("add", "-A")
 	w.git("commit", "-qm", "feat: add every kind of project")

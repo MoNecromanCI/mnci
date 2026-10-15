@@ -53,7 +53,7 @@ func create(workspaceRoot string) error {
 		if !toolrun.Available(launcher[0]) {
 			continue
 		}
-		argv := append(append([]string{}, launcher...), "-m", "venv", ".venv")
+		argv := append(append([]string{}, launcher...), "-m", "venv", "--upgrade-deps", ".venv")
 		if lastErr = Runner(workspaceRoot, argv); lastErr == nil {
 			return nil
 		}

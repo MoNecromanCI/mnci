@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
+	"github.com/MoNecromanCI/mnci/apps/mnci/convert"
 	"github.com/MoNecromanCI/mnci/apps/mnci/doctor"
 	"github.com/MoNecromanCI/mnci/apps/mnci/explain"
 	"github.com/MoNecromanCI/mnci/apps/mnci/graphview"
@@ -40,7 +41,7 @@ generates CI pipelines, and releases packages from conventional commits.`,
 			root.AddCommand(c)
 		}
 	}
-	add("start", scaffold.NewCommand(version), scaffold.AddCommand(version))
+	add("start", scaffold.NewCommand(version), scaffold.AddCommand(version), convert.Command(version))
 	add("work", taskrun.Commands(version)...)
 	add("ship", release.Command(version), cipipeline.Command(version))
 	add("inspect", graphview.Commands(version)...)

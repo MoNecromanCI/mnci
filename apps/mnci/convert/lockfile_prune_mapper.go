@@ -3,6 +3,8 @@ package convert
 import (
 	"fmt"
 	"strings"
+
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/jsondoc"
 )
 
 // PruneLockfile drops the packages drop selects from package-lock.json, at
@@ -11,7 +13,7 @@ import (
 // package.json alone leaves Nx installed; without the entries, npm install
 // resolves the tree again and drops everything only Nx needed.
 func PruneLockfile(raw []byte, drop func(name string) bool) ([]byte, []string, error) {
-	doc, err := ParseDocument(raw)
+	doc, err := jsondoc.ParseDocument(raw)
 	if err != nil {
 		return nil, nil, fmt.Errorf("package-lock.json: %w", err)
 	}

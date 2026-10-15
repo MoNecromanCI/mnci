@@ -15,6 +15,7 @@ import (
 	"github.com/MoNecromanCI/mnci/apps/mnci/convertplan"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/jsondoc"
 )
 
 // ApplyOptions configure Apply.
@@ -169,7 +170,7 @@ func editRootPackage(root string, plan *convertplan.Plan) error {
 	if err != nil {
 		return err
 	}
-	doc, err := ParseDocument(raw)
+	doc, err := jsondoc.ParseDocument(raw)
 	if err != nil {
 		return fmt.Errorf("package.json: %w", err)
 	}
@@ -234,7 +235,7 @@ func editManifest(root string, p *convertplan.ProjectPlan) error {
 		if err != nil {
 			return err
 		}
-		doc, err := ParseDocument(raw)
+		doc, err := jsondoc.ParseDocument(raw)
 		if err != nil {
 			return err
 		}

@@ -120,7 +120,14 @@ func pluginTarget(plan *Plan, pp *ProjectPlan, name string, t nxworkspace.Target
 			var args []string
 			t.Option("args", &args)
 			o.Command = append(strings.Fields(linter), args...)
+			if t.Parallelism != nil && !*t.Parallelism && o.Command[0] == "golangci-lint" {
+				// Nx ran it one at a time; golangci-lint waits for its own
+				// lock instead of failing when mnci runs projects in parallel.
+				o.Command = append(o.Command, "--allow-serial-runners")
+			}
 		}
+	} else if t.Parallelism != nil && !*t.Parallelism {
+		plan.Add(Changed, pp.Name, name, "Nx ran it one at a time (parallelism: false); mnci may run it alongside other tasks")
 	}
 	if o.Command == nil && o.DependsOn == nil {
 		plan.Add(Mapped, pp.Name, name, "run by the "+pp.Language+" plugin")

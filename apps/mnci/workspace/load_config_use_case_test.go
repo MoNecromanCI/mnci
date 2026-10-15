@@ -44,6 +44,7 @@ func TestParseOverrides(t *testing.T) {
 }
 
 func TestFindRoot(t *testing.T) {
+	t.Setenv("MNCI_WORKSPACE_ROOT", "") // set when the test runs as an mnci task
 	root := t.TempDir()
 	deep := filepath.Join(root, "apps", "web", "src")
 	_ = os.MkdirAll(deep, 0o755)

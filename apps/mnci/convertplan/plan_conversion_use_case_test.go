@@ -44,7 +44,7 @@ func legacyWorkspace(t *testing.T) (*nxworkspace.Workspace, Input) {
 		"release": {"projects": ["packages/*", "python-packages/*", "tag:release:go", "!tag:type:go-lib"], "releaseTag": {"pattern": "{projectName}@{version}"}},
 		"mnci": {"workspaceName": "legacy", "scope": "@legacy", "ci": "both"}
 	}`), &nx)
-	goLint := target(t, `{"executor": "@nx-go/nx-go:lint", "dependsOn": ["slice-check"], "options": {"linter": "golangci-lint", "args": ["run"]}}`)
+	goLint := target(t, `{"executor": "@nx-go/nx-go:lint", "dependsOn": ["slice-check"], "parallelism": false, "options": {"linter": "golangci-lint", "args": ["run"]}}`)
 	slice := target(t, `{"executor": "nx:run-commands", "cache": true, "inputs": ["{projectRoot}/**/*.go", "{workspaceRoot}/tools/go-slice-check.cjs"], "options": {"command": "node tools/go-slice-check.cjs apps/tool"}}`)
 	tool := project("tool", "apps/tool", "app", []string{"go.mod", "main.go"}, map[string]nxworkspace.Target{
 		"build":       target(t, `{"executor": "@nx-go/nx-go:build"}`),
@@ -108,7 +108,7 @@ func TestPlanLegacyWorkspace(t *testing.T) {
 	if tool.Release == nil || tool.Release.AssetName != "{product}_{version}_{os}_{arch}.{ext}" || tool.Release.Product != "tl" {
 		t.Fatalf("tool release %+v", tool.Release)
 	}
-	if lint := tool.Tasks["lint"]; strings.Join(lint.Command, " ") != "golangci-lint run" || lint.DependsOn[0] != "slice-check" {
+	if lint := tool.Tasks["lint"]; strings.Join(lint.Command, " ") != "golangci-lint run --allow-serial-runners" || lint.DependsOn[0] != "slice-check" {
 		t.Fatalf("lint %+v", lint)
 	}
 	slice := tool.Tasks["slice-check"]

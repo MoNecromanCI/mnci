@@ -1,0 +1,68 @@
+package protocol
+
+// DiscoverParams asks a plugin to describe the projects behind manifests the
+// host found. Paths are workspace-relative and use forward slashes.
+type DiscoverParams struct {
+	Manifests []string `json:"manifests"`
+}
+
+// DiscoverResult describes every manifest that is a project of this plugin.
+// A manifest the plugin does not own is simply left out.
+type DiscoverResult struct {
+	Projects []Project `json:"projects"`
+}
+
+// Project is one unit of the monorepo as a plugin sees it.
+type Project struct {
+	// Name is unique across the workspace; it is what users type.
+	Name string `json:"name"`
+	// Root is the workspace-relative directory, forward slashes.
+	Root     string      `json:"root"`
+	Language string      `json:"language"`
+	Kind     ProjectKind `json:"kind"`
+	// Exports are the identifiers other projects import this one by: an npm
+	// package name, a Go module path, a Python import name.
+	Exports []string `json:"exports,omitempty"`
+	// Imports are identifiers this project's sources import. The host keeps
+	// the ones another project exports and turns them into graph edges.
+	Imports []string `json:"imports,omitempty"`
+	// Version is the version recorded in the manifest, if it has one.
+	Version string `json:"version,omitempty"`
+	// TagPrefix overrides the release tag prefix; empty means "<name>@".
+	// Go modules use "<root>/v" so `go get` can resolve the tag.
+	TagPrefix string          `json:"tagPrefix,omitempty"`
+	Tasks     map[string]Task `json:"tasks,omitempty"`
+	Tags      []string        `json:"tags,omitempty"`
+}
+
+// ProjectKind is the universal kind vocabulary.
+type ProjectKind string
+
+// Project kinds. An app is deployed, never published; a lib is internal and
+// never published; a package is published.
+const (
+	ProjectApp     ProjectKind = "app"
+	ProjectLib     ProjectKind = "lib"
+	ProjectPackage ProjectKind = "package"
+)
+
+// Task is a command the host can run, hash and cache.
+type Task struct {
+	// Command is an argv array; it is never passed through a shell.
+	Command []string `json:"command"`
+	// Cwd is workspace-relative; empty means the project root.
+	Cwd string            `json:"cwd,omitempty"`
+	Env map[string]string `json:"env,omitempty"`
+	// Inputs are globs relative to the project root. Empty means every
+	// tracked or untracked-but-not-ignored file of the project.
+	Inputs []string `json:"inputs,omitempty"`
+	// Outputs are directories relative to the project root, restored on a
+	// cache hit.
+	Outputs []string `json:"outputs,omitempty"`
+	// DependsOn lists task names: "build" runs this project's build first,
+	// "^build" runs the build of every project this one imports first.
+	DependsOn []string `json:"dependsOn,omitempty"`
+	Cache     bool     `json:"cache,omitempty"`
+	// Description is shown by `mnci explain` and the TUI.
+	Description string `json:"description,omitempty"`
+}

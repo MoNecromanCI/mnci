@@ -1,3 +1,4 @@
-// Package pluginsdk is the plugin-sdk capability. Its code lives in the
-// slice packages below this directory, one package per outcome.
+// Package pluginsdk is the mnci plugin SDK: protocol messages (protocol),
+// framing (transport), the plugin runtime (serve) and the host client and
+// test kit (host).
 package pluginsdk

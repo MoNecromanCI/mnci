@@ -4,6 +4,9 @@ import (
 	"sort"
 
 	gop "github.com/MoNecromanCI/mnci/libs/plugin-go/plugin"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-conventions/eslint"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-conventions/jest"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-conventions/vitest"
 	nodep "github.com/MoNecromanCI/mnci/libs/plugin-node/plugin"
 	pythonp "github.com/MoNecromanCI/mnci/libs/plugin-python/plugin"
 	slicesp "github.com/MoNecromanCI/mnci/libs/plugin-vertical-slices/plugin"
@@ -22,6 +25,9 @@ var Builtins = map[string]func(version string) serve.Plugin{
 // ([conventions.<name>]).
 var BuiltinConventions = map[string]func(version string) serve.Plugin{
 	slicesp.Name: func(v string) serve.Plugin { return slicesp.New(v) },
+	eslint.Name:  func(v string) serve.Plugin { return eslint.New(v) },
+	jest.Name:    func(v string) serve.Plugin { return jest.New(v) },
+	vitest.Name:  func(v string) serve.Plugin { return vitest.New(v) },
 }
 
 // Builtin returns the constructor of a built-in plugin or convention.

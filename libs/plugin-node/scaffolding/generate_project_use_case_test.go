@@ -23,10 +23,13 @@ func TestGenerateWritesProjectAndWorkspaceOnce(t *testing.T) {
 		t.Fatalf("installs=%d", installs)
 	}
 	joined := strings.Join(res.Files, ",")
-	for _, want := range []string{"package.json", "tsconfig.base.json", "eslint.config.mjs", ".npmrc", "packages/sdk/package.json", "packages/sdk/src/greeting/greet.use-case.ts"} {
+	for _, want := range []string{"package.json", "tsconfig.base.json", ".npmrc", "packages/sdk/package.json", "packages/sdk/src/greeting/greet.use-case.ts"} {
 		if !strings.Contains(joined, want) {
 			t.Errorf("missing %s in %v", want, res.Files)
 		}
+	}
+	if strings.Contains(joined, "spec.ts") || strings.Contains(joined, "eslint") {
+		t.Fatalf("lint and test tooling come from conventions: %v", res.Files)
 	}
 	var pkg map[string]any
 	raw, _ := os.ReadFile(filepath.Join(ws, "packages", "sdk", "package.json"))
@@ -68,7 +71,7 @@ func TestRootManifestKeepsUserEntries(t *testing.T) {
 	raw, _ := os.ReadFile(filepath.Join(ws, "package.json"))
 	_ = json.Unmarshal(raw, &root)
 	dev := root["devDependencies"].(map[string]any)
-	if root["name"] != "mine" || dev["typescript"] != "5.0.0" || dev["jest"] == nil || root["scripts"] == nil {
+	if root["name"] != "mine" || dev["typescript"] != "5.0.0" || dev["@types/node"] == nil || root["scripts"] == nil {
 		t.Fatalf("user entries must survive: %v", root)
 	}
 }

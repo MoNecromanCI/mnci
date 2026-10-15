@@ -1,0 +1,38 @@
+{
+  "name": "plugin-node",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/plugin-node",
+  "tags": [
+    "type:go-internal-lib"
+  ],
+  "targets": {
+    "test": {
+      "executor": "@nx-go/nx-go:test"
+    },
+    "lint": {
+      "executor": "@nx-go/nx-go:lint",
+      "dependsOn": [
+        "slice-check"
+      ],
+      "parallelism": false,
+      "options": {
+        "linter": "golangci-lint",
+        "args": [
+          "run"
+        ]
+      }
+    },
+    "slice-check": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.go",
+        "{workspaceRoot}/tools/go-slice-check.cjs"
+      ],
+      "options": {
+        "command": "node tools/go-slice-check.cjs libs/plugin-node"
+      }
+    }
+  }
+}

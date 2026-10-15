@@ -1,0 +1,128 @@
+{
+  "name": "mnci",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/mnci",
+  "tags": [
+    "type:go-app",
+    "release:go"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx-go/nx-go:build",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/mnci"
+      ],
+      "options": {
+        "outputPath": "../../dist/apps/mnci/mnci"
+      }
+    },
+    "test": {
+      "executor": "@nx-go/nx-go:test"
+    },
+    "lint": {
+      "executor": "@nx-go/nx-go:lint",
+      "dependsOn": [
+        "slice-check"
+      ],
+      "parallelism": false,
+      "options": {
+        "linter": "golangci-lint",
+        "args": [
+          "run"
+        ]
+      }
+    },
+    "slice-check": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.go",
+        "{workspaceRoot}/tools/go-slice-check.cjs"
+      ],
+      "options": {
+        "command": "node tools/go-slice-check.cjs apps/mnci"
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build"
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/drop/go-app-mnci.zip"
+      ],
+      "options": {
+        "command": "node -e \"const fs=require('node:fs');fs.mkdirSync('dist/drop',{recursive:true});const A=require('adm-zip');const z=new A();z.addLocalFolder('dist/apps/mnci');z.writeZip('dist/drop/go-app-mnci.zip')\""
+      }
+    },
+    "build-all": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/go.mod",
+        "{workspaceRoot}/go.sum",
+        {
+          "env": "VERSION"
+        }
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/platforms/mnci"
+      ],
+      "options": {
+        "command": "node -e \"const{spawnSync}=require('node:child_process');const v=process.env.VERSION||'dev';for(const p of ['windows/amd64','windows/arm64','linux/amd64','linux/arm64','darwin/amd64','darwin/arm64']){const[os,arch]=p.split('/');const out='../../dist/platforms/mnci/'+os+'-'+arch+'/mnci'+(os==='windows'?'.exe':'');const r=spawnSync('go',['build','-trimpath','-ldflags','-s -w -X main.version='+v,'-o',out,'.'],{cwd:'apps/mnci',stdio:'inherit',env:{...process.env,CGO_ENABLED:'0',GOOS:os,GOARCH:arch}});if(r.status!==0)process.exit(r.status??1)}\""
+      }
+    },
+    "package-all": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build-all"
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/drop/go-app-mnci-*.zip"
+      ],
+      "options": {
+        "command": "node -e \"const fs=require('node:fs');const A=require('adm-zip');fs.mkdirSync('dist/drop',{recursive:true});for(const d of fs.readdirSync('dist/platforms/mnci')){const z=new A();z.addLocalFolder('dist/platforms/mnci/'+d);z.writeZip('dist/drop/go-app-mnci-'+d+'.zip')}\""
+      }
+    },
+    "build-dev": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/dist/dev/apps/mnci"
+      ],
+      "options": {
+        "command": "go build \"-gcflags=all=-N -l\" -o ../../dist/dev/apps/mnci/mnci .",
+        "cwd": "apps/mnci"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "go run github.com/air-verse/air@v1.61.7 --build.cmd \"go build ./...\" --build.bin \"go run .\" --build.exclude_dir tmp",
+        "cwd": "apps/mnci"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "go run .",
+        "cwd": "apps/mnci"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node -e \"console.log('Published by its git tag; the platform zips are attached to the GitHub Release by tools/go-app-release.cjs assets.')\""
+      }
+    }
+  },
+  "release": {
+    "version": {
+      "versionActions": "tools/go-app-release.cjs",
+      "currentVersionResolver": "git-tag"
+    }
+  }
+}

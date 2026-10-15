@@ -65,3 +65,32 @@ func TestBuildAssets(t *testing.T) {
 		t.Fatalf("only the assets remain, got %v", entries)
 	}
 }
+
+// TestBuildAssetsIsReproducible builds the same app in two different
+// directories: -trimpath, a fixed zip header and no build-time values make
+// the archives byte-identical, so anyone can check a release against its
+// source.
+func TestBuildAssetsIsReproducible(t *testing.T) {
+	if _, err := exec.LookPath("go"); err != nil {
+		t.Skip("go unavailable")
+	}
+	build := func() string {
+		root := t.TempDir()
+		app := filepath.Join(root, "apps", "hello")
+		_ = os.MkdirAll(app, 0o755)
+		_ = os.WriteFile(filepath.Join(app, "go.mod"), []byte("module example.com/hello\n\ngo 1.26.0\n"), 0o644)
+		_ = os.WriteFile(filepath.Join(app, "main.go"), []byte("package main\n\nvar version = \"dev\"\n\nfunc main() { println(version) }\n"), 0o644)
+		spec := &protocol.AssetSpec{Name: "{product}_{version}_{os}_{arch}.{ext}", Platforms: []string{"linux/amd64", "windows/amd64"}, OutDir: "dist/release/hello"}
+		if _, err := Publish(root, protocol.PublishParams{Project: protocol.Project{Name: "hello", Root: "apps/hello"}, Version: "1.0.0", Assets: spec}); err != nil {
+			t.Fatal(err)
+		}
+		sums, err := os.ReadFile(filepath.Join(root, "dist/release/hello/checksums.txt"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(sums)
+	}
+	if first, second := build(), build(); first != second {
+		t.Fatalf("two builds differ:\n%s\n%s", first, second)
+	}
+}

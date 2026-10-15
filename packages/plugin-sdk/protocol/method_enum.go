@@ -11,4 +11,6 @@ const (
 	MethodPublish    = "publish"
 	MethodCI         = "ci"
 	MethodDoctor     = "doctor"
+	// MethodContribute asks a convention plugin for its additions.
+	MethodContribute = "contribute"
 )

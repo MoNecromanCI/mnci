@@ -123,6 +123,19 @@ func refreshLockfile(root string, out io.Writer) error {
 		fmt.Fprintln(out, "npm is not installed: run npm install to update package-lock.json")
 		return nil
 	}
+	lock := filepath.Join(root, "package-lock.json")
+	if raw, err := os.ReadFile(lock); err == nil {
+		pruned, dropped, err := PruneLockfile(raw, convertplan.NxPackage)
+		if err != nil {
+			return err
+		}
+		if len(dropped) > 0 {
+			if err := os.WriteFile(lock, pruned, 0o644); err != nil {
+				return err
+			}
+			fmt.Fprintf(out, "removed %d Nx packages from package-lock.json\n", len(dropped))
+		}
+	}
 	run := func(args ...string) error {
 		cmd := exec.Command("npm", args...)
 		cmd.Dir, cmd.Stdout, cmd.Stderr = root, out, out

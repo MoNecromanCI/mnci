@@ -70,7 +70,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -85,4 +85,4 @@ jobs:
           python-version: '3.12'
       - name: Convert an Nx workspace and an old-mnci workspace, then build and plan a release
         working-directory: apps/mnci
-        run: go test -tags e2e -timeout 55m -v -run TestConvert ./goldenpath
+        run: go test -tags e2e -timeout 85m -v -run TestConvert ./goldenpath

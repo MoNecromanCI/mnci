@@ -1,0 +1,132 @@
+package taskrun
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
+	"github.com/MoNecromanCI/mnci/apps/mnci/taskcache"
+	"github.com/MoNecromanCI/mnci/apps/mnci/taskgraph"
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+)
+
+// TestMain lets the test binary act as the task command: with MNCI_HELPER set
+// it writes out/<file> containing its argument, or fails when asked to.
+func TestMain(m *testing.M) {
+	if mode := os.Getenv("MNCI_HELPER"); mode != "" {
+		arg := os.Args[len(os.Args)-1]
+		fmt.Println("helper ran with", arg)
+		if arg == "fail" {
+			os.Exit(3)
+		}
+		if arg == "sleep" {
+			time.Sleep(time.Minute)
+		}
+		_ = os.MkdirAll("out", 0o755)
+		_ = os.WriteFile(filepath.Join("out", "result.txt"), []byte(arg), 0o644)
+		os.Exit(0)
+	}
+	os.Exit(m.Run())
+}
+
+type fixture struct {
+	root  string
+	pg    *projectgraph.Graph
+	files []string
+	store taskcache.Storage
+}
+
+func newFixture(t *testing.T, libArg string) *fixture {
+	t.Helper()
+	root := t.TempDir()
+	for _, f := range []string{"libs/core/src.txt", "apps/web/src.txt"} {
+		p := filepath.Join(root, filepath.FromSlash(f))
+		_ = os.MkdirAll(filepath.Dir(p), 0o755)
+		_ = os.WriteFile(p, []byte("v1"), 0o644)
+	}
+	self, _ := os.Executable()
+	task := func(arg string, deps ...string) protocol.Task {
+		return protocol.Task{Command: []string{self, "-test.run=^$", arg}, Env: map[string]string{"MNCI_HELPER": "1"}, Outputs: []string{"out"}, Cache: true, DependsOn: deps}
+	}
+	core := &projectgraph.Project{Project: protocol.Project{Name: "core", Root: "libs/core", Tasks: map[string]protocol.Task{"build": task(libArg)}}, Plugin: "test"}
+	web := &projectgraph.Project{Project: protocol.Project{Name: "web", Root: "apps/web", Tasks: map[string]protocol.Task{"build": task("web", "^build")}}, Plugin: "test", Deps: []string{"core"}}
+	pg, err := projectgraph.New([]*projectgraph.Project{core, web})
+	if err != nil {
+		t.Fatal(err)
+	}
+	store, _ := taskcache.NewLocalStorage(filepath.Join(root, ".cache"))
+	return &fixture{root: root, pg: pg, files: []string{"apps/web/src.txt", "libs/core/src.txt"}, store: store}
+}
+
+func (f *fixture) run(t *testing.T) (Summary, string) {
+	t.Helper()
+	g, err := taskgraph.Build(f.pg, []string{"web"}, []string{"build"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	s := Run(context.Background(), g, Options{Root: f.root, Files: f.files, Projects: f.pg, Storage: f.store, Parallel: 2, Out: &out, ToolVersion: "test"})
+	return s, out.String()
+}
+
+func TestRunCachesAndInvalidates(t *testing.T) {
+	f := newFixture(t, "core")
+	s, out := f.run(t)
+	if !s.OK() || s.Count(Succeeded) != 2 {
+		t.Fatalf("first run: %s\n%s", s, out)
+	}
+	if !strings.Contains(out, "web:build │ helper ran with web") {
+		t.Fatalf("output must be prefixed:\n%s", out)
+	}
+
+	_ = os.RemoveAll(filepath.Join(f.root, "apps", "web", "out"))
+	s, out = f.run(t)
+	if s.Count(Cached) != 2 {
+		t.Fatalf("second run must be fully cached: %s\n%s", s, out)
+	}
+	if body, _ := os.ReadFile(filepath.Join(f.root, "apps", "web", "out", "result.txt")); string(body) != "web" {
+		t.Fatalf("outputs must be restored, got %q", body)
+	}
+	if !strings.Contains(out, "web:build │ helper ran with web") {
+		t.Fatalf("a cache hit replays the log:\n%s", out)
+	}
+
+	// Changing the dependency's sources invalidates the dependent too.
+	_ = os.WriteFile(filepath.Join(f.root, "libs", "core", "src.txt"), []byte("v2"), 0o644)
+	s, _ = f.run(t)
+	if s.Count(Succeeded) != 2 {
+		t.Fatalf("a changed dependency must re-run both: %s", s)
+	}
+}
+
+func TestFailureSkipsDependents(t *testing.T) {
+	f := newFixture(t, "fail")
+	s, out := f.run(t)
+	if s.OK() || s.Count(Failed) != 1 || s.Count(Skipped) != 1 {
+		t.Fatalf("summary %s\n%s", s, out)
+	}
+	if !strings.Contains(s.String(), "web:build because core:build did not succeed") {
+		t.Fatalf("summary text %q", s.String())
+	}
+	if ok, _ := f.store.Has(taskcache.AC, s.Results[0].Key); ok {
+		t.Fatal("a failure must not be cached")
+	}
+}
+
+func TestCancelStopsTheProcess(t *testing.T) {
+	f := newFixture(t, "sleep")
+	g, _ := taskgraph.Build(f.pg, []string{"core"}, []string{"build"})
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	defer cancel()
+	began := time.Now()
+	s := Run(ctx, g, Options{Root: f.root, Files: f.files, Projects: f.pg, Out: &bytes.Buffer{}})
+	if time.Since(began) > 20*time.Second || s.Results[0].Status != Failed {
+		t.Fatalf("cancel must stop the task promptly: %+v after %s", s.Results, time.Since(began))
+	}
+}

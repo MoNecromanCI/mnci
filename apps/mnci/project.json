@@ -120,6 +120,10 @@
     }
   },
   "release": {
+    "asset": {
+      "name": "{product}_{version}_{os}_{arch}.{ext}",
+      "product": "mnci"
+    },
     "version": {
       "versionActions": "tools/go-app-release.cjs",
       "currentVersionResolver": "git-tag"

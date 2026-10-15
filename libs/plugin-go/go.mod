@@ -1,3 +1,3 @@
 module github.com/MoNecromanCI/mnci/libs/plugin-go
 
-go 1.24
+go 1.26.0

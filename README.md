@@ -1,109 +1,70 @@
-# New Nx Repository
+<p align="center"><strong>mnci</strong> — a simple monorepo tool</p>
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+# mnci
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+Ask for an app, an internal library or a publishable package, in Node, Go or
+Python, and it just works: it lints, type-checks, tests, builds and runs at
+once, in dependency order, from a cache. CI pipelines are generated from what is
+in the repository, and packages are released from conventional commits.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/docs/technologies/typescript/introduction?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
-
-🚀 If you haven't connected to Nx Cloud yet, [complete your setup here](https://cloud.nx.app/get-started). Get faster builds with remote caching, distributed task execution, and self-healing CI. [See how your workspace can benefit](#nx-cloud).
-
-## Generate a library
-
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
-```
-
-## Run tasks
-
-To build the library use:
+mnci is a single static binary written in Go. Each language is a plugin that
+runs out-of-process over a small JSON-RPC protocol, so any language can be added
+without touching mnci.
 
 ```sh
-npx nx run pkg1:build
+mnci new acme && cd acme
+mnci add app web --lang node        # deployed, never published
+mnci add lib core --lang go         # imported internally, never published
+mnci add package sdk --lang python  # published on release
+
+mnci build                          # every project, in dependency order, cached
+mnci test --affected                # only what changed since main
+mnci graph                          # how projects depend on each other
+mnci release --dry-run              # what the next release would publish
+mnci doctor                         # is the workspace healthy?
 ```
 
-To run any task with Nx use:
+## Install
 
 ```sh
-npx nx run <project-name>:<target>
+curl -fsSL https://raw.githubusercontent.com/MoNecromanCI/mnci/main/install.sh | sh     # Linux, macOS, Git Bash
+irm https://raw.githubusercontent.com/MoNecromanCI/mnci/main/install.ps1 | iex           # Windows PowerShell
 ```
 
-These targets are either [inferred automatically](https://nx.dev/docs/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+Or download a zip from the [releases](https://github.com/MoNecromanCI/mnci/releases).
+npm, PyPI, Homebrew and Scoop packages are planned (epic #18).
 
-[More about running tasks in the docs &raquo;](https://nx.dev/docs/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## What it does
 
-## Versioning and releasing
+| | |
+|---|---|
+| **Three kinds** | `app` (deployed), `lib` (internal), `package` (published). The kind decides what release does with a project. |
+| **No configuration to write** | Projects, tasks and dependencies come from the manifests (`package.json`, `go.mod`, `pyproject.toml`) and from what the sources import. `mnci.toml` names the workspace; everything else has a default. |
+| **Cache** | A task whose inputs did not change replays its output and log from a content-addressed cache. |
+| **Affected** | `--affected` runs only the projects a change can break, and runs everything when it cannot be sure. |
+| **CI generated** | GitHub Actions and Azure Pipelines, derived from the plugins in use, calling `mnci ci <phase>` — the same commands you run locally. |
+| **Release** | feat → minor, fix → patch, breaking → major. Packages release in dependency order to npm, PyPI and Go module tags; a failed release resumes when re-run. |
+| **Plugins** | Node (TypeScript, ESLint, Jest), Go (modules in a `go.work`), Python (pip, Ruff, pytest). Write your own in any language. |
 
-To version and release the library use
+## Documentation
 
-```
-npx nx release
-```
+- [Getting started](docs/getting-started.md)
+- [Configuration (`mnci.toml`)](docs/configuration.md)
+- [Tasks, cache and affected](docs/tasks-and-cache.md)
+- [CI pipelines](docs/ci.md)
+- [Releasing](docs/releasing.md)
+- [Plugins and the plugin protocol](docs/plugins.md)
+- [Working on mnci](docs/development.md)
+- Background: [decisions](docs/decisions.md) and [research](docs/research/)
 
-Pass `--dry-run` to see what would happen without actually releasing the library.
+## Status
 
-[Learn more about Nx release &raquo;](https://nx.dev/docs/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+The golden path — a new workspace, every kind of project in Node, Go and
+Python, build, test, run, CI and release — works and is tested end to end on
+Windows, macOS and Linux. The roadmap is tracked in
+[issues](https://github.com/MoNecromanCI/mnci/issues) and on the
+[project board](https://github.com/orgs/MoNecromanCI/projects/2).
 
-## Keep TypeScript project references up to date
+## License
 
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
-
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
-
-```sh
-npx nx sync
-```
-
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
-
-```sh
-npx nx sync:check
-```
-
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
-
-## Nx Cloud
-
-Nx Cloud ensures a [fast and scalable CI](https://nx.dev/nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/docs/features/ci-features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/docs/features/ci-features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/docs/features/ci-features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/docs/features/ci-features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Set up CI (non-Github Actions CI)
-
-**Note:** This is only required if your CI provider is not GitHub Actions.
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/docs/features/ci-features?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/docs/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## 🔗 Learn More
-
-- [Nx Documentation](https://nx.dev/docs)
-- [Crafting Your Workspace Tutorial](https://nx.dev/docs/getting-started/tutorials/crafting-your-workspace)
-- [Module Boundaries](https://nx.dev/docs/features/enforce-module-boundaries)
-- [Releasing Packages](https://nx.dev/docs/features/manage-releases)
-- [Nx Plugins](https://nx.dev/docs/concepts/nx-plugins)
-- [Nx Cloud](https://nx.dev/nx-cloud)
-
-## 💬 Community
-
-Join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [X (Twitter)](https://twitter.com/nxdevtools)
-- [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [YouTube](https://www.youtube.com/@nxdevtools)
-- [Blog](https://nx.dev/blog)
+MIT

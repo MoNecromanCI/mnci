@@ -1,0 +1,84 @@
+# Configuration: `mnci.toml`
+
+One file at the workspace root, and the only one mnci reads. Its presence marks
+the workspace root. Every setting has a default; a typo in a key is an error,
+never a silently ignored setting.
+
+```toml
+schema = 1
+
+[workspace]
+name = "acme"                         # required
+scope = "@acme"                       # npm scope for Node projects
+module_prefix = "github.com/acme/acme"  # Go module path prefix
+
+[ci]
+providers = ["github"]                # "github", "azure", or both
+
+[release]
+branch = "main"                       # real releases run only here
+remote = "origin"                     # release tags are pushed here
+
+[cache]
+dir = ".mnci/cache"                   # workspace-relative, or absolute
+max_size_mb = 2048
+
+[plugins]
+enabled = ["node", "go", "python"]    # default: every built-in plugin
+
+[plugins.external.rust]
+command = ["mnci-plugin-rust"]        # any executable speaking the protocol
+```
+
+## Overriding a task
+
+Plugins infer every task. To change one, say only what differs:
+
+```toml
+# every project's test task
+[tasks.test]
+cache = false
+
+# one project's build
+[projects.web.tasks.build]
+depends_on = ["^build", "codegen"]
+inputs = ["src/**", "!src/**/*.spec.ts", "{workspaceRoot}/tsconfig.base.json"]
+
+# a task the plugin does not know about needs a command
+[projects.web.tasks.e2e]
+command = ["npx", "playwright", "test"]
+depends_on = ["build"]
+```
+
+Fields: `command` (argv, never a shell string), `inputs`, `outputs`,
+`depends_on`, `env`, `cache`.
+
+There is exactly one precedence rule: **plugin → `[tasks.<task>]` →
+`[projects.<name>.tasks.<task>]`**, later wins, field by field. To see the
+result and where each value came from:
+
+```sh
+mnci explain web:build
+```
+
+```
+web:build — Compile to dist/
+  command    npm run build --silent
+               from plugin node
+  dependsOn  ^build, codegen
+               from mnci.toml [projects.web.tasks.build]
+  ...
+```
+
+## Environment variables
+
+| Variable | Effect |
+|---|---|
+| `MNCI_WORKSPACE_ROOT` | use this workspace instead of searching upward |
+| `MNCI_CACHE_DIR` | cache directory, overriding `[cache] dir` |
+| `MNCI_BASE` | base branch for `--affected` and `mnci ci verify` |
+| `MNCI_RELEASE_ANY_BRANCH` | allow a real release from another branch |
+| `MNCI_PYPI_SIMPLE_URL` | the simple index to check before uploading to a custom Python index |
+
+The TUI configuration editor (epic #15) and a published JSON Schema (#47) are
+planned.

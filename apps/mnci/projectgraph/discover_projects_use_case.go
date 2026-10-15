@@ -1,0 +1,58 @@
+package projectgraph
+
+import (
+	"path"
+	"sort"
+	"time"
+
+	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
+	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+)
+
+// Discover asks every plugin to describe the manifests it claims among the
+// workspace's files (tracked, or untracked and not ignored), then resolves
+// edges and applies mnci.toml overrides.
+func Discover(files []string, plugins *pluginhost.PluginSet, cfg workspace.Config) (*Graph, error) {
+	var projects []*Project
+	for _, c := range plugins.Clients {
+		if !c.Info.Capabilities.Discover {
+			continue
+		}
+		wanted := map[string]bool{}
+		for _, m := range c.Info.Manifests {
+			wanted[m] = true
+		}
+		var manifests []string
+		for _, f := range files {
+			if wanted[path.Base(f)] {
+				manifests = append(manifests, f)
+			}
+		}
+		if len(manifests) == 0 {
+			continue
+		}
+		sort.Strings(manifests)
+		var res protocol.DiscoverResult
+		if err := c.Call(protocol.MethodDiscover, protocol.DiscoverParams{Manifests: manifests}, &res, time.Minute); err != nil {
+			return nil, err
+		}
+		for _, p := range res.Projects {
+			projects = append(projects, &Project{Project: p, Plugin: c.Info.Plugin.Name})
+		}
+	}
+	ResolveEdges(projects)
+	for _, p := range projects {
+		if err := ApplyOverrides(p, cfg); err != nil {
+			return nil, err
+		}
+	}
+	g, err := New(projects)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := g.Order(); err != nil {
+		return nil, err
+	}
+	return g, nil
+}

@@ -1,11 +1,18 @@
+// Command mnci is a monorepo tool: it scaffolds apps, libs and packages in any
+// language a plugin supports, runs their tasks in dependency order from a
+// cache, generates CI pipelines and releases packages from conventional
+// commits.
 package main
 
 import (
-	"fmt"
+	"os"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/hello"
+	"github.com/MoNecromanCI/mnci/apps/mnci/commandline"
 )
 
+// version is stamped at build time with -ldflags "-X main.version=1.2.3".
+var version = "dev"
+
 func main() {
-	fmt.Println(hello.Greet("world").Message)
+	os.Exit(commandline.Execute(version, os.Args[1:]))
 }

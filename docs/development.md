@@ -37,6 +37,7 @@ Core slices in `apps/mnci`:
 | `scaffold` | `mnci new`, `mnci add` |
 | `nxworkspace`, `convertplan`, `convert` | read an Nx workspace, plan its conversion, apply it (`mnci convert`) |
 | `githubrelease` | GitHub Releases and their assets |
+| `slicecheck` | `mnci slices check`, the vertical-slices convention's check |
 | `doctor`, `explain`, `graphview` | inspection commands |
 | `session` | open a workspace for a command |
 | `gitclient` | every git call |
@@ -46,17 +47,16 @@ Core slices in `apps/mnci`:
 ## Checks
 
 ```sh
-for m in apps/mnci libs/plugin-node libs/plugin-go libs/plugin-python packages/plugin-sdk; do
-  (cd $m && go vet ./... && go test ./... && golangci-lint run ./...)
+for m in apps/mnci libs/plugin-node libs/plugin-go libs/plugin-python libs/plugin-vertical-slices packages/plugin-sdk; do
+  (cd $m && go vet ./... && go test ./... && golangci-lint run ./... && go run github.com/MoNecromanCI/mnci/apps/mnci slices check .)
 done
-node tools/go-slice-check.cjs apps/mnci libs/plugin-node libs/plugin-go libs/plugin-python packages/plugin-sdk
 
 # the golden path, end to end (needs Node 24, Go, Python 3.12 and network)
 cd apps/mnci && go test -tags e2e -timeout 40m -v ./goldenpath
 ```
 
 `mnci run lint test build` runs the same through the workspace (lint includes
-the slice check), with the cache. Use the mnci you are working on:
+the vertical-slices convention's `slice-check`), with the cache. Use the mnci you are working on:
 `go run ./apps/mnci run lint test build`.
 
 ## Building

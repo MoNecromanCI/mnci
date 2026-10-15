@@ -176,6 +176,8 @@ func (c *Client) Supports(method string) bool {
 		return caps.CI
 	case protocol.MethodDoctor:
 		return caps.Doctor
+	case protocol.MethodContribute:
+		return caps.Contribute
 	}
 	return method == protocol.MethodInitialize || method == protocol.MethodShutdown
 }

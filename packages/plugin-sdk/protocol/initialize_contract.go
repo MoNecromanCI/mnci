@@ -47,4 +47,7 @@ type Capabilities struct {
 	Publish  bool `json:"publish,omitempty"`
 	CI       bool `json:"ci,omitempty"`
 	Doctor   bool `json:"doctor,omitempty"`
+	// Contribute is a convention plugin's: it adds tasks to projects other
+	// plugins discovered.
+	Contribute bool `json:"contribute,omitempty"`
 }

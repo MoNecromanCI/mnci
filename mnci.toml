@@ -10,6 +10,13 @@ module_prefix = "github.com/MoNecromanCI/mnci"
 [ci]
 providers = ["github"]
 
+# Every Go project gets a slice-check task, run before lint: role-named files,
+# no junk-drawer folders (see docs/conventions.md).
+[conventions.vertical-slices]
+
+[tasks.lint]
+command = ["golangci-lint", "run", "--allow-serial-runners"]
+
 [release]
 github_releases = true
 
@@ -24,55 +31,5 @@ outputs = ["../../dist/dev/apps/mnci"]
 [projects.mnci.tasks.dev]
 command = ["go", "run", "github.com/air-verse/air@v1.61.7", "--build.cmd", "go build ./...", "--build.bin", "go run .", "--build.exclude_dir", "tmp"]
 
-[projects.mnci.tasks.lint]
-command = ["golangci-lint", "run", "--allow-serial-runners"]
-depends_on = ["slice-check"]
-
-[projects.mnci.tasks.slice-check]
-command = ["node", "tools/go-slice-check.cjs", "apps/mnci"]
-cwd = "."
-inputs = ["**/*.go", "{workspaceRoot}/tools/go-slice-check.cjs"]
-cache = true
-
 [projects.mnci.tasks.start]
 command = ["go", "run", "."]
-
-[projects.plugin-go.tasks.lint]
-command = ["golangci-lint", "run", "--allow-serial-runners"]
-depends_on = ["slice-check"]
-
-[projects.plugin-go.tasks.slice-check]
-command = ["node", "tools/go-slice-check.cjs", "libs/plugin-go"]
-cwd = "."
-inputs = ["**/*.go", "{workspaceRoot}/tools/go-slice-check.cjs"]
-cache = true
-
-[projects.plugin-node.tasks.lint]
-command = ["golangci-lint", "run", "--allow-serial-runners"]
-depends_on = ["slice-check"]
-
-[projects.plugin-node.tasks.slice-check]
-command = ["node", "tools/go-slice-check.cjs", "libs/plugin-node"]
-cwd = "."
-inputs = ["**/*.go", "{workspaceRoot}/tools/go-slice-check.cjs"]
-cache = true
-
-[projects.plugin-python.tasks.lint]
-command = ["golangci-lint", "run", "--allow-serial-runners"]
-depends_on = ["slice-check"]
-
-[projects.plugin-python.tasks.slice-check]
-command = ["node", "tools/go-slice-check.cjs", "libs/plugin-python"]
-cwd = "."
-inputs = ["**/*.go", "{workspaceRoot}/tools/go-slice-check.cjs"]
-cache = true
-
-[projects.plugin-sdk.tasks.lint]
-command = ["golangci-lint", "run", "--allow-serial-runners"]
-depends_on = ["slice-check"]
-
-[projects.plugin-sdk.tasks.slice-check]
-command = ["node", "tools/go-slice-check.cjs", "packages/plugin-sdk"]
-cwd = "."
-inputs = ["**/*.go", "{workspaceRoot}/tools/go-slice-check.cjs"]
-cache = true

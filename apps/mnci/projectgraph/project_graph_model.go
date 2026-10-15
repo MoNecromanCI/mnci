@@ -2,6 +2,7 @@ package projectgraph
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -22,12 +23,22 @@ type Project struct {
 	// Release is set for an app that releases (mnci.toml
 	// [projects.<name>.release]).
 	Release *workspace.ProjectRelease `json:"release,omitempty"`
+	// Conventions are the conventions that apply to the project, sorted.
+	Conventions []string `json:"conventions,omitempty"`
+	// contributed maps "task.field" to the convention that set it.
+	contributed map[string]string
 }
 
 // Releases reports whether the project takes part in releases: every
 // package, and an app that opted in.
 func (p *Project) Releases() bool {
 	return p.Kind == protocol.ProjectPackage || (p.Kind == protocol.ProjectApp && p.Release != nil)
+}
+
+// ServedBy reports whether a plugin owns the project or, as a convention,
+// applies to it: the projects a plugin's ci and doctor answers cover.
+func (p *Project) ServedBy(plugin string) bool {
+	return p.Plugin == plugin || slices.Contains(p.Conventions, plugin)
 }
 
 // Graph is every project and the edges between them.

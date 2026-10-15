@@ -38,7 +38,7 @@ func Run(s *session.Session) Report {
 		}
 		var projects []protocol.Project
 		for _, p := range s.Graph.Projects {
-			if p.Plugin == c.Info.Plugin.Name {
+			if p.ServedBy(c.Info.Plugin.Name) {
 				projects = append(projects, p.Project)
 			}
 		}

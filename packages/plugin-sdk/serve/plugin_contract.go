@@ -38,3 +38,8 @@ type CIContributor interface {
 type DoctorContributor interface {
 	Doctor(params protocol.DoctorParams) (protocol.DoctorResult, error)
 }
+
+// Contributor is a convention: it adds tasks to the projects it applies to.
+type Contributor interface {
+	Contribute(params protocol.ContributeParams) (protocol.ContributeResult, error)
+}

@@ -211,12 +211,22 @@ func (r *runner) sources(project string) string {
 
 func (r *runner) expand(t *taskgraph.Task, argv []string) []string {
 	root := filepath.ToSlash(r.opts.Root)
-	repl := strings.NewReplacer("{workspaceRoot}", root, "{projectRoot}", root+"/"+t.Project.Root)
+	repl := strings.NewReplacer("{mnci}", Self(), "{workspaceRoot}", root, "{projectRoot}", root+"/"+t.Project.Root)
 	out := make([]string, len(argv))
 	for i, a := range argv {
 		out[i] = repl.Replace(a)
 	}
 	return out
+}
+
+// Self is the path of the running mnci, which {mnci} in a command stands
+// for: a convention's task runs the same mnci that runs it, on PATH or not.
+func Self() string {
+	exe, err := os.Executable()
+	if err != nil {
+		return "mnci"
+	}
+	return filepath.ToSlash(exe)
 }
 
 func (r *runner) cwd(t *taskgraph.Task) string {

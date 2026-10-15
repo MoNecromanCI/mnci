@@ -42,7 +42,7 @@ func Preflight(s *session.Session, plan Plan) error {
 	for name := range plugins {
 		var projects []protocol.Project
 		for _, p := range s.Graph.Projects {
-			if p.Plugin == name {
+			if p.ServedBy(name) {
 				projects = append(projects, p.Project)
 			}
 		}

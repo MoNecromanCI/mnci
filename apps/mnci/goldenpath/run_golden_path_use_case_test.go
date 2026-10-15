@@ -117,6 +117,19 @@ func TestGoldenPath(t *testing.T) {
 	if !strings.Contains(out, "tasks succeeded") {
 		t.Fatal(out)
 	}
+	// The vertical-slices convention checks Go and Python layouts before lint.
+	for _, want := range []string{"api:slice-check", "pykit:slice-check"} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("%s did not run:\n%s", want, out)
+		}
+	}
+	w.write("libs/core/helpers/format.go", "package helpers\n")
+	if out := w.mnci(false, "run", "slice-check", "-p", "core"); !strings.Contains(out, `"helpers" is a junk drawer`) {
+		t.Fatalf("a junk-drawer folder passes the slice check:\n%s", out)
+	}
+	if err := os.RemoveAll(filepath.Join(w.dir, "libs", "core", "helpers")); err != nil {
+		t.Fatal(err)
+	}
 	out = w.mnci(true, "run", "lint", "typecheck", "test", "build")
 	if strings.Contains(out, "▶") {
 		t.Fatalf("second run executed tasks:\n%s", out)

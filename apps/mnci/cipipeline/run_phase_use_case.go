@@ -85,7 +85,7 @@ func runSteps(ctx context.Context, root string, steps []protocol.Step, out io.Wr
 		fmt.Fprintf(out, "▶ %s\n", step.Name)
 		argv := make([]string, len(step.Command))
 		for i, a := range step.Command {
-			argv[i] = strings.ReplaceAll(a, "{workspaceRoot}", filepath.ToSlash(root))
+			argv[i] = strings.NewReplacer("{mnci}", taskrun.Self(), "{workspaceRoot}", filepath.ToSlash(root)).Replace(a)
 		}
 		dir := root
 		if step.Dir != "" {

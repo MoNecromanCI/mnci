@@ -20,7 +20,7 @@ func Command(version string) *cobra.Command {
 		Args:   cobra.ExactArgs(1),
 		Hidden: true,
 		RunE: func(_ *cobra.Command, args []string) error {
-			ctor, ok := Builtins[args[0]]
+			ctor, ok := Builtin(args[0])
 			if !ok {
 				return fmt.Errorf("no built-in plugin %q", args[0])
 			}
@@ -39,6 +39,9 @@ func Command(version string) *cobra.Command {
 			var rows []row
 			for _, name := range BuiltinNames() {
 				rows = append(rows, row{name, serve.CapabilitiesOf(Builtins[name](version))})
+			}
+			for _, name := range sortedNames(BuiltinConventions) {
+				rows = append(rows, row{name, serve.CapabilitiesOf(BuiltinConventions[name](version))})
 			}
 			if asJSON {
 				enc := json.NewEncoder(cmd.OutOrStdout())

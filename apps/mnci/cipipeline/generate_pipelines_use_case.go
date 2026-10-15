@@ -22,7 +22,7 @@ func Collect(s *session.Session) (Contributions, error) {
 		}
 		var projects []protocol.Project
 		for _, p := range s.Graph.Projects {
-			if p.Plugin == client.Info.Plugin.Name {
+			if p.ServedBy(client.Info.Plugin.Name) {
 				projects = append(projects, p.Project)
 			}
 		}

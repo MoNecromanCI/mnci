@@ -49,8 +49,10 @@ module.exports = {
 // import Nx at run time.
 func configFile(f string) bool {
 	base := path.Base(f)
-	if strings.HasPrefix(f, "node_modules/") || strings.Contains(f, "/node_modules/") || strings.HasPrefix(f, ".nx/") {
-		return false
+	for _, skip := range []string{"node_modules", ".nx", "testdata", "fixtures", "__fixtures__"} {
+		if strings.HasPrefix(f, skip+"/") || strings.Contains(f, "/"+skip+"/") {
+			return false
+		}
 	}
 	for _, ext := range []string{".js", ".cjs", ".mjs", ".ts", ".cts", ".mts"} {
 		if !strings.HasSuffix(base, ext) {

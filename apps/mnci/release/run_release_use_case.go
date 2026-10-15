@@ -7,10 +7,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/MoNecromanCI/mnci/apps/mnci/githubrelease"
+	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/MoNecromanCI/mnci/apps/mnci/taskrun"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
@@ -63,7 +66,13 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 	if commit := s.Git.TagCommit(item.Tag); commit != "" {
 		res.Status = "already-released"
 		say("%s already exists", item.Tag)
-		return nil
+		if opts.DryRun || !s.Config.Release.GitHubReleases {
+			return nil
+		}
+		if err := pushTag(s, item, opts, res); err != nil {
+			return err
+		}
+		return publishGitHubRelease(s, p, item, res, say, nil)
 	}
 
 	deps := map[string]string{}
@@ -90,7 +99,8 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 		}()
 	}
 
-	if !opts.DryRun {
+	// An app's assets are built by publishing; its own build is not needed.
+	if !opts.DryRun && p.Release == nil {
 		if _, has := p.Tasks["build"]; has {
 			say("building %s", item.Next)
 			summary, err := taskrun.RunInWorkspace(ctx, s, taskrun.Request{Tasks: []string{"build"}, Projects: []string{p.Name}, Out: opts.Out, NoCache: len(vr.Files) > 0})
@@ -103,18 +113,19 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 		}
 	}
 
-	var pr protocol.PublishResult
-	ok, err = s.Plugins.Call(p.Plugin, protocol.MethodPublish, protocol.PublishParams{Project: p.Project, Version: item.Next, DryRun: opts.DryRun}, &pr, 15*time.Minute)
+	if p.Release != nil && !opts.DryRun {
+		say("building assets for %s", item.Next)
+	}
+	pr, err := publish(s, p, item, opts.DryRun)
 	if err != nil {
-		return fmt.Errorf("publishing: %w", err)
+		return err
 	}
-	if ok {
-		res.Published, res.Registry, res.Publish = pr.Published, pr.Registry, pr.Skipped
-	} else {
-		res.Publish = "published by its tag"
-	}
+	res.Published, res.Registry, res.Publish, res.Assets = pr.Published, pr.Registry, pr.Skipped, pr.Assets
 	if opts.DryRun {
 		say("would release %s (%s)", item.Next, item.Reason)
+		if len(pr.Assets) > 0 {
+			say("would attach %s", strings.Join(pr.Assets, ", "))
+		}
 		return nil
 	}
 
@@ -123,13 +134,138 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 	}
 	res.Status = "released"
 	say("tagged %s", item.Tag)
-	if opts.Push && s.Git.HasRemote(s.Config.Release.Remote) {
-		if err := s.Git.PushTag(s.Config.Release.Remote, item.Tag); err != nil {
-			return fmt.Errorf("pushing %s: %w (the tag exists locally; re-run to push it)", item.Tag, err)
-		}
-		res.Pushed = true
+	if err := pushTag(s, item, opts, res); err != nil {
+		return err
+	}
+	if s.Config.Release.GitHubReleases {
+		return publishGitHubRelease(s, p, item, res, say, pr.Assets)
 	}
 	return nil
+}
+
+// publish asks the project's plugin to publish it; an app with a release
+// configuration gets its assets built instead.
+func publish(s *session.Session, p *projectgraph.Project, item Item, dryRun bool) (protocol.PublishResult, error) {
+	params := protocol.PublishParams{Project: p.Project, Version: item.Next, DryRun: dryRun, Assets: AssetSpec(p)}
+	var pr protocol.PublishResult
+	ok, err := s.Plugins.Call(p.Plugin, protocol.MethodPublish, params, &pr, 30*time.Minute)
+	if err != nil {
+		return pr, fmt.Errorf("publishing: %w", err)
+	}
+	if !ok {
+		if params.Assets != nil {
+			return pr, fmt.Errorf("the %s plugin cannot build release assets", p.Plugin)
+		}
+		pr.Skipped = "published by its tag"
+	}
+	return pr, nil
+}
+
+// AssetSpec is what a plugin needs to build an app's release assets, or nil
+// for a project without them.
+func AssetSpec(p *projectgraph.Project) *protocol.AssetSpec {
+	r := p.Release
+	if r == nil {
+		return nil
+	}
+	return &protocol.AssetSpec{
+		Name:            r.AssetName,
+		Product:         r.Product,
+		Platforms:       r.Platforms,
+		OSAlias:         r.OSAlias,
+		ArchAlias:       r.ArchAlias,
+		VersionVariable: r.VersionVariable,
+		OutDir:          "dist/release/" + p.Name,
+	}
+}
+
+func pushTag(s *session.Session, item Item, opts Options, res *ReportResult) error {
+	if !opts.Push || !s.Git.HasRemote(s.Config.Release.Remote) {
+		return nil
+	}
+	if err := s.Git.PushTag(s.Config.Release.Remote, item.Tag); err != nil {
+		return fmt.Errorf("pushing %s: %w (the tag exists locally; re-run to push it)", item.Tag, err)
+	}
+	res.Pushed = true
+	return nil
+}
+
+// publishGitHubRelease creates the tag's GitHub Release and attaches the
+// assets. When assets is nil (a resumed release), the plugin lists the
+// expected files and they are rebuilt only if the release lacks any.
+func publishGitHubRelease(s *session.Session, p *projectgraph.Project, item Item, res *ReportResult, say func(string, ...any), assets []string) error {
+	if !res.Pushed {
+		say("not creating a GitHub Release: the tag was not pushed")
+		return nil
+	}
+	client, err := githubrelease.FromEnvironment()
+	if err != nil {
+		return err
+	}
+	repo, err := Repository(s)
+	if err != nil {
+		return err
+	}
+	if assets == nil && p.Release != nil {
+		existing, found, err := client.ReleaseByTag(repo, item.Tag)
+		if err != nil {
+			return err
+		}
+		planned, err := publish(s, p, item, true)
+		if err != nil {
+			return err
+		}
+		if !found || missing(existing, planned.Assets) {
+			say("building assets for %s", item.Next)
+			built, err := publish(s, p, item, false)
+			if err != nil {
+				return err
+			}
+			assets = built.Assets
+		}
+	}
+	files := make([]string, len(assets))
+	for i, a := range assets {
+		files[i] = filepath.Join(s.Root, filepath.FromSlash(a))
+	}
+	out, err := githubrelease.Ensure(client, repo, githubrelease.Request{Tag: item.Tag, Title: item.Project + " " + item.Next, Notes: githubrelease.Notes(item.Reason, item.Commits), Assets: files})
+	if err != nil {
+		return fmt.Errorf("GitHub Release %s: %w (re-run the release to finish it)", item.Tag, err)
+	}
+	res.GitHubRelease = out.URL
+	if out.Created {
+		say("created GitHub Release %s", out.URL)
+	}
+	if len(out.Uploaded) > 0 {
+		say("attached %s", strings.Join(out.Uploaded, ", "))
+	}
+	return nil
+}
+
+func missing(r githubrelease.Release, assets []string) bool {
+	have := map[string]bool{}
+	for _, a := range r.Assets {
+		have[a.Name] = true
+	}
+	for _, a := range assets {
+		if !have[path.Base(a)] {
+			return true
+		}
+	}
+	return false
+}
+
+// Repository is the GitHub repository releases go to: GITHUB_REPOSITORY on
+// Actions, otherwise the release remote's URL.
+func Repository(s *session.Session) (githubrelease.Repository, error) {
+	if env := os.Getenv("GITHUB_REPOSITORY"); env != "" {
+		return githubrelease.ParseRepository(env)
+	}
+	remote, err := s.Git.RemoteURL(s.Config.Release.Remote)
+	if err != nil {
+		return githubrelease.Repository{}, fmt.Errorf("no GitHub repository: set GITHUB_REPOSITORY or add the %s remote", s.Config.Release.Remote)
+	}
+	return githubrelease.ParseRepository(remote)
 }
 
 // pushPending pushes release tags at HEAD left local by an interrupted run.

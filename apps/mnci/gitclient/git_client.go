@@ -136,15 +136,21 @@ type Commit struct {
 
 // Log returns commits reachable from HEAD and not from since (all history when
 // since is empty) that touch path ("" means the whole repository), newest first.
-func (g *Git) Log(since, path string) ([]Commit, error) {
+func (g *Git) Log(since string, paths ...string) ([]Commit, error) {
 	args := []string{"log", "-z", "--format=%H%x1f%s%x1f%b"}
 	if since != "" {
 		args = append(args, since+"..HEAD")
 	} else {
 		args = append(args, "HEAD")
 	}
-	if path != "" {
-		args = append(args, "--", path)
+	var only []string
+	for _, p := range paths {
+		if p != "" {
+			only = append(only, p)
+		}
+	}
+	if len(only) > 0 {
+		args = append(append(args, "--"), only...)
 	}
 	out, err := g.raw(args...)
 	if err != nil {

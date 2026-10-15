@@ -35,6 +35,9 @@ func Collect(s *session.Session) (Contributions, error) {
 		}
 		c.Add(r)
 	}
+	if s.Config.Release.GitHubReleases {
+		c.Add(protocol.CIResult{Credentials: []protocol.Credential{{Env: "GITHUB_TOKEN", Description: "creates GitHub Releases and uploads their assets", Required: true}}})
+	}
 	return c, nil
 }
 

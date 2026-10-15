@@ -29,7 +29,11 @@ type ReportResult struct {
 	Publish   string   `json:"publish,omitempty"`
 	Registry  string   `json:"registry,omitempty"`
 	Pushed    bool     `json:"pushed"`
-	Error     string   `json:"error,omitempty"`
+	// Assets are the files built for an app's release.
+	Assets []string `json:"assets,omitempty"`
+	// GitHubRelease is the URL of the tag's GitHub Release.
+	GitHubRelease string `json:"githubRelease,omitempty"`
+	Error         string `json:"error,omitempty"`
 }
 
 // Markdown renders the report for a CI step summary or a PR comment.

@@ -20,6 +20,29 @@ type PublishParams struct {
 	Project Project `json:"project"`
 	Version string  `json:"version"`
 	DryRun  bool    `json:"dryRun,omitempty"`
+	// Assets, when set, asks the plugin to build the files attached to the
+	// release (an app's per-platform binaries) instead of publishing to a
+	// registry.
+	Assets *AssetSpec `json:"assets,omitempty"`
+}
+
+// AssetSpec describes the release files of an app.
+type AssetSpec struct {
+	// Name is the file name pattern; placeholders are {product}, {version},
+	// {os}, {arch} and {ext}.
+	Name string `json:"name"`
+	// Product fills {product}; it defaults to the project name.
+	Product string `json:"product,omitempty"`
+	// Platforms are "os/arch" pairs in the language's own spelling.
+	Platforms []string `json:"platforms"`
+	// OSAlias and ArchAlias rename an os or arch in file names only.
+	OSAlias   map[string]string `json:"osAlias,omitempty"`
+	ArchAlias map[string]string `json:"archAlias,omitempty"`
+	// VersionVariable is the symbol the version is stamped into, for
+	// languages that stamp at link time (Go: main.version).
+	VersionVariable string `json:"versionVariable,omitempty"`
+	// OutDir is the workspace-relative directory the files go to.
+	OutDir string `json:"outDir"`
 }
 
 // PublishResult reports what happened. Skipped with a reason is a success:
@@ -28,4 +51,7 @@ type PublishResult struct {
 	Published bool   `json:"published"`
 	Skipped   string `json:"skipped,omitempty"`
 	Registry  string `json:"registry,omitempty"`
+	// Assets are the workspace-relative files built for the release, in
+	// upload order; in a dry run, the files that would be built.
+	Assets []string `json:"assets,omitempty"`
 }

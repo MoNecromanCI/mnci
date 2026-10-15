@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
 
@@ -18,6 +19,15 @@ type Project struct {
 	// Sources maps "task.field" to where its value came from
 	// ("plugin node", "mnci.toml [tasks.test]", ...).
 	Sources map[string]string `json:"-"`
+	// Release is set for an app that releases (mnci.toml
+	// [projects.<name>.release]).
+	Release *workspace.ProjectRelease `json:"release,omitempty"`
+}
+
+// Releases reports whether the project takes part in releases: every
+// package, and an app that opted in.
+func (p *Project) Releases() bool {
+	return p.Kind == protocol.ProjectPackage || (p.Kind == protocol.ProjectApp && p.Release != nil)
 }
 
 // Graph is every project and the edges between them.

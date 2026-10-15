@@ -9,7 +9,7 @@ import (
 )
 
 // TaskFields are the fields of a task whose source is tracked.
-var TaskFields = []string{"command", "inputs", "outputs", "dependsOn", "env", "cache"}
+var TaskFields = []string{"command", "cwd", "inputs", "outputs", "dependsOn", "env", "cache"}
 
 // ApplyOverrides layers mnci.toml on top of plugin-inferred tasks: plugin
 // defaults, then [tasks.<task>], then [projects.<name>.tasks.<task>]. A
@@ -36,6 +36,10 @@ func ApplyOverrides(p *Project, cfg workspace.Config) error {
 		}
 	}
 	if po, ok := cfg.Projects[p.Name]; ok {
+		if po.TagPrefix != "" {
+			p.TagPrefix = po.TagPrefix
+		}
+		p.Release = po.Release
 		taskNames := make([]string, 0, len(po.Tasks))
 		for name := range po.Tasks {
 			taskNames = append(taskNames, name)
@@ -58,6 +62,10 @@ func apply(t protocol.Task, o workspace.TaskOverride, sources map[string]string,
 	if o.Command != nil {
 		t.Command = o.Command
 		set("command")
+	}
+	if o.Cwd != "" {
+		t.Cwd = o.Cwd
+		set("cwd")
 	}
 	if o.Inputs != nil {
 		t.Inputs = o.Inputs

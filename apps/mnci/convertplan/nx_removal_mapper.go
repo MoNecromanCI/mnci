@@ -195,8 +195,12 @@ func replaceRollup(plan *Plan, w *nxworkspace.Workspace, file, text string) bool
 		format = m[1]
 	}
 	entry := strings.TrimPrefix(main[1], "./")
-	build := fmt.Sprintf("esbuild %s --bundle --packages=external --format=%s --outfile=%s --sourcemap && tsc -p %s --emitDeclarationOnly --declaration --declarationDir %s",
-		entry, format, out, strings.TrimPrefix(tsconfig[1], "./"), path.Dir(types))
+	// The declarations keep their own build info: sharing the project's
+	// would make `tsc --build` (typecheck) think the library is built when
+	// its own outputs are missing.
+	declarations := path.Dir(types)
+	build := fmt.Sprintf("esbuild %s --bundle --packages=external --format=%s --outfile=%s --sourcemap && tsc -p %s --emitDeclarationOnly --declaration --declarationDir %s --tsBuildInfoFile %s/tsconfig.lib.tsbuildinfo",
+		entry, format, out, strings.TrimPrefix(tsconfig[1], "./"), declarations, declarations)
 	if pp.Scripts == nil {
 		pp.Scripts = map[string]string{}
 	}

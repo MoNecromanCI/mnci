@@ -22,8 +22,10 @@ func Preflight(s *session.Session, plan Plan) error {
 	if branch := s.Git.CurrentBranch(); branch != "" && branch != s.Config.Release.Branch && os.Getenv("MNCI_RELEASE_ANY_BRANCH") == "" {
 		problems = append(problems, fmt.Sprintf("releases run from %s, not %s", s.Config.Release.Branch, branch))
 	}
-	if out, err := s.Git.Run("status", "--porcelain", "--untracked-files=no"); err == nil && out != "" {
-		problems = append(problems, "the working tree has uncommitted changes; commit or stash them first")
+	if out, err := s.Git.Run("status", "--porcelain", "--untracked-files=no"); err == nil {
+		if changed := Uncommitted(out); len(changed) > 0 {
+			problems = append(problems, "the working tree has uncommitted changes ("+strings.Join(changed, ", ")+"); commit or stash them first")
+		}
 	}
 	if s.Config.Release.GitHubReleases && len(plan.Items) > 0 {
 		if _, err := githubrelease.FromEnvironment(); err != nil {
@@ -69,4 +71,23 @@ func alternative(env string) bool {
 		return os.Getenv("NPM_TOKEN") != "" || os.Getenv("MNCI_NPM_ALREADY_AUTHENTICATED") != ""
 	}
 	return false
+}
+
+// Uncommitted lists the changed files of `git status --porcelain` that
+// matter to a release. go.work.sum is left out: it caches module checksums,
+// `go mod download` (CI setup) completes it, and it never changes what is
+// released.
+func Uncommitted(porcelain string) []string {
+	var out []string
+	for _, line := range strings.Split(strings.ReplaceAll(porcelain, "\r\n", "\n"), "\n") {
+		if len(line) < 4 {
+			continue
+		}
+		file := strings.TrimSpace(line[3:])
+		if file == "go.work.sum" {
+			continue
+		}
+		out = append(out, file)
+	}
+	return out
 }

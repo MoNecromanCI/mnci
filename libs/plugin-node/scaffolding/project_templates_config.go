@@ -130,6 +130,7 @@ var workspaceTemplates = map[string]string{
     "moduleResolution": "nodenext",
     "strict": true,
     "esModuleInterop": true,
+    "isolatedModules": true,
     "skipLibCheck": true,
     "declaration": true,
     "sourceMap": true,

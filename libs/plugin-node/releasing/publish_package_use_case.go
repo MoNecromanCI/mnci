@@ -26,13 +26,14 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 	}
 	name := params.Project.Exports[0]
 	dir := filepath.Join(workspaceRoot, filepath.FromSlash(params.Project.Root))
-	registry, _ := npm.output(dir, []string{"npm", "config", "get", "registry"})
+	// npm refuses config and view inside a workspace package, so ask at the root.
+	registry, _ := npm.output(workspaceRoot, []string{"npm", "config", "get", "registry"})
 	result := protocol.PublishResult{Registry: strings.TrimSpace(registry)}
 	if params.DryRun {
 		result.Skipped = "dry run"
 		return result, nil
 	}
-	existing, _ := npm.output(dir, []string{"npm", "view", name + "@" + params.Version, "version"})
+	existing, _ := npm.output(workspaceRoot, []string{"npm", "view", name + "@" + params.Version, "version"})
 	if strings.TrimSpace(existing) == params.Version {
 		result.Skipped = "already published"
 		return result, nil

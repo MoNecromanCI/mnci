@@ -1,0 +1,108 @@
+package workspace
+
+import (
+	"bytes"
+	"errors"
+	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/pelletier/go-toml/v2"
+)
+
+// ErrNotFound is returned when no mnci.toml exists at or above a directory.
+var ErrNotFound = errors.New("not inside an mnci workspace (no mnci.toml found); run `mnci new <name>` to create one")
+
+// FindRoot walks up from dir to the directory holding mnci.toml.
+func FindRoot(dir string) (string, error) {
+	if env := os.Getenv("MNCI_WORKSPACE_ROOT"); env != "" {
+		dir = env
+	}
+	dir, err := filepath.Abs(dir)
+	if err != nil {
+		return "", err
+	}
+	for {
+		if _, err := os.Stat(filepath.Join(dir, FileName)); err == nil {
+			return dir, nil
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", ErrNotFound
+		}
+		dir = parent
+	}
+}
+
+// Load reads mnci.toml under root, rejects unknown keys and applies defaults.
+func Load(root string) (Config, error) {
+	raw, err := os.ReadFile(filepath.Join(root, FileName))
+	if errors.Is(err, fs.ErrNotExist) {
+		return Config{}, ErrNotFound
+	}
+	if err != nil {
+		return Config{}, err
+	}
+	return Parse(raw)
+}
+
+// Parse decodes mnci.toml text, rejecting unknown keys so a typo is an error
+// rather than a silently ignored setting.
+func Parse(raw []byte) (Config, error) {
+	var cfg Config
+	dec := toml.NewDecoder(bytes.NewReader(raw)).DisallowUnknownFields()
+	if err := dec.Decode(&cfg); err != nil {
+		var strict *toml.StrictMissingError
+		if errors.As(err, &strict) {
+			return cfg, fmt.Errorf("%s: %s", FileName, strings.TrimSpace(strict.String()))
+		}
+		var decodeErr *toml.DecodeError
+		if errors.As(err, &decodeErr) {
+			row, col := decodeErr.Position()
+			return cfg, fmt.Errorf("%s:%d:%d: %s", FileName, row, col, decodeErr.Error())
+		}
+		return cfg, fmt.Errorf("%s: %w", FileName, err)
+	}
+	return cfg, Validate(&cfg)
+}
+
+// Validate applies defaults and checks values.
+func Validate(cfg *Config) error {
+	if cfg.Schema == 0 {
+		cfg.Schema = SchemaVersion
+	}
+	if cfg.Schema > SchemaVersion {
+		return fmt.Errorf("%s uses schema %d; this mnci reads up to %d, upgrade mnci", FileName, cfg.Schema, SchemaVersion)
+	}
+	if strings.TrimSpace(cfg.Workspace.Name) == "" {
+		return fmt.Errorf("%s: [workspace] name is required", FileName)
+	}
+	if len(cfg.CI.Providers) == 0 {
+		cfg.CI.Providers = []string{"github"}
+	}
+	for _, p := range cfg.CI.Providers {
+		if p != "github" && p != "azure" {
+			return fmt.Errorf("%s: unknown CI provider %q (use github or azure)", FileName, p)
+		}
+	}
+	if cfg.Release.Branch == "" {
+		cfg.Release.Branch = "main"
+	}
+	if cfg.Release.Remote == "" {
+		cfg.Release.Remote = "origin"
+	}
+	if cfg.Cache.Dir == "" {
+		cfg.Cache.Dir = ".mnci/cache"
+	}
+	if cfg.Cache.MaxSizeMB == 0 {
+		cfg.Cache.MaxSizeMB = 2048
+	}
+	for name, ext := range cfg.Plugins.External {
+		if len(ext.Command) == 0 {
+			return fmt.Errorf("%s: [plugins.external.%s] needs a command", FileName, name)
+		}
+	}
+	return nil
+}

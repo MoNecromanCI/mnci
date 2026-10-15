@@ -1,0 +1,59 @@
+package taskrun
+
+import (
+	"bytes"
+	"io"
+	"sync"
+)
+
+// prefixWriter writes complete lines to out, each starting with prefix, and
+// keeps an unprefixed copy of everything for the cache log. Lines from tasks
+// running in parallel never interleave mid-line.
+type prefixWriter struct {
+	prefix  string
+	out     io.Writer
+	outMu   *sync.Mutex
+	pending []byte
+	log     bytes.Buffer
+}
+
+func newPrefixWriter(prefix string, out io.Writer, mu *sync.Mutex) *prefixWriter {
+	return &prefixWriter{prefix: prefix, out: out, outMu: mu}
+}
+
+func (w *prefixWriter) Write(p []byte) (int, error) {
+	w.log.Write(p)
+	w.pending = append(w.pending, p...)
+	for {
+		i := bytes.IndexByte(w.pending, '\n')
+		if i < 0 {
+			break
+		}
+		w.emit(w.pending[:i+1])
+		w.pending = w.pending[i+1:]
+	}
+	return len(p), nil
+}
+
+// Flush writes a trailing partial line.
+func (w *prefixWriter) Flush() {
+	if len(w.pending) > 0 {
+		w.emit(append(w.pending, '\n'))
+		w.pending = nil
+	}
+}
+
+func (w *prefixWriter) emit(line []byte) {
+	w.outMu.Lock()
+	defer w.outMu.Unlock()
+	_, _ = io.WriteString(w.out, w.prefix)
+	_, _ = w.out.Write(bytes.TrimRight(line, "\r\n"))
+	_, _ = io.WriteString(w.out, "\n")
+}
+
+// Replay writes a cached log through the same prefixing.
+func Replay(prefix string, log []byte, out io.Writer, mu *sync.Mutex) {
+	w := newPrefixWriter(prefix, out, mu)
+	_, _ = w.Write(log)
+	w.Flush()
+}

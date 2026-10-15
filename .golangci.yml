@@ -1,0 +1,10 @@
+# golangci-lint for every Go module in the repository.
+version: "2"
+linters:
+  settings:
+    errcheck:
+      # Writing to the terminal or a cobra command's output cannot usefully fail.
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln

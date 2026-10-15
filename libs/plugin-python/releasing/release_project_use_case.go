@@ -64,18 +64,36 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 	if len(files) == 0 {
 		return result, errors.New("no distribution for version " + params.Version + " in " + params.Project.Root + "/dist; build it first")
 	}
+	project := params.Project.Name
+	if len(params.Project.Exports) > 0 {
+		project = params.Project.Exports[0]
+	}
+	names := make([]string, len(files))
+	for i, f := range files {
+		names[i] = filepath.Base(f)
+	}
+	present := Uploaded(SimpleIndexURL(registry), project, names)
+	var missing []string
+	for i, f := range files {
+		if !present[names[i]] {
+			missing = append(missing, f)
+		}
+	}
+	if len(missing) == 0 {
+		result.Skipped = "already published"
+		return result, nil
+	}
 	var env []string
 	if token := os.Getenv("PYPI_TOKEN"); token != "" && os.Getenv("TWINE_PASSWORD") == "" {
 		env = append(env, "TWINE_USERNAME=__token__", "TWINE_PASSWORD="+token)
 	}
-	argv := append([]string{venv.Path(workspaceRoot), "-m", "twine", "upload", "--non-interactive", "--skip-existing", "--disable-progress-bar"}, files...)
-	out, err := Twine(dir, argv, env)
-	if err != nil {
+	argv := append([]string{venv.Path(workspaceRoot), "-m", "twine", "upload", "--non-interactive", "--disable-progress-bar"}, missing...)
+	if out, err := Twine(dir, argv, env); err != nil {
+		if strings.Contains(out, "File already exists") || strings.Contains(out, "409") {
+			result.Skipped = "already published"
+			return result, nil
+		}
 		return result, err
-	}
-	if strings.Contains(out, "Skipping") && !strings.Contains(out, "Uploading") {
-		result.Skipped = "already published"
-		return result, nil
 	}
 	result.Published = true
 	return result, nil

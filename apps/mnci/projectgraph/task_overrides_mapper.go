@@ -25,6 +25,9 @@ func ApplyOverrides(p *Project, cfg workspace.Config) error {
 			p.Sources[name+"."+f] = "plugin " + p.Plugin
 		}
 	}
+	for field, source := range p.contributed {
+		p.Sources[field] = source
+	}
 	names := make([]string, 0, len(p.Tasks))
 	for name := range p.Tasks {
 		names = append(names, name)

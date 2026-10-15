@@ -27,6 +27,10 @@ max_size_mb = 2048
 [plugins]
 enabled = ["node", "go", "python"]    # default: every built-in plugin
 
+[conventions.vertical-slices]         # apply a convention (docs/conventions.md)
+languages = ["go"]                    # default: every language it supports
+exclude = ["legacy"]                  # projects it leaves alone
+
 [plugins.external.rust]
 command = ["mnci-plugin-rust"]        # any executable speaking the protocol
 ```

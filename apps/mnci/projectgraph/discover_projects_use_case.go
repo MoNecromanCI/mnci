@@ -2,6 +2,7 @@ package projectgraph
 
 import (
 	"path"
+	"slices"
 	"sort"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 
 // Discover asks every plugin to describe the manifests it claims among the
 // workspace's files (tracked, or untracked and not ignored), then resolves
-// edges and applies mnci.toml overrides.
+// edges, applies the configured conventions and then mnci.toml overrides.
 func Discover(files []string, plugins *pluginhost.PluginSet, cfg workspace.Config) (*Graph, error) {
 	var projects []*Project
 	for _, c := range plugins.Clients {
@@ -42,7 +43,19 @@ func Discover(files []string, plugins *pluginhost.PluginSet, cfg workspace.Confi
 		}
 	}
 	ResolveEdges(projects)
+	applied, err := ApplyConventions(projects, plugins, cfg)
+	if err != nil {
+		return nil, err
+	}
+	for convention, names := range applied {
+		for _, p := range projects {
+			if slices.Contains(names, p.Name) {
+				p.Conventions = append(p.Conventions, convention)
+			}
+		}
+	}
 	for _, p := range projects {
+		sort.Strings(p.Conventions)
 		if err := ApplyOverrides(p, cfg); err != nil {
 			return nil, err
 		}

@@ -8,14 +8,17 @@ const SchemaVersion = 1
 
 // Config is mnci.toml. Every field is optional except workspace.name.
 type Config struct {
-	Schema    int                        `toml:"schema"`
-	Workspace WorkspaceSection           `toml:"workspace"`
-	CI        CISection                  `toml:"ci"`
-	Release   ReleaseSection             `toml:"release"`
-	Cache     CacheSection               `toml:"cache"`
-	Plugins   PluginsSection             `toml:"plugins"`
-	Tasks     map[string]TaskOverride    `toml:"tasks"`
-	Projects  map[string]ProjectOverride `toml:"projects"`
+	Schema    int              `toml:"schema"`
+	Workspace WorkspaceSection `toml:"workspace"`
+	CI        CISection        `toml:"ci"`
+	Release   ReleaseSection   `toml:"release"`
+	Cache     CacheSection     `toml:"cache"`
+	Plugins   PluginsSection   `toml:"plugins"`
+	// Conventions apply convention plugins, by name, to the projects of the
+	// languages they support.
+	Conventions map[string]ConventionConfig `toml:"conventions"`
+	Tasks       map[string]TaskOverride     `toml:"tasks"`
+	Projects    map[string]ProjectOverride  `toml:"projects"`
 }
 
 // WorkspaceSection names the monorepo.
@@ -64,6 +67,15 @@ type PluginsSection struct {
 // ExternalPlugin is a plugin outside the mnci binary.
 type ExternalPlugin struct {
 	Command []string `toml:"command"`
+}
+
+// ConventionConfig chooses the projects a convention applies to.
+type ConventionConfig struct {
+	// Languages narrows the convention to some of the languages it supports.
+	// Default: all of them.
+	Languages []string `toml:"languages"`
+	// Exclude lists projects the convention leaves alone.
+	Exclude []string `toml:"exclude"`
 }
 
 // ProjectOverride adjusts one project.

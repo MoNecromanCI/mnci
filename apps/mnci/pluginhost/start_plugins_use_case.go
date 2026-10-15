@@ -51,6 +51,15 @@ func Start(opts Options) (*PluginSet, error) {
 	for _, name := range external {
 		launches = append(launches, launch{name, opts.Config.Plugins.External[name].Command})
 	}
+	for _, name := range sortedNames(opts.Config.Conventions) {
+		if _, ok := opts.Config.Plugins.External[name]; ok {
+			continue
+		}
+		if _, ok := BuiltinConventions[name]; !ok {
+			return nil, fmt.Errorf("mnci.toml configures unknown convention %q; built-in conventions are %v, and an external one is declared under [plugins.external.%s]", name, sortedNames(BuiltinConventions), name)
+		}
+		launches = append(launches, launch{name, []string{self, "plugin", "serve", name}})
+	}
 
 	log := opts.Log
 	if log == nil {

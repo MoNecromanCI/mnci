@@ -11,6 +11,7 @@ core knows none of it.
 | `node` | `package.json` (npm workspaces) | TypeScript; `tsc`, Jest (`ts-jest`), ESLint with `@mnci/eslint-config` (TypeScript rules, Standard style, vertical slices) | `npm publish`, skipping an existing version |
 | `go` | `go.mod` (in a root `go.work`) | `go build`, `go test`, `go vet` | a `<dir>/vX.Y.Z` module tag |
 | `python` | `pyproject.toml` (src layout) | one root `.venv`, Ruff, pytest, PyPA `build` | `twine upload` of files the index lacks |
+| `vertical-slices` (convention) | — | a `slice-check` task for Go and Python projects, run before `lint` | — |
 
 Built-in plugins ship inside the `mnci` binary but still run as separate
 processes (`mnci plugin serve <name>`), speaking the same protocol an external
@@ -75,6 +76,7 @@ Content-Length: 85\r\n
 | `publish` | project, version, dry run → published / skipped with a reason | `publish` |
 | `ci` | the plugin's projects → toolchains, setup and audit steps, credentials | `ci` |
 | `doctor` | the plugin's projects → findings, each with a remedy | `doctor` |
+| `contribute` | the projects a convention applies to → new tasks and extra task dependencies, by project | `contribute` |
 | `shutdown` | → `{}`; the plugin then exits | always |
 
 A **project** carries its name, root, language, kind (`app`, `lib`,
@@ -96,7 +98,10 @@ Rules:
 
 ## Convention plugins
 
-A convention describes everything a kind of project does — its tools, rules and
-folder structure (for example node + ESLint + Jest + TypeScript + vertical
-slices). Today the built-in language plugins carry one convention each; making
-conventions separate, composable plugins is epic #11.
+A convention is a rule set on top of the language plugins: it adds tasks (and,
+through `ci` and `doctor`, pipeline steps and checks) to projects another
+plugin discovered. It answers `initialize` with kind `convention` and the
+languages it applies to, and implements `contribute` (`serve.Contributor` in
+the Go SDK). It runs only in a workspace that configures it with
+`[conventions.<name>]`; see [conventions](conventions.md) for the built-in
+`vertical-slices` and how a convention's tasks combine with a project's.

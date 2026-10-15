@@ -7,7 +7,7 @@ A task is a command a plugin infers for a project: `build`, `test`, `lint`,
 
 | Field | Meaning |
 |---|---|
-| `command` | argv, run without a shell, from the project root |
+| `command` | argv, run without a shell, from the project root; `{workspaceRoot}`, `{projectRoot}` and `{mnci}` (the running mnci binary) are expanded |
 | `dependsOn` | `build` — this project's build first; `^build` — the build of every project this one imports first (reaching through projects without a build); `web:build` — a specific task |
 | `inputs` | globs relative to the project, `{workspaceRoot}/...` for root files, `!` to exclude; default: every file of the project |
 | `outputs` | directories restored on a cache hit (`dist`) |
@@ -35,7 +35,7 @@ elsewhere through a process group.
 
 A task's **key** is a SHA-256 over a versioned, canonical encoding of:
 
-- the task id and its command (before `{workspaceRoot}` is expanded, so keys do
+- the task id and its command (before `{workspaceRoot}` and `{mnci}` are expanded, so keys do
   not depend on where the repository is checked out)
 - the declared env
 - the content of every input file

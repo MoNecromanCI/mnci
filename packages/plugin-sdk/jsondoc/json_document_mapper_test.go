@@ -59,3 +59,29 @@ func TestDocumentKeepsOrderAndEditsInPlace(t *testing.T) {
 		t.Fatalf("%q", empty.Bytes())
 	}
 }
+
+func TestSetJSONMakesObjectsEditable(t *testing.T) {
+	doc, _ := ParseDocument([]byte(`{"name": "x"}`))
+	if err := doc.SetJSON("jest", map[string]any{"preset": "ts-jest", "roots": []string{"<rootDir>/src"}}); err != nil {
+		t.Fatal(err)
+	}
+	doc.Object("jest", false).SetString("testEnvironment", "node")
+	if err := doc.SetJSON("private", true); err != nil {
+		t.Fatal(err)
+	}
+	want := `{
+  "name": "x",
+  "jest": {
+    "preset": "ts-jest",
+    "roots": [
+      "<rootDir>/src"
+    ],
+    "testEnvironment": "node"
+  },
+  "private": true
+}
+`
+	if got := string(doc.Bytes()); got != want {
+		t.Fatalf("got:\n%s\nwant:\n%s", got, want)
+	}
+}

@@ -44,6 +44,7 @@ func TestParseOverrides(t *testing.T) {
 }
 
 func TestFindRoot(t *testing.T) {
+	t.Setenv("MNCI_WORKSPACE_ROOT", "") // set when the test runs as an mnci task
 	root := t.TempDir()
 	deep := filepath.Join(root, "apps", "web", "src")
 	_ = os.MkdirAll(deep, 0o755)
@@ -59,5 +60,22 @@ func TestFindRoot(t *testing.T) {
 	}
 	if _, err := FindRoot(t.TempDir()); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("want ErrNotFound, got %v", err)
+	}
+}
+
+func TestParseProjectReleaseAndTagPrefix(t *testing.T) {
+	cfg, err := Parse([]byte("[workspace]\nname = \"a\"\n[release]\ngithub_releases = true\n[projects.cli]\ntag_prefix = \"@a/cli@\"\n[projects.cli.release]\nproduct = \"acme\"\n[projects.cli.tasks.slice]\ncommand = [\"node\", \"check.cjs\"]\ncwd = \".\"\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cli := cfg.Projects["cli"]
+	if !cfg.Release.GitHubReleases || cli.TagPrefix != "@a/cli@" || cli.Tasks["slice"].Cwd != "." {
+		t.Fatalf("%+v", cfg)
+	}
+	if cli.Release.Product != "acme" || len(cli.Release.Platforms) != 6 || cli.Release.AssetName != "{product}_{version}_{os}_{arch}.{ext}" {
+		t.Fatalf("release defaults %+v", cli.Release)
+	}
+	if _, err := Parse([]byte("[workspace]\nname = \"a\"\n[projects.cli.release]\nplatforms = [\"linux\"]\n")); err == nil || !strings.Contains(err.Error(), "os/arch") {
+		t.Fatalf("a bad platform must be rejected: %v", err)
 	}
 }

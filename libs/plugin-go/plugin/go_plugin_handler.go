@@ -3,6 +3,7 @@ package plugin
 import (
 	"github.com/MoNecromanCI/mnci/libs/plugin-go/discovery"
 	"github.com/MoNecromanCI/mnci/libs/plugin-go/pipeline"
+	"github.com/MoNecromanCI/mnci/libs/plugin-go/releasing"
 	"github.com/MoNecromanCI/mnci/libs/plugin-go/scaffolding"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
@@ -35,6 +36,11 @@ func (g *Go) Discover(params protocol.DiscoverParams) (protocol.DiscoverResult, 
 // Generate implements serve.Generator.
 func (g *Go) Generate(params protocol.GenerateParams) (protocol.GenerateResult, error) {
 	return scaffolding.Generate(g.root, params)
+}
+
+// Publish implements serve.Publisher.
+func (g *Go) Publish(params protocol.PublishParams) (protocol.PublishResult, error) {
+	return releasing.Publish(g.root, params)
 }
 
 // CI implements serve.CIContributor.

@@ -229,6 +229,12 @@ func (r *runner) cwd(t *taskgraph.Task) string {
 
 func (r *runner) env(t *taskgraph.Task, key string) []string {
 	extra := map[string]string{"MNCI_TASK": t.ID, "MNCI_TASK_KEY": key, "MNCI_WORKSPACE_ROOT": r.opts.Root}
+	// The workspace's Python environment comes first on PATH, as
+	// node_modules/.bin does for npm scripts, so `python` is the venv's.
+	if bin := VenvBin(r.opts.Root); bin != "" {
+		extra["PATH"] = bin + string(os.PathListSeparator) + os.Getenv("PATH")
+		extra["VIRTUAL_ENV"] = filepath.Dir(bin)
+	}
 	for k, v := range t.Def.Env {
 		extra[k] = r.expand(t, []string{v})[0]
 	}

@@ -8,12 +8,16 @@ import (
 var inputs = []string{"**/*", "{workspaceRoot}/requirements-dev.txt", "{workspaceRoot}/ruff.toml"}
 
 // Tasks returns the tasks of a Python project. Every project is installed in
-// the venv in editable mode, so none needs another project built first.
-func Tasks(kind protocol.ProjectKind, importName string) map[string]protocol.Task {
+// the venv in editable mode, so none needs another project built first. A
+// project that configures mypy ([tool.mypy]) is also type-checked.
+func Tasks(kind protocol.ProjectKind, importName string, mypy bool) map[string]protocol.Task {
 	py := venv.Interpreter()
 	tasks := map[string]protocol.Task{
 		"lint": {Command: []string{py, "-m", "ruff", "check", "."}, Inputs: inputs, Cache: true, Description: "ruff check"},
 		"test": {Command: []string{py, "-m", "pytest", "-q", "-p", "no:cacheprovider"}, Inputs: inputs, Cache: true, Description: "pytest"},
+	}
+	if mypy {
+		tasks["typecheck"] = protocol.Task{Command: []string{py, "-m", "mypy", "."}, Inputs: inputs, Cache: true, Description: "mypy"}
 	}
 	switch kind {
 	case protocol.ProjectPackage:

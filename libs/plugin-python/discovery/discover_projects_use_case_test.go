@@ -55,3 +55,19 @@ func TestModuleNames(t *testing.T) {
 		t.Fatalf("got %v", got)
 	}
 }
+
+func TestTypecheckOnlyWithMypyConfigured(t *testing.T) {
+	ws := t.TempDir()
+	write(t, ws, "libs/typed/pyproject.toml", "[project]\nname = \"typed\"\n\n[tool.mypy]\nstrict = true\n")
+	write(t, ws, "libs/plain/pyproject.toml", "[project]\nname = \"plain\"\n")
+	res, err := Discover(ws, []string{"libs/plain/pyproject.toml", "libs/typed/pyproject.toml"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := res.Projects[0].Tasks["typecheck"]; ok {
+		t.Fatal("a project without [tool.mypy] has no typecheck")
+	}
+	if cmd := res.Projects[1].Tasks["typecheck"].Command; len(cmd) != 4 || cmd[2] != "mypy" {
+		t.Fatalf("typecheck %v", cmd)
+	}
+}

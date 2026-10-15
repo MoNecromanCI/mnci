@@ -27,7 +27,7 @@ func RunProcess(ctx context.Context, spec Spec) (int, error) {
 	}
 	program := spec.Argv[0]
 	if !strings.ContainsAny(program, `/\`) {
-		resolved, err := exec.LookPath(program)
+		resolved, err := lookPath(program, spec.Env)
 		if err != nil {
 			return -1, fmt.Errorf("%s is not installed or not on PATH", program)
 		}
@@ -60,6 +60,40 @@ func RunProcess(ctx context.Context, spec Spec) (int, error) {
 		<-done
 		return -1, ctx.Err()
 	}
+}
+
+// lookPath finds a program on the PATH of the child's environment (which
+// may put a tool directory first), falling back to mnci's own PATH.
+func lookPath(program string, env []string) (string, error) {
+	var path string
+	for _, kv := range env {
+		name, value, _ := strings.Cut(kv, "=")
+		if name == "PATH" || (isWindows && strings.EqualFold(name, "PATH")) {
+			path = value
+		}
+	}
+	if path == "" {
+		return exec.LookPath(program)
+	}
+	exts := []string{""}
+	if isWindows && filepath.Ext(program) == "" {
+		exts = strings.Split(strings.ToLower(os.Getenv("PATHEXT")), ";")
+		if len(exts) == 1 && exts[0] == "" {
+			exts = []string{".com", ".exe", ".bat", ".cmd"}
+		}
+	}
+	for _, dir := range filepath.SplitList(path) {
+		if dir == "" {
+			continue
+		}
+		for _, ext := range exts {
+			candidate := filepath.Join(dir, program+ext)
+			if info, err := os.Stat(candidate); err == nil && !info.IsDir() && (isWindows || info.Mode()&0o111 != 0) {
+				return candidate, nil
+			}
+		}
+	}
+	return exec.LookPath(program)
 }
 
 func exitCode(err error) (int, error) {

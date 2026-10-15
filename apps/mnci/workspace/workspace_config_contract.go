@@ -39,6 +39,10 @@ type ReleaseSection struct {
 	Branch string `toml:"branch"`
 	// Remote receives release tags. Default: origin.
 	Remote string `toml:"remote"`
+	// GitHubReleases creates a GitHub Release for every tag, with the
+	// release's commits as notes and an app's assets attached. Needs
+	// GITHUB_TOKEN (or GH_TOKEN). Default: false.
+	GitHubReleases bool `toml:"github_releases"`
 }
 
 // CacheSection configures the local task cache.
@@ -64,13 +68,43 @@ type ExternalPlugin struct {
 
 // ProjectOverride adjusts one project.
 type ProjectOverride struct {
-	Tasks map[string]TaskOverride `toml:"tasks"`
+	// TagPrefix replaces the release tag prefix ("<name>@" by default), so a
+	// converted project keeps its existing tags.
+	TagPrefix string `toml:"tag_prefix"`
+	// Release makes an app releasable: it is versioned by its tag and its
+	// assets are built and attached to the release.
+	Release *ProjectRelease         `toml:"release"`
+	Tasks   map[string]TaskOverride `toml:"tasks"`
+}
+
+// DefaultPlatforms are the platforms an app's assets are built for.
+var DefaultPlatforms = []string{"linux/amd64", "linux/arm64", "darwin/amd64", "darwin/arm64", "windows/amd64", "windows/arm64"}
+
+// ProjectRelease configures the release of an app.
+type ProjectRelease struct {
+	// AssetName is the file name pattern of each asset; placeholders are
+	// {product}, {version}, {os}, {arch} and {ext}.
+	// Default: {product}_{version}_{os}_{arch}.{ext}.
+	AssetName string `toml:"asset_name"`
+	// Product fills {product}. Default: the project name.
+	Product string `toml:"product"`
+	// Platforms are os/arch pairs. Default: DefaultPlatforms.
+	Platforms []string `toml:"platforms"`
+	// OSAlias and ArchAlias rename an os or arch in asset names.
+	OSAlias   map[string]string `toml:"os_alias"`
+	ArchAlias map[string]string `toml:"arch_alias"`
+	// VersionVariable is the symbol the version is stamped into. Default for
+	// Go: main.version.
+	VersionVariable string `toml:"version_variable"`
 }
 
 // TaskOverride replaces individual fields of a plugin-inferred task. Unset
 // fields keep the plugin's value.
 type TaskOverride struct {
-	Command   []string          `toml:"command"`
+	Command []string `toml:"command"`
+	// Cwd is workspace-relative ("." is the workspace root); empty keeps the
+	// project root.
+	Cwd       string            `toml:"cwd"`
 	Inputs    []string          `toml:"inputs"`
 	Outputs   []string          `toml:"outputs"`
 	DependsOn []string          `toml:"depends_on"`

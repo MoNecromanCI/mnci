@@ -99,6 +99,22 @@ func Validate(cfg *Config) error {
 	if cfg.Cache.MaxSizeMB == 0 {
 		cfg.Cache.MaxSizeMB = 2048
 	}
+	for name, po := range cfg.Projects {
+		if po.Release == nil {
+			continue
+		}
+		if len(po.Release.Platforms) == 0 {
+			po.Release.Platforms = append([]string(nil), DefaultPlatforms...)
+		}
+		if po.Release.AssetName == "" {
+			po.Release.AssetName = "{product}_{version}_{os}_{arch}.{ext}"
+		}
+		for _, p := range po.Release.Platforms {
+			if os, arch, ok := strings.Cut(p, "/"); !ok || os == "" || arch == "" {
+				return fmt.Errorf("%s: [projects.%s.release] platform %q must be os/arch", FileName, name, p)
+			}
+		}
+	}
 	for name, ext := range cfg.Plugins.External {
 		if len(ext.Command) == 0 {
 			return fmt.Errorf("%s: [plugins.external.%s] needs a command", FileName, name)

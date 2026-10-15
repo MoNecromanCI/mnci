@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MoNecromanCI/mnci/apps/mnci/githubrelease"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
@@ -23,6 +24,14 @@ func Preflight(s *session.Session, plan Plan) error {
 	}
 	if out, err := s.Git.Run("status", "--porcelain", "--untracked-files=no"); err == nil && out != "" {
 		problems = append(problems, "the working tree has uncommitted changes; commit or stash them first")
+	}
+	if s.Config.Release.GitHubReleases && len(plan.Items) > 0 {
+		if _, err := githubrelease.FromEnvironment(); err != nil {
+			problems = append(problems, err.Error())
+		}
+		if _, err := Repository(s); err != nil {
+			problems = append(problems, err.Error())
+		}
 	}
 	plugins := map[string]bool{}
 	for _, item := range plan.Items {

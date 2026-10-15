@@ -1,0 +1,69 @@
+package githubrelease
+
+import (
+	"fmt"
+	"path/filepath"
+	"strings"
+)
+
+// Request describes the release of one tag.
+type Request struct {
+	Tag   string
+	Title string
+	Notes string
+	// Assets are absolute paths of files to attach.
+	Assets []string
+}
+
+// Outcome reports what Ensure did.
+type Outcome struct {
+	URL      string
+	Created  bool
+	Uploaded []string
+}
+
+// Ensure makes sure the tag has a release with every asset attached. It is
+// safe to repeat: an existing release keeps its notes and receives only the
+// assets it lacks.
+func Ensure(c *Client, repo Repository, req Request) (Outcome, error) {
+	r, found, err := c.ReleaseByTag(repo, req.Tag)
+	if err != nil {
+		return Outcome{}, err
+	}
+	out := Outcome{}
+	if !found {
+		if r, err = c.CreateRelease(repo, req.Tag, req.Title, req.Notes); err != nil {
+			return out, err
+		}
+		out.Created = true
+	}
+	out.URL = r.HTMLURL
+	have := map[string]bool{}
+	for _, a := range r.Assets {
+		have[a.Name] = true
+	}
+	for _, file := range req.Assets {
+		name := filepath.Base(file)
+		if have[name] {
+			continue
+		}
+		if err := c.UploadAsset(r, file); err != nil {
+			return out, fmt.Errorf("uploading %s: %w", name, err)
+		}
+		out.Uploaded = append(out.Uploaded, name)
+	}
+	return out, nil
+}
+
+// Notes renders release notes from the releasing commit subjects.
+func Notes(reason string, subjects []string) string {
+	if len(subjects) == 0 {
+		return reason + "\n"
+	}
+	var b strings.Builder
+	b.WriteString("## Changes\n\n")
+	for _, s := range subjects {
+		b.WriteString("- " + s + "\n")
+	}
+	return b.String()
+}

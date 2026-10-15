@@ -1,0 +1,139 @@
+package convert
+
+import (
+	"fmt"
+	"sort"
+	"strings"
+
+	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+)
+
+// ConfigText renders mnci.toml for a converted workspace: only the settings
+// that differ from mnci's defaults, in a stable order.
+func ConfigText(cfg workspace.Config) string {
+	var b strings.Builder
+	b.WriteString("# mnci workspace configuration. Written by `mnci convert`; edit it freely or with the TUI.\n")
+	b.WriteString("# Every setting is optional except [workspace] name; see docs/configuration.md.\n")
+	fmt.Fprintf(&b, "schema = %d\n\n[workspace]\nname = %s\n", workspace.SchemaVersion, q(cfg.Workspace.Name))
+	if cfg.Workspace.Scope != "" {
+		fmt.Fprintf(&b, "scope = %s\n", q(cfg.Workspace.Scope))
+	}
+	if cfg.Workspace.ModulePrefix != "" {
+		fmt.Fprintf(&b, "module_prefix = %s\n", q(cfg.Workspace.ModulePrefix))
+	}
+	if len(cfg.CI.Providers) > 0 {
+		fmt.Fprintf(&b, "\n[ci]\nproviders = %s\n", list(cfg.CI.Providers))
+	}
+	if cfg.Release.Branch != "" || cfg.Release.Remote != "" || cfg.Release.GitHubReleases {
+		b.WriteString("\n[release]\n")
+		if cfg.Release.Branch != "" {
+			fmt.Fprintf(&b, "branch = %s\n", q(cfg.Release.Branch))
+		}
+		if cfg.Release.Remote != "" {
+			fmt.Fprintf(&b, "remote = %s\n", q(cfg.Release.Remote))
+		}
+		if cfg.Release.GitHubReleases {
+			b.WriteString("github_releases = true\n")
+		}
+	}
+	writeTasks(&b, "tasks", cfg.Tasks)
+	for _, name := range sortedKeys(cfg.Projects) {
+		p := cfg.Projects[name]
+		if p.TagPrefix != "" {
+			fmt.Fprintf(&b, "\n[projects.%s]\ntag_prefix = %s\n", key(name), q(p.TagPrefix))
+		}
+		if r := p.Release; r != nil {
+			fmt.Fprintf(&b, "\n[projects.%s.release]\n", key(name))
+			if r.AssetName != "" {
+				fmt.Fprintf(&b, "asset_name = %s\n", q(r.AssetName))
+			}
+			if r.Product != "" {
+				fmt.Fprintf(&b, "product = %s\n", q(r.Product))
+			}
+			if len(r.Platforms) > 0 {
+				fmt.Fprintf(&b, "platforms = %s\n", list(r.Platforms))
+			}
+			if len(r.OSAlias) > 0 {
+				fmt.Fprintf(&b, "os_alias = %s\n", table(r.OSAlias))
+			}
+			if len(r.ArchAlias) > 0 {
+				fmt.Fprintf(&b, "arch_alias = %s\n", table(r.ArchAlias))
+			}
+			if r.VersionVariable != "" {
+				fmt.Fprintf(&b, "version_variable = %s\n", q(r.VersionVariable))
+			}
+		}
+		writeTasks(&b, "projects."+key(name)+".tasks", p.Tasks)
+	}
+	return b.String()
+}
+
+func writeTasks(b *strings.Builder, prefix string, tasks map[string]workspace.TaskOverride) {
+	for _, name := range sortedKeys(tasks) {
+		t := tasks[name]
+		fmt.Fprintf(b, "\n[%s.%s]\n", prefix, key(name))
+		if t.Command != nil {
+			fmt.Fprintf(b, "command = %s\n", list(t.Command))
+		}
+		if t.Cwd != "" {
+			fmt.Fprintf(b, "cwd = %s\n", q(t.Cwd))
+		}
+		if t.DependsOn != nil {
+			fmt.Fprintf(b, "depends_on = %s\n", list(t.DependsOn))
+		}
+		if t.Inputs != nil {
+			fmt.Fprintf(b, "inputs = %s\n", list(t.Inputs))
+		}
+		if t.Outputs != nil {
+			fmt.Fprintf(b, "outputs = %s\n", list(t.Outputs))
+		}
+		if t.Env != nil {
+			fmt.Fprintf(b, "env = %s\n", table(t.Env))
+		}
+		if t.Cache != nil {
+			fmt.Fprintf(b, "cache = %t\n", *t.Cache)
+		}
+	}
+}
+
+// q quotes a TOML basic string.
+func q(s string) string {
+	r := strings.NewReplacer(`\`, `\\`, `"`, `\"`, "\n", `\n`, "\t", `\t`, "\r", `\r`)
+	return `"` + r.Replace(s) + `"`
+}
+
+// key quotes a table key when it is not a bare key.
+func key(s string) string {
+	for _, c := range s {
+		bare := c == '-' || c == '_' || c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
+		if !bare {
+			return q(s)
+		}
+	}
+	return s
+}
+
+func list(items []string) string {
+	quoted := make([]string, len(items))
+	for i, s := range items {
+		quoted[i] = q(s)
+	}
+	return "[" + strings.Join(quoted, ", ") + "]"
+}
+
+func table(m map[string]string) string {
+	parts := make([]string, 0, len(m))
+	for _, k := range sortedKeys(m) {
+		parts = append(parts, key(k)+" = "+q(m[k]))
+	}
+	return "{ " + strings.Join(parts, ", ") + " }"
+}
+
+func sortedKeys[V any](m map[string]V) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}

@@ -41,3 +41,18 @@ func TestCIReadsGoVersion(t *testing.T) {
 		t.Fatalf("%+v", res)
 	}
 }
+
+func TestCIInstallsGolangciLintOnlyWhenUsed(t *testing.T) {
+	plain := CI(t.TempDir(), protocol.CIParams{Projects: []protocol.Project{{Name: "api", Root: "apps/api", Tasks: map[string]protocol.Task{"lint": {Command: []string{"go", "vet", "./..."}}}}}})
+	if len(plain.Setup) != 1 {
+		t.Fatalf("go vet needs no install: %+v", plain.Setup)
+	}
+	lint := protocol.Task{Command: []string{"golangci-lint", "run"}}
+	res := CI(t.TempDir(), protocol.CIParams{Projects: []protocol.Project{
+		{Name: "a", Root: "apps/a", Tasks: map[string]protocol.Task{"lint": lint}},
+		{Name: "b", Root: "libs/b", Tasks: map[string]protocol.Task{"lint": lint}},
+	}})
+	if len(res.Setup) != 2 || res.Setup[1].Command[2] != "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@"+GolangciLintVersion {
+		t.Fatalf("one pinned install: %+v", res.Setup)
+	}
+}

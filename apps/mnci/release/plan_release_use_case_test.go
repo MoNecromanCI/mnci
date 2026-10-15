@@ -7,6 +7,7 @@ import (
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/gitclient"
 	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
+	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
 
@@ -106,5 +107,35 @@ func TestPlan(t *testing.T) {
 	}
 	if items["core"].Next != "1.0.0" || !items["core"].Forced {
 		t.Fatalf("core %+v", items["core"])
+	}
+}
+
+func TestPlanReleasesOptedInAppsFromTheirBundledLibs(t *testing.T) {
+	g := repo(t)
+	mk := func(name, root string, kind protocol.ProjectKind, deps ...string) *projectgraph.Project {
+		return &projectgraph.Project{Project: protocol.Project{Name: name, Root: root, Kind: kind}, Deps: deps, Plugin: "test"}
+	}
+	cli := mk("cli", "apps/cli", protocol.ProjectApp, "engine")
+	cli.Release = &workspace.ProjectRelease{}
+	pg, err := projectgraph.New([]*projectgraph.Project{cli, mk("engine", "libs/engine", protocol.ProjectLib), mk("web", "apps/web", protocol.ProjectApp, "engine")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	commit(t, g, "apps/cli/a", "feat: first")
+	if err := g.CreateTag("cli@0.1.0", "cli 0.1.0"); err != nil {
+		t.Fatal(err)
+	}
+	commit(t, g, "libs/engine/a", "fix(engine): a bug the app ships")
+
+	plan, err := MakePlan(g, pg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	items := byProject(plan)
+	if items["cli"].Next != "0.1.1" || items["cli"].Current != "0.1.0" {
+		t.Fatalf("a fix in a bundled lib must release the app: %+v", plan)
+	}
+	if _, ok := items["web"]; ok {
+		t.Fatalf("an app without a release section never releases: %+v", plan)
 	}
 }

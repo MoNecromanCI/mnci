@@ -6,7 +6,6 @@ import (
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/gitclient"
 	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
 
 // Item is one package's planned release.
@@ -70,7 +69,7 @@ func MakePlan(git *gitclient.Git, graph *projectgraph.Graph) (Plan, error) {
 	releasing := map[string]bool{}
 	for _, name := range order {
 		p := graph.Get(name)
-		if p.Kind != protocol.ProjectPackage {
+		if !p.Releases() {
 			continue
 		}
 		latest, tag, released := LatestTag(git, p)
@@ -81,7 +80,7 @@ func MakePlan(git *gitclient.Git, graph *projectgraph.Graph) (Plan, error) {
 				current = v
 			}
 		}
-		raw, err := git.Log(tag, p.Root)
+		raw, err := git.Log(tag, SourceRoots(graph, p)...)
 		if err != nil {
 			return Plan{}, err
 		}
@@ -134,10 +133,23 @@ func MakePlan(git *gitclient.Git, graph *projectgraph.Graph) (Plan, error) {
 	return plan, nil
 }
 
+// SourceRoots are the directories whose commits release a project: its own
+// root and the roots of the internal projects it bundles (dependencies that
+// never release on their own), so a fix in a lib releases the app using it.
+func SourceRoots(graph *projectgraph.Graph, p *projectgraph.Project) []string {
+	roots := []string{p.Root}
+	for _, d := range graph.TransitiveDeps(p.Name) {
+		if dep := graph.Get(d); dep != nil && !dep.Releases() {
+			roots = append(roots, dep.Root)
+		}
+	}
+	return roots
+}
+
 // directiveFor finds the newest version(<project>)[x] directive since a tag,
 // anywhere in the repository.
 func directiveFor(git *gitclient.Git, since, project string) (string, error) {
-	commits, err := git.Log(since, "")
+	commits, err := git.Log(since)
 	if err != nil {
 		return "", err
 	}

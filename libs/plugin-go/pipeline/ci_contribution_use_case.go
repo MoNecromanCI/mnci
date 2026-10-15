@@ -10,6 +10,10 @@ import (
 // GovulncheckVersion is pinned; bump it deliberately.
 const GovulncheckVersion = "v1.9.0"
 
+// GolangciLintVersion is installed when a project lints with golangci-lint;
+// bump it deliberately.
+const GolangciLintVersion = "v2.14.0"
+
 // DefaultGoVersion is used when go.work does not say.
 const DefaultGoVersion = "1.24"
 
@@ -28,6 +32,12 @@ func CI(workspaceRoot string, params protocol.CIParams) protocol.CIResult {
 	result := protocol.CIResult{
 		Toolchains: []protocol.Toolchain{{Name: "go", Version: version}},
 		Setup:      []protocol.Step{{Name: "Download Go modules", Command: []string{"go", "mod", "download"}, Blocking: true}},
+	}
+	for _, p := range params.Projects {
+		if lint, ok := p.Tasks["lint"]; ok && len(lint.Command) > 0 && lint.Command[0] == "golangci-lint" {
+			result.Setup = append(result.Setup, protocol.Step{Name: "Install golangci-lint", Command: []string{"go", "install", "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@" + GolangciLintVersion}, Blocking: true})
+			break
+		}
 	}
 	// govulncheck needs a module, so it runs once in each one.
 	for _, p := range params.Projects {

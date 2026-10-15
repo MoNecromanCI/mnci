@@ -46,6 +46,7 @@ you regenerate it with a newer mnci.
 |---|---|
 | `NODE_AUTH_TOKEN` | `npm publish` (the generated `.npmrc` reads it) |
 | `PYPI_TOKEN` | twine upload as `__token__` (or set `TWINE_USERNAME`/`TWINE_PASSWORD` and `TWINE_REPOSITORY_URL` for another index) |
+| `GITHUB_TOKEN` | GitHub Releases and their assets, with `[release] github_releases`; GitHub Actions provides it |
 
 Go packages are published by their tag and need no secret. On GitHub, the job
 has `contents: write` so it can push tags; on Azure the checkout keeps its

@@ -44,11 +44,13 @@ npm, PyPI, Homebrew and Scoop packages are planned (epic #18).
 | **Affected** | `--affected` runs only the projects a change can break, and runs everything when it cannot be sure. |
 | **CI generated** | GitHub Actions and Azure Pipelines, derived from the plugins in use, calling `mnci ci <phase>` — the same commands you run locally. |
 | **Release** | feat → minor, fix → patch, breaking → major. Packages release in dependency order to npm, PyPI and Go module tags; a failed release resumes when re-run. |
+| **Convert** | `mnci convert` turns an Nx workspace, or one made by the old Nx-based mnci, into an mnci workspace, keeping its projects and release tags. It reports anything it cannot map. |
 | **Plugins** | Node (TypeScript, ESLint, Jest), Go (modules in a `go.work`), Python (pip, Ruff, pytest). Write your own in any language. |
 
 ## Documentation
 
 - [Getting started](docs/getting-started.md)
+- [Converting from Nx](docs/converting.md)
 - [Configuration (`mnci.toml`)](docs/configuration.md)
 - [Tasks, cache and affected](docs/tasks-and-cache.md)
 - [CI pipelines](docs/ci.md)

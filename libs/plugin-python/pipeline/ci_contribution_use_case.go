@@ -17,7 +17,7 @@ func CI(params protocol.CIParams) protocol.CIResult {
 	py := venv.Interpreter()
 	launcher := venv.Launchers()[0]
 	setup := []protocol.Step{
-		{Name: "Create the Python venv", Command: append(append([]string{}, launcher...), "-m", "venv", ".venv"), Blocking: true},
+		{Name: "Create the Python venv", Command: append(append([]string{}, launcher...), "-m", "venv", "--upgrade-deps", ".venv"), Blocking: true},
 		{Name: "Install the Python toolchain", Command: []string{py, "-m", "pip", "install", "--quiet", "--disable-pip-version-check", "-r", venv.RequirementsFile}, Blocking: true},
 	}
 	for _, p := range params.Projects {

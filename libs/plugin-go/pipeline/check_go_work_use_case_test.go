@@ -36,8 +36,8 @@ func TestDoctorFindsStaleAndMissingEntries(t *testing.T) {
 func TestCIReadsGoVersion(t *testing.T) {
 	ws := t.TempDir()
 	_ = os.WriteFile(filepath.Join(ws, "go.work"), []byte("go 1.25.1\n"), 0o644)
-	res := CI(ws, protocol.CIParams{Projects: []protocol.Project{{}}})
-	if res.Toolchains[0].Version != "1.25" || res.Audit[0].Blocking {
+	res := CI(ws, protocol.CIParams{Projects: []protocol.Project{{Name: "api", Root: "apps/api"}, {Name: "core", Root: "libs/core"}}})
+	if res.Toolchains[0].Version != "1.25" || res.Audit[0].Blocking || len(res.Audit) != 2 || res.Audit[1].Dir != "libs/core" {
 		t.Fatalf("%+v", res)
 	}
 }

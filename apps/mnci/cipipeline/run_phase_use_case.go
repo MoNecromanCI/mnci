@@ -87,7 +87,11 @@ func runSteps(ctx context.Context, root string, steps []protocol.Step, out io.Wr
 		for i, a := range step.Command {
 			argv[i] = strings.ReplaceAll(a, "{workspaceRoot}", filepath.ToSlash(root))
 		}
-		code, err := taskrun.RunProcess(ctx, taskrun.Spec{Argv: argv, Dir: root, Env: os.Environ(), Out: out})
+		dir := root
+		if step.Dir != "" {
+			dir = filepath.Join(root, filepath.FromSlash(step.Dir))
+		}
+		code, err := taskrun.RunProcess(ctx, taskrun.Spec{Argv: argv, Dir: dir, Env: os.Environ(), Out: out})
 		if err == nil && code == 0 {
 			continue
 		}

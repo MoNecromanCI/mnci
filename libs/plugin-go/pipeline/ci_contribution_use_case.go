@@ -25,9 +25,13 @@ func CI(workspaceRoot string, params protocol.CIParams) protocol.CIResult {
 			version = v
 		}
 	}
-	return protocol.CIResult{
+	result := protocol.CIResult{
 		Toolchains: []protocol.Toolchain{{Name: "go", Version: version}},
 		Setup:      []protocol.Step{{Name: "Download Go modules", Command: []string{"go", "mod", "download"}, Blocking: true}},
-		Audit:      []protocol.Step{{Name: "govulncheck", Command: []string{"go", "run", "golang.org/x/vuln/cmd/govulncheck@" + GovulncheckVersion, "./..."}, Blocking: false}},
 	}
+	// govulncheck needs a module, so it runs once in each one.
+	for _, p := range params.Projects {
+		result.Audit = append(result.Audit, protocol.Step{Name: "govulncheck " + p.Name, Command: []string{"go", "run", "golang.org/x/vuln/cmd/govulncheck@" + GovulncheckVersion, "./..."}, Dir: p.Root, Blocking: false})
+	}
+	return result
 }

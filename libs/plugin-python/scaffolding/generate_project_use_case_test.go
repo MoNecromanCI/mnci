@@ -15,7 +15,7 @@ func TestGenerate(t *testing.T) {
 	var calls []string
 	venv.Runner = func(_ string, argv []string) error {
 		calls = append(calls, strings.Join(argv, " "))
-		if len(argv) > 2 && argv[len(argv)-2] == "venv" {
+		if len(argv) > 3 && argv[len(argv)-3] == "venv" {
 			py := venv.Path(ws)
 			_ = os.MkdirAll(filepath.Dir(py), 0o755)
 			return os.WriteFile(py, nil, 0o755)
@@ -37,7 +37,7 @@ func TestGenerate(t *testing.T) {
 		t.Fatalf("pyproject %s", pyproject)
 	}
 	joined := strings.Join(calls, "\n")
-	if !strings.Contains(joined, "-m venv .venv") || !strings.Contains(joined, "-r requirements-dev.txt") || !strings.Contains(joined, "-e ./apps/api") {
+	if !strings.Contains(joined, "-m venv --upgrade-deps .venv") || !strings.Contains(joined, "-r requirements-dev.txt") || !strings.Contains(joined, "-e ./apps/api") {
 		t.Fatalf("calls %v", calls)
 	}
 

@@ -22,6 +22,10 @@ Project selection (`-p`, comma-separated or repeated): a name, a glob over names
 or directories (`apps/*`), `kind:package`, `lang:go`, `tag:x`, and `!` to
 exclude.
 
+Every task runs with the workspace's Python environment (`.venv`) first on
+`PATH`, the way npm puts `node_modules/.bin` first, so `python` and the tools
+installed in the venv are the workspace's on every OS.
+
 Tasks run in parallel (one per CPU by default) in dependency order. A failed task
 skips the tasks that depend on it; independent tasks keep going unless `--bail`.
 Ctrl+C stops every process tree mnci started — on Windows through a Job Object,

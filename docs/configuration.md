@@ -18,6 +18,7 @@ providers = ["github"]                # "github", "azure", or both
 [release]
 branch = "main"                       # real releases run only here
 remote = "origin"                     # release tags are pushed here
+github_releases = false               # a GitHub Release per tag (needs GITHUB_TOKEN)
 
 [cache]
 dir = ".mnci/cache"                   # workspace-relative, or absolute
@@ -50,7 +51,8 @@ command = ["npx", "playwright", "test"]
 depends_on = ["build"]
 ```
 
-Fields: `command` (argv, never a shell string), `inputs`, `outputs`,
+Fields: `command` (argv, never a shell string), `cwd` (workspace-relative,
+`"."` for the root; default: the project root), `inputs`, `outputs`,
 `depends_on`, `env`, `cache`.
 
 There is exactly one precedence rule: **plugin → `[tasks.<task>]` →
@@ -69,6 +71,24 @@ web:build — Compile to dist/
                from mnci.toml [projects.web.tasks.build]
   ...
 ```
+
+## A project's release settings
+
+```toml
+# keep existing tags that do not follow <name>@<version>
+[projects.kit]
+tag_prefix = "@acme/kit@"
+
+# make an app release: versioned by its tag, with per-platform binaries
+[projects.cli.release]
+asset_name = "{product}_{version}_{os}_{arch}.{ext}"   # the default
+product = "acme"                                      # default: the project name
+platforms = ["linux/amd64", "darwin/arm64", "windows/amd64"]  # default: six
+os_alias = { darwin = "macos" }                       # names in file names only
+version_variable = "main.version"                     # Go: stamped with -X
+```
+
+See [Releasing](releasing.md#apps).
 
 ## Environment variables
 

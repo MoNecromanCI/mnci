@@ -7,8 +7,10 @@ mnci release              # asks before releasing (CI: mnci ci release)
 
 ## What releases
 
-Only projects of kind `package`. For each, mnci reads the commits that touched
-its directory since its last release tag:
+Every project of kind `package`, and every app with a release section (see
+[Apps](#apps)). For each, mnci reads the commits since its last release tag that
+touched its directory, or the directory of an internal `lib` it imports (a lib
+ships inside what uses it, so a fix there releases its users):
 
 | Commit | Bump |
 |---|---|
@@ -27,11 +29,34 @@ To force a version, commit a directive anywhere in the repository:
 version(sdk)[1.0.0]: first stable release
 ```
 
+## Apps
+
+An app releases when `mnci.toml` gives it a release section:
+
+```toml
+[projects.cli.release]
+asset_name = "{product}_{version}_{os}_{arch}.{ext}"
+```
+
+It is versioned by its tag (`cli@1.2.0`) only. Its plugin builds the release
+assets: the Go plugin cross-compiles every platform with `CGO_ENABLED=0`,
+stamps the version into `main.version` (`-ldflags -X`), zips each binary and
+writes `checksums.txt`, all under `dist/release/<app>/`. The settings are in
+[Configuration](configuration.md#a-projects-release-settings).
+
+## GitHub Releases
+
+With `[release] github_releases = true`, every released tag gets a GitHub
+Release named `<project> <version>`. Its notes list the releasing commits and an
+app's assets are attached. It needs `GITHUB_TOKEN` (or `GH_TOKEN`) with
+`contents: write`, which the generated GitHub pipeline passes. A re-run
+completes a release that is missing assets and never duplicates one.
+
 ## Tags
 
 | Language | Tag | Why |
 |---|---|---|
-| Node, Python | `<name>@<version>` | |
+| Node, Python, apps | `<name>@<version>` | override with `tag_prefix` |
 | Go | `<dir>/v<version>` (e.g. `packages/gokit/v0.1.0`) | how `go get` finds a nested module's version |
 
 The model is **tag-only**: nothing is committed back to the branch. For each
@@ -68,4 +93,4 @@ GitHub Actions, a summary table:
   "unchanged": ["gokit"] }
 ```
 
-Changelogs and GitHub Releases per package are planned (#64).
+Changelog files are planned (#64).

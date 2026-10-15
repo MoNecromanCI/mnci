@@ -15,11 +15,17 @@ module_prefix = %q
 # Pipelines to generate: "github", "azure" or both.
 providers = [%s]
 
-# Conventions add rules on top of the language plugins. vertical-slices gives
-# Go and Python projects a slice-check task, run before lint: role-named
-# files, no junk-drawer folders. Node projects get the same rules from
-# @mnci/eslint-config. See docs/conventions.md.
+# Conventions add rules on top of the language plugins. See
+# docs/conventions.md.
+#
+# vertical-slices gives Go and Python projects a slice-check task, run before
+# lint: role-named files, no junk-drawer folders.
 [conventions.vertical-slices]
+# eslint lints new Node projects with @mnci/eslint-config, which carries the
+# same slice rules for TypeScript.
+[conventions.eslint]
+# jest tests new Node projects; swap it for [conventions.vitest] to use Vitest.
+[conventions.jest]
 
 # [release]
 # branch = "main"     # releases run only from this branch

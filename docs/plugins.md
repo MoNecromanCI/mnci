@@ -8,10 +8,12 @@ core knows none of it.
 
 | Plugin | Manifest | Projects | Release |
 |---|---|---|---|
-| `node` | `package.json` (npm workspaces) | TypeScript; `tsc`, Jest (`ts-jest`), ESLint with `@mnci/eslint-config` (TypeScript rules, Standard style, vertical slices) | `npm publish`, skipping an existing version |
+| `node` | `package.json` (npm workspaces) | TypeScript; `tsc` builds and type-checks, every package.json script is a task | `npm publish`, skipping an existing version |
 | `go` | `go.mod` (in a root `go.work`) | `go build`, `go test`, `go vet` | a `<dir>/vX.Y.Z` module tag |
 | `python` | `pyproject.toml` (src layout) | one root `.venv`, Ruff, pytest, PyPA `build` | `twine upload` of files the index lacks |
 | `vertical-slices` (convention) | — | a `slice-check` task for Go and Python projects, run before `lint` | — |
+| `eslint` (convention) | — | new Node projects lint with ESLint and `@mnci/eslint-config` (TypeScript rules, Standard style, vertical slices) | — |
+| `jest`, `vitest` (conventions) | — | new Node projects test with Jest (`ts-jest`) or Vitest | — |
 
 Built-in plugins ship inside the `mnci` binary but still run as separate
 processes (`mnci plugin serve <name>`), speaking the same protocol an external
@@ -100,8 +102,11 @@ Rules:
 
 A convention is a rule set on top of the language plugins: it adds tasks (and,
 through `ci` and `doctor`, pipeline steps and checks) to projects another
-plugin discovered. It answers `initialize` with kind `convention` and the
-languages it applies to, and implements `contribute` (`serve.Contributor` in
-the Go SDK). It runs only in a workspace that configures it with
+plugin discovered, and sets new projects up. It answers `initialize` with kind
+`convention` and the languages it applies to, and implements `contribute`
+(`serve.Contributor` in the Go SDK), `generate` (`serve.Generator`), or both.
+`generate` runs after the language plugin has generated a project, with the
+same parameters, so the convention can add its files, scripts and
+dependencies. A convention runs only in a workspace that configures it with
 `[conventions.<name>]`; see [conventions](conventions.md) for the built-in
-`vertical-slices` and how a convention's tasks combine with a project's.
+ones and how a convention's tasks combine with a project's.

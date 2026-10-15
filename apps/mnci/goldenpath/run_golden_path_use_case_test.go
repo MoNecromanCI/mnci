@@ -93,7 +93,18 @@ func TestGoldenPath(t *testing.T) {
 		{"app", "api", "go"}, {"lib", "core", "go"}, {"package", "gokit", "go"},
 		{"app", "worker", "python"}, {"lib", "pyutil", "python"}, {"package", "pykit", "python"},
 	} {
+		if add[1] == "sdk" {
+			// Swap the test-runner convention: later Node projects use Vitest,
+			// the earlier ones keep Jest.
+			toml, _ := os.ReadFile(filepath.Join(w.dir, "mnci.toml"))
+			w.write("mnci.toml", strings.Replace(string(toml), "[conventions.jest]", "[conventions.vitest]", 1))
+		}
 		w.mnci(true, "add", add[0], add[1], "--lang", add[2])
+	}
+	for dir, runner := range map[string]string{"apps/web": `"test": "jest"`, "packages/sdk": `"test": "vitest run"`} {
+		if manifest, _ := os.ReadFile(filepath.Join(w.dir, dir, "package.json")); !strings.Contains(string(manifest), runner) || !strings.Contains(string(manifest), `"lint": "eslint ."`) {
+			t.Fatalf("%s must test with %s and lint with eslint:\n%s", dir, runner, manifest)
+		}
 	}
 	projects := w.mnci(true, "projects", "--json")
 	var list []struct{ Name, Kind, Language string }

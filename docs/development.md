@@ -12,6 +12,8 @@ packages/plugin-sdk/    the plugin protocol, framing, runtime, host client and h
 libs/plugin-node/       the Node language plugin
 libs/plugin-go/         the Go language plugin
 libs/plugin-python/     the Python language plugin
+libs/plugin-vertical-slices/    the vertical-slices convention
+libs/plugin-node-conventions/   the eslint, jest and vitest conventions
 install.sh, install.ps1 installers used by people and by generated pipelines
 docs/                   documentation, decisions and research
 ```
@@ -47,7 +49,7 @@ Core slices in `apps/mnci`:
 ## Checks
 
 ```sh
-for m in apps/mnci libs/plugin-node libs/plugin-go libs/plugin-python libs/plugin-vertical-slices packages/plugin-sdk; do
+for m in apps/mnci libs/plugin-node libs/plugin-node-conventions libs/plugin-go libs/plugin-python libs/plugin-vertical-slices packages/plugin-sdk; do
   (cd $m && go vet ./... && go test ./... && golangci-lint run ./... && go run github.com/MoNecromanCI/mnci/apps/mnci slices check .)
 done
 

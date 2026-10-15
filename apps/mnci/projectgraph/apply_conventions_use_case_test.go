@@ -7,6 +7,7 @@ import (
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
 	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-conventions/jest"
 	slicesp "github.com/MoNecromanCI/mnci/libs/plugin-vertical-slices/plugin"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
@@ -71,6 +72,26 @@ func TestApplyConventionsOnlyWhenConfigured(t *testing.T) {
 	if applied, err := ApplyConventions(ps, set, workspace.Config{}); err != nil || len(applied) != 0 || len(ps[0].Tasks) != 1 {
 		t.Fatalf("%v %v %+v", applied, err, ps[0].Tasks)
 	}
+}
+
+func TestConventionWithoutTasksStillApplies(t *testing.T) {
+	set := &pluginhost.PluginSet{Clients: []*host.Client{connect(t, jest.New("1.0.0")), connect(t, pythonLanguage{})}}
+	ps := projects()
+	applied, err := ApplyConventions(ps, set, workspace.Config{Conventions: map[string]workspace.ConventionConfig{"jest": {}}})
+	if err != nil || strings.Join(applied["jest"], ",") != "web" || len(ps[3].Tasks) != 0 {
+		t.Fatalf("%v %v %+v", applied, err, ps[3].Tasks)
+	}
+	_, err = ApplyConventions(ps, set, workspace.Config{Conventions: map[string]workspace.ConventionConfig{"python": {}}})
+	if err == nil || !strings.Contains(err.Error(), "not a convention plugin") {
+		t.Fatalf("a language plugin is not a convention: %v", err)
+	}
+}
+
+// pythonLanguage is a language plugin named like a convention could be.
+type pythonLanguage struct{}
+
+func (pythonLanguage) Describe(protocol.InitializeParams) (protocol.InitializeResult, error) {
+	return protocol.InitializeResult{Plugin: protocol.Peer{Name: "python"}, Kind: protocol.KindLanguage, Languages: []string{"python"}}, nil
 }
 
 func TestConventionTargetsRejectsUnsupportedLanguage(t *testing.T) {

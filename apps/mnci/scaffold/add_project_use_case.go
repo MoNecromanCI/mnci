@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
+	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/projectkind"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
@@ -25,8 +26,9 @@ type AddOptions struct {
 	Out  io.Writer
 }
 
-// AddProject generates a project through its language plugin and regenerates
-// the pipelines so CI knows about the new toolchain at once.
+// AddProject generates a project through its language plugin, lets each
+// configured convention that applies to it add its part (lint, tests), and
+// regenerates the pipelines so CI knows about the new toolchain at once.
 func AddProject(s *session.Session, opts AddOptions) (*protocol.GenerateResult, error) {
 	kind := protocol.ProjectKind(opts.Kind)
 	switch kind {
@@ -66,8 +68,12 @@ func AddProject(s *session.Session, opts AddOptions) (*protocol.GenerateResult, 
 	if err := s.Refresh(); err != nil {
 		return &res, err
 	}
-	if s.Graph.Get(opts.Name) == nil {
+	project := s.Graph.Get(opts.Name)
+	if project == nil {
 		return &res, errors.New("the plugin generated files, but no project named " + opts.Name + " was discovered")
+	}
+	if err := generateConventions(s, project, params, &res, opts.Out); err != nil {
+		return &res, err
 	}
 	changed, _, err := cipipeline.Regenerate(s)
 	if err != nil {
@@ -92,4 +98,36 @@ func chooseLanguage(s *session.Session, lang string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("choose a language with --lang (%s)", strings.Join(s.Plugins.Languages(), ", "))
+}
+
+// generateConventions asks every configured convention that applies to the
+// new project and can generate to add its files, then rediscovers.
+func generateConventions(s *session.Session, project *projectgraph.Project, params protocol.GenerateParams, res *protocol.GenerateResult, out io.Writer) error {
+	ran := false
+	for _, c := range s.Plugins.Clients {
+		name := c.Info.Plugin.Name
+		conv, configured := s.Config.Conventions[name]
+		if !configured || c.Info.Kind != protocol.KindConvention || !c.Supports(protocol.MethodGenerate) {
+			continue
+		}
+		targets, err := projectgraph.ConventionTargets(name, []*projectgraph.Project{project}, c.Info.Languages, conv)
+		if err != nil {
+			return err
+		}
+		if len(targets) == 0 {
+			continue
+		}
+		fmt.Fprintf(out, "Applying convention %s\n", name)
+		var added protocol.GenerateResult
+		if err := c.Call(protocol.MethodGenerate, params, &added, 20*time.Minute); err != nil {
+			return fmt.Errorf("convention %s: %w", name, err)
+		}
+		res.Files = append(res.Files, added.Files...)
+		res.Notes = append(res.Notes, added.Notes...)
+		ran = true
+	}
+	if !ran {
+		return nil
+	}
+	return s.Refresh()
 }

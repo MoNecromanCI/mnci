@@ -53,7 +53,7 @@ func Discover(workspaceRoot string, manifests []string) (protocol.DiscoverResult
 			Exports:  []string{importName},
 			Imports:  dedupe(imports),
 			Version:  py.Project.Version,
-			Tasks:    Tasks(kind, importName),
+			Tasks:    Tasks(kind, importName, py.Tool.Mypy != nil),
 		})
 	}
 	return result, nil

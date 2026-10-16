@@ -25,8 +25,21 @@ func TestExternalLanguagePlugin(t *testing.T) {
 
 	w.mnci(true, "new", "acme", "--ci", "github,azure")
 	w.dir = filepath.Join(base, "acme")
+	// Installed on the plugin search path (the workspace's .mnci/plugins), and
+	// declared by name and version only.
+	w.write(".mnci/plugins/kiwi/plugin.json", `{"name": "kiwi", "version": "1.0.0", "command": [`+quote(filepath.ToSlash(plugin))+`]}`)
 	toml, _ := os.ReadFile(filepath.Join(w.dir, "mnci.toml"))
-	w.write("mnci.toml", string(toml)+"\n[plugins.external.kiwi]\ncommand = ["+quote(filepath.ToSlash(plugin))+"]\n")
+	w.write("mnci.toml", string(toml)+"\n[plugins.external.kiwi]\nversion = \"^2\"\n")
+	if out := w.mnci(false, "projects"); !strings.Contains(out, "wants version ^2, but the plugin is 1.0.0") {
+		t.Fatalf("a version mnci.toml does not accept must fail:\n%s", out)
+	}
+	w.write("mnci.toml", string(toml)+"\n[plugins.external.kiwi]\nversion = \"^1\"\n")
+	if out := w.mnci(true, "plugin", "list"); !strings.Contains(out, "kiwi           1.0.0") {
+		t.Fatalf("plugin list:\n%s", out)
+	}
+	if out := w.mnci(true, "plugin", "check", "kiwi", "--generate"); !strings.Contains(out, "✔ the generated package records its stack") || strings.Contains(out, "✖") {
+		t.Fatalf("plugin check:\n%s", out)
+	}
 	ignore, _ := os.ReadFile(filepath.Join(w.dir, ".gitignore"))
 	w.write(".gitignore", string(ignore)+".kiwi-registry\nout/\n")
 

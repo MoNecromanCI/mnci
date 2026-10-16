@@ -81,9 +81,15 @@ type PluginsSection struct {
 	External map[string]ExternalPlugin `toml:"external"`
 }
 
-// ExternalPlugin is a plugin outside the mnci binary.
+// ExternalPlugin is a plugin outside the mnci binary. It replaces a built-in
+// plugin of the same name.
 type ExternalPlugin struct {
+	// Command runs the plugin. Empty means: find it installed on the plugin
+	// search path (docs/plugins.md).
 	Command []string `toml:"command"`
+	// Version constrains the plugin's version: "1.2.3", "^1.2", "~1.2",
+	// ">=1.2". Empty means any.
+	Version string `toml:"version"`
 }
 
 // ConventionConfig chooses the projects a convention applies to.

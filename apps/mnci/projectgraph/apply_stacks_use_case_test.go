@@ -14,7 +14,7 @@ import (
 type language struct{}
 
 func (language) Describe(protocol.InitializeParams) (protocol.InitializeResult, error) {
-	return protocol.InitializeResult{Plugin: protocol.Peer{Name: "xlang"}, Kind: protocol.KindLanguage, Languages: []string{"x"}}, nil
+	return protocol.InitializeResult{Plugin: protocol.Peer{Name: "xlang", Version: "2.0.0"}, Kind: protocol.KindLanguage, Languages: []string{"x"}}, nil
 }
 
 // toolchain owns lint: it replaces the language plugin's and adds format.
@@ -22,7 +22,7 @@ type toolchain struct{ name string }
 
 func (t toolchain) Describe(protocol.InitializeParams) (protocol.InitializeResult, error) {
 	return protocol.InitializeResult{
-		Plugin: protocol.Peer{Name: t.name}, Kind: protocol.KindConvention, Languages: []string{"x"},
+		Plugin: protocol.Peer{Name: t.name, Version: "1.0.0"}, Kind: protocol.KindConvention, Languages: []string{"x"},
 		Roles: []protocol.Role{protocol.RoleToolchain}, Provides: []string{"lint"},
 		Stacks: []protocol.Stack{{Name: "x-" + t.name, Language: "xlang", Toolchain: []string{t.name}}},
 	}, nil
@@ -78,6 +78,10 @@ func TestApplyStacksPerProject(t *testing.T) {
 	}
 	if !a.ServedBy("xfmt") || a.ServedBy("xlint") || !b.ServedBy("xlint") {
 		t.Fatal("ServedBy covers the project's stack plugins only")
+	}
+	a.Conventions = []string{"xlint"}
+	if got := toolset(a, set); got != "xlang@2.0.0+xfmt@1.0.0+xlint@1.0.0" {
+		t.Fatalf("toolset %s", got)
 	}
 	if err := ApplyOverrides(a, cfg); err != nil {
 		t.Fatal(err)

@@ -30,6 +30,19 @@ type Project struct {
 	// stackPlugins are the plugins of the project's stack, other than its
 	// language plugin.
 	stackPlugins []string
+	// toolset names every plugin that shapes the project, with its version.
+	toolset string
+}
+
+// Toolset names every plugin that shapes the project's tasks, with its
+// version ("node@1.0.0+jest@1.0.0"), for cache keys: upgrading any of them
+// invalidates the project's results. It is the plugin's name until the
+// project is discovered.
+func (p *Project) Toolset() string {
+	if p.toolset == "" {
+		return p.Plugin
+	}
+	return p.toolset
 }
 
 // Releases reports whether the project takes part in releases: every

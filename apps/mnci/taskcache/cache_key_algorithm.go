@@ -34,7 +34,8 @@ type KeyInputs struct {
 	// the keys go into this key.
 	Deps     map[string]string `json:"deps,omitempty"`
 	Platform string            `json:"platform"`
-	// Tool is the version of mnci and of the plugin that defined the task.
+	// Tool is the version of mnci and of every plugin that shapes the
+	// project ("0.2.0/node@0.2.0+jest@0.2.0").
 	Tool string `json:"tool"`
 }
 

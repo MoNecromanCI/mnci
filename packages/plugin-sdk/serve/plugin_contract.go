@@ -29,6 +29,11 @@ type Publisher interface {
 	Publish(params protocol.PublishParams) (protocol.PublishResult, error)
 }
 
+// RegistryReader reports the newest version a registry has of a project.
+type RegistryReader interface {
+	Published(params protocol.PublishedParams) (protocol.PublishedResult, error)
+}
+
 // CIContributor describes what a pipeline needs for the plugin's projects.
 type CIContributor interface {
 	CI(params protocol.CIParams) (protocol.CIResult, error)

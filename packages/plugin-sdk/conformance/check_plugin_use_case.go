@@ -140,6 +140,11 @@ func generate(c *host.Client, ws string, r *Report) {
 			err := c.Call(protocol.MethodPublish, protocol.PublishParams{Project: p, Version: "1.2.3", DryRun: true}, &pub, 5*time.Minute)
 			r.add("publishes the package (dry run)", err == nil, "%v", err)
 		}
+		if params.Kind == protocol.ProjectPackage && c.Supports(protocol.MethodPublished) {
+			var pub protocol.PublishedResult
+			err := c.Call(protocol.MethodPublished, protocol.PublishedParams{Project: p}, &pub, time.Minute)
+			r.add("says what the registry has of the package", err == nil, "%v (an unreachable registry is a result, not an error)", err)
+		}
 	}
 }
 

@@ -23,13 +23,13 @@ func TestGenerateWritesProjectAndWorkspaceOnce(t *testing.T) {
 		t.Fatalf("installs=%d", installs)
 	}
 	joined := strings.Join(res.Files, ",")
-	for _, want := range []string{"package.json", "tsconfig.base.json", ".npmrc", "packages/sdk/package.json", "packages/sdk/src/greeting/greet.use-case.ts"} {
+	for _, want := range []string{"package.json", ".npmrc", "packages/sdk/package.json", "packages/sdk/src/greeting/greet.use-case.js", "packages/sdk/src/index.js"} {
 		if !strings.Contains(joined, want) {
 			t.Errorf("missing %s in %v", want, res.Files)
 		}
 	}
-	if strings.Contains(joined, "spec.ts") || strings.Contains(joined, "eslint") {
-		t.Fatalf("lint and test tooling come from conventions: %v", res.Files)
+	if strings.Contains(joined, ".ts") || strings.Contains(joined, "eslint") {
+		t.Fatalf("the node plugin alone writes plain JavaScript: %v", res.Files)
 	}
 	var pkg map[string]any
 	raw, _ := os.ReadFile(filepath.Join(ws, "packages", "sdk", "package.json"))
@@ -64,7 +64,9 @@ func TestRootManifestKeepsUserEntries(t *testing.T) {
 	Installer = func(string) error { return nil }
 	ws := t.TempDir()
 	_ = os.WriteFile(filepath.Join(ws, "package.json"), []byte(`{"name":"mine","private":true,"devDependencies":{"typescript":"5.0.0"},"scripts":{"x":"y"}}`), 0o644)
-	if _, err := Generate(ws, protocol.GenerateParams{Kind: protocol.ProjectLib, Name: "ui", Directory: "libs/ui"}); err != nil {
+	set := JavaScript
+	set.DevDependencies = map[string]string{"typescript": "~6.0.3", "@types/node": "^24.0.0"}
+	if _, err := GenerateFrom(ws, protocol.GenerateParams{Kind: protocol.ProjectLib, Name: "ui", Directory: "libs/ui"}, set); err != nil {
 		t.Fatal(err)
 	}
 	var root map[string]any

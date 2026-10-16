@@ -10,9 +10,10 @@ with through its [stack](stacks.md).
 
 | Plugin | Roles | Does | Release |
 |---|---|---|---|
-| `node` | language (+ default toolchain, scaffold) | `package.json` projects (npm workspaces); TypeScript, `tsc` builds and type-checks, every package.json script is a task | `npm publish`, skipping an existing version |
+| `node` | language (+ default toolchain, scaffold) | `package.json` projects (npm workspaces); every package.json script is a task; scaffolds plain JavaScript | `npm publish`, skipping an existing version |
 | `go` | language (+ default toolchain, scaffold) | `go.mod` projects (in a root `go.work`); `go build`, `go test`, `go vet` | a `<dir>/vX.Y.Z` module tag |
 | `python` | language (+ default toolchain, scaffold) | `pyproject.toml` projects (src layout); one root `.venv`, Ruff, pytest, PyPA `build` | `twine upload` of files the index lacks |
+| `typescript` | scaffold and toolchain, provides `build`, `typecheck`; publishes `node-ts` | scaffolds TypeScript projects that build and type-check with `tsc` | — |
 | `eslint` | toolchain, provides `lint` | Node projects lint with ESLint and `@mnci/eslint-config` (TypeScript rules, Standard style, vertical slices) | — |
 | `jest` | toolchain, provides `test`; publishes `node-jest` | Node projects test with Jest (`ts-jest`) | — |
 | `vitest` | toolchain, provides `test`; publishes `node-vitest` | Node projects test with Vitest | — |

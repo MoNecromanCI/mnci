@@ -35,7 +35,8 @@ func ApplyStacks(projects []*Project, plugins *pluginhost.PluginSet, catalog *pl
 	users := map[string][]*Project{}
 	for _, p := range projects {
 		name := StackOf(p, cfg)
-		if name == "" {
+		if name == "" || name == protocol.NoStack {
+			p.Stack = name
 			continue
 		}
 		st, err := catalog.Get(name)

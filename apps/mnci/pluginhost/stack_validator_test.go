@@ -18,6 +18,13 @@ func (f fake) Describe(protocol.InitializeParams) (protocol.InitializeResult, er
 	return f.info, nil
 }
 
+// scaffold is a fake that can generate.
+type scaffold struct{ fake }
+
+func (scaffold) Generate(protocol.GenerateParams) (protocol.GenerateResult, error) {
+	return protocol.GenerateResult{}, nil
+}
+
 func connect(t *testing.T, p serve.Plugin) *host.Client {
 	t.Helper()
 	toPlugin, fromHost := io.Pipe()
@@ -43,12 +50,14 @@ func TestValidateStack(t *testing.T) {
 		connect(t, plugin("jest", protocol.KindConvention, tc, []string{"node"}, "test")),
 		connect(t, plugin("vitest", protocol.KindConvention, tc, []string{"node"}, "test")),
 		connect(t, plugin("slices", protocol.KindConvention, nil, []string{"go"})),
+		connect(t, scaffold{fake{protocol.InitializeResult{Plugin: protocol.Peer{Name: "ts"}, Kind: protocol.KindConvention, Languages: []string{"node"}, Roles: []protocol.Role{protocol.RoleScaffold, protocol.RoleToolchain}, Provides: []string{"build"}}}}),
 	}}
 	for _, c := range []struct {
 		stack protocol.Stack
 		want  string
 	}{
 		{protocol.Stack{Language: "node", Toolchain: []string{"jest"}}, ""},
+		{protocol.Stack{Language: "node", Scaffold: "ts", Toolchain: []string{"ts", "jest"}}, ""},
 		{protocol.Stack{Language: "go", Structure: []string{"slices"}}, ""},
 		{protocol.Stack{Language: "jest"}, "not a language plugin"},
 		{protocol.Stack{Language: "rust"}, `"rust" is not loaded`},
@@ -56,7 +65,7 @@ func TestValidateStack(t *testing.T) {
 		{protocol.Stack{Language: "node", Toolchain: []string{"slices"}}, "listed as toolchain"},
 		{protocol.Stack{Language: "node", Structure: []string{"slices"}}, "not to node projects"},
 		{protocol.Stack{Language: "node", Scaffold: "jest"}, "listed as scaffold"},
-		{protocol.Stack{Language: "node", Toolchain: []string{"jest", "jest"}}, "listed twice"},
+		{protocol.Stack{Language: "node", Toolchain: []string{"jest", "jest"}}, "listed twice as toolchain"},
 	} {
 		err := ValidateStack(c.stack, set)
 		if (c.want == "") != (err == nil) || (err != nil && !strings.Contains(err.Error(), c.want)) {

@@ -6,6 +6,7 @@ import (
 	gop "github.com/MoNecromanCI/mnci/libs/plugin-go/plugin"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/eslint"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/jest"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/typescript"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/vitest"
 	nodep "github.com/MoNecromanCI/mnci/libs/plugin-node/plugin"
 	pythonp "github.com/MoNecromanCI/mnci/libs/plugin-python/plugin"
@@ -25,10 +26,11 @@ var Builtins = map[string]func(version string) serve.Plugin{
 // so their stacks are available, but act only on projects whose stack names
 // them, or as a convention mnci.toml configures ([conventions.<name>]).
 var BuiltinAddons = map[string]func(version string) serve.Plugin{
-	slicesp.Name: func(v string) serve.Plugin { return slicesp.New(v) },
-	eslint.Name:  func(v string) serve.Plugin { return eslint.New(v) },
-	jest.Name:    func(v string) serve.Plugin { return jest.New(v) },
-	vitest.Name:  func(v string) serve.Plugin { return vitest.New(v) },
+	slicesp.Name:    func(v string) serve.Plugin { return slicesp.New(v) },
+	eslint.Name:     func(v string) serve.Plugin { return eslint.New(v) },
+	jest.Name:       func(v string) serve.Plugin { return jest.New(v) },
+	vitest.Name:     func(v string) serve.Plugin { return vitest.New(v) },
+	typescript.Name: func(v string) serve.Plugin { return typescript.New(v) },
 }
 
 // Builtin returns the constructor of a built-in plugin.

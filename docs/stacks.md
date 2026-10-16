@@ -26,7 +26,8 @@ another.
 
 A language plugin without explicit roles also brings a default toolchain and
 scaffold, so `node`, `go` and `python` work on their own: a project with no
-stack is built by its language plugin alone.
+stack is built by its language plugin alone. `node` on its own is plain
+JavaScript; TypeScript is the `typescript` plugin's, through a stack.
 
 ## Declaring a stack
 
@@ -56,6 +57,7 @@ wrong with it if it cannot be used, and the projects using it.
 ```sh
 mnci add app api --stack ts-func
 mnci add app web --lang node          # the default stack for node, if any
+mnci add lib util --lang node --stack none   # the language plugin alone
 ```
 
 The project records its stack in its manifest:
@@ -67,7 +69,8 @@ The project records its stack in its manifest:
 | Go | a `// mnci:stack ts-func` line at the top of `go.mod` |
 
 A project's stack is, in order: `[projects.<name>] stack` in `mnci.toml`, the
-one its manifest records, or the default for its language:
+one its manifest records, or the default for its language. `none` means
+the language plugin alone, even where there is a default:
 
 ```toml
 [default_stacks]
@@ -96,14 +99,17 @@ add: a file, script, setting or dependency that already exists is kept.
 
 ## Built-in stacks
 
-| Stack | Language | Toolchain | Published by |
-|---|---|---|---|
-| `node-jest` | node | `eslint` (`@mnci/eslint-config`), `jest` | `jest` |
-| `node-vitest` | node | `eslint` (`@mnci/eslint-config`), `vitest` | `vitest` |
+| Stack | Language | Scaffold | Toolchain | Published by |
+|---|---|---|---|---|
+| `node-ts` | node | `typescript` | `typescript` | `typescript` |
+| `node-jest` | node | `typescript` | `typescript`, `eslint` (`@mnci/eslint-config`), `jest` | `jest` |
+| `node-vitest` | node | `typescript` | `typescript`, `eslint` (`@mnci/eslint-config`), `vitest` | `vitest` |
 
-`mnci new` makes `node-jest` the default for Node. The node plugin alone
-builds and type-checks with `tsc`. The toolchain plugins add the rest when a
-project is created:
+`mnci new` makes `node-jest` the default for Node. The `node` plugin alone
+scaffolds plain JavaScript (CommonJS), with nothing to compile. The
+`typescript` plugin scaffolds a TypeScript project instead: `tsconfig`, and
+`build` and `typecheck` scripts that run `tsc`. The other toolchain plugins add
+the rest when a project is created:
 
 - `eslint` writes `eslint.config.mjs` at the root (once), adds `eslint` and
   `@mnci/eslint-config` to the root devDependencies, and a `lint` script.
@@ -111,6 +117,9 @@ project is created:
   Jest settings in `package.json`, and the starter's spec.
 - `vitest` adds `vitest`, a `test` script (`vitest run`) and the starter's
   spec.
+
+The starter's spec is written for the TypeScript starter; a JavaScript
+project gets the test script and its runner, and you write the first spec.
 
 A workspace created by mnci 0.1 had ESLint and Jest built into the node
 plugin. Add `[default_stacks]` with `node = "node-jest"` to its `mnci.toml` to

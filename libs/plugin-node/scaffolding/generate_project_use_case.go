@@ -25,26 +25,32 @@ type templateData struct {
 	Dir, Name, Package, Stack string
 }
 
-// Generate scaffolds one Node project, adds the workspace's Node tooling the
-// first time, and installs so the new package is linked into node_modules.
+// Generate scaffolds one plain JavaScript project.
 func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.GenerateResult, error) {
+	return GenerateFrom(workspaceRoot, params, JavaScript)
+}
+
+// GenerateFrom scaffolds one Node project from a template set, adds the
+// workspace's Node tooling the first time, and installs so the new package
+// is linked into node_modules.
+func GenerateFrom(workspaceRoot string, params protocol.GenerateParams, set TemplateSet) (protocol.GenerateResult, error) {
 	data := templateData{Dir: params.Directory, Name: params.Name, Package: packageName(params.Workspace.Scope, params.Name), Stack: params.Stack}
 
 	var files []string
-	rootFiles, err := ensureWorkspace(workspaceRoot, params.Workspace.Name)
+	rootFiles, err := ensureWorkspace(workspaceRoot, params.Workspace.Name, set)
 	if err != nil {
 		return protocol.GenerateResult{}, err
 	}
 	files = append(files, rootFiles...)
 
-	templates := maps.Clone(sliceTemplates)
+	templates := maps.Clone(set.Slice)
 	switch params.Kind {
 	case protocol.ProjectApp:
-		maps.Copy(templates, appTemplates)
+		maps.Copy(templates, set.App)
 	case protocol.ProjectLib:
-		maps.Copy(templates, libTemplates)
+		maps.Copy(templates, set.Lib)
 	case protocol.ProjectPackage:
-		maps.Copy(templates, packageTemplates)
+		maps.Copy(templates, set.Package)
 	default:
 		return protocol.GenerateResult{}, fmt.Errorf("unknown kind %q", params.Kind)
 	}
@@ -76,9 +82,11 @@ func packageName(scope, name string) string {
 // ensureWorkspace writes the root Node files that do not exist yet. An
 // existing root package.json gains the workspaces and devDependencies it
 // lacks; everything already there is kept.
-func ensureWorkspace(root, workspaceName string) ([]string, error) {
+func ensureWorkspace(root, workspaceName string, set TemplateSet) ([]string, error) {
 	var written []string
-	for name, body := range workspaceTemplates {
+	rootFiles := maps.Clone(workspaceTemplates)
+	maps.Copy(rootFiles, set.Root)
+	for name, body := range rootFiles {
 		p := filepath.Join(root, name)
 		if _, err := os.Stat(p); err == nil {
 			continue
@@ -90,7 +98,7 @@ func ensureWorkspace(root, workspaceName string) ([]string, error) {
 		}
 		written = append(written, name)
 	}
-	changed, err := ensureRootManifest(filepath.Join(root, "package.json"), workspaceName)
+	changed, err := ensureRootManifest(filepath.Join(root, "package.json"), workspaceName, set.DevDependencies)
 	if err != nil {
 		return written, err
 	}
@@ -101,7 +109,7 @@ func ensureWorkspace(root, workspaceName string) ([]string, error) {
 	return written, nil
 }
 
-func ensureRootManifest(path, workspaceName string) (bool, error) {
+func ensureRootManifest(path, workspaceName string, devDependencies map[string]string) (bool, error) {
 	manifest := map[string]any{}
 	raw, err := os.ReadFile(path)
 	switch {

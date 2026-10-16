@@ -31,6 +31,7 @@ jobs:
         run: curl -fsSL https://raw.githubusercontent.com/MoNecromanCI/mnci/main/install.sh | sh -s -- "$MNCI_VERSION"
         env:
           MNCI_VERSION: latest
+          GITHUB_TOKEN: ${{ github.token }}
       # mnci:slot before-setup
       # This repository is mnci: every step below runs the mnci built from this commit.
       - name: Build mnci from this commit

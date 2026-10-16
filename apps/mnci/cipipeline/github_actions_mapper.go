@@ -43,6 +43,7 @@ jobs:
         run: curl -fsSL %s | sh -s -- "$MNCI_VERSION"
         env:
           MNCI_VERSION: %s
+          GITHUB_TOKEN: ${{ github.token }}
 `, InstallScriptURL, m.MnciVersion)
 	b.WriteString(slot("      ", "before-setup"))
 	b.WriteString(`      - name: Setup
@@ -112,6 +113,7 @@ func githubNativeJob(m Model) string {
         run: curl -fsSL %s | sh -s -- "$MNCI_VERSION"
         env:
           MNCI_VERSION: %s
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Setup
         run: mnci ci setup
       - name: Native

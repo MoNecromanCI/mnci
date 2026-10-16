@@ -30,7 +30,14 @@ case "$(uname -m)" in
 esac
 
 if [ "$VERSION" = "latest" ]; then
-  VERSION=$(curl -fsSL "https://api.github.com/repos/$REPO/releases?per_page=50" \
+  # GitHub limits anonymous API calls per address, which shared CI runners
+  # exhaust; a token (CI provides one) lifts the limit.
+  if [ -n "${GITHUB_TOKEN:-}" ]; then
+    set -- -H "Authorization: Bearer $GITHUB_TOKEN"
+  else
+    set --
+  fi
+  VERSION=$(curl -fsSL "$@" "https://api.github.com/repos/$REPO/releases?per_page=50" \
     | grep -o '"tag_name": *"mnci@[^"]*"' | head -n 1 | sed 's/.*mnci@\([^"]*\)".*/\1/')
   [ -n "$VERSION" ] || fail "no mnci release found"
 fi

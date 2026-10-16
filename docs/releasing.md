@@ -48,10 +48,17 @@ writes `checksums.txt`, all under `dist/release/<app>/`. The settings are in
 ## GitHub Releases
 
 With `[release] github_releases = true`, every released tag gets a GitHub
-Release named `<project> <version>`. Its notes list the releasing commits and an
-app's assets are attached. It needs `GITHUB_TOKEN` (or `GH_TOKEN`) with
-`contents: write`, which the generated GitHub pipeline passes. A re-run
-completes a release that is missing assets and never duplicates one.
+Release named `<project> <version>`, and an app's assets are attached. It
+needs `GITHUB_TOKEN` (or `GH_TOKEN`) with `contents: write`, which the
+generated GitHub pipeline passes. A re-run completes a release that is missing
+assets and never duplicates one.
+
+The notes come from the releasing commits. Breaking changes are listed first,
+with the text of their `BREAKING CHANGE:` footer. Then come Features, Fixes,
+Performance and Reverts, each entry with its scope and short hash. A release
+caused only by a dependency says so. The notes end by thanking the commits'
+authors, bots aside. `mnci release --dry-run --notes` prints them before
+anything is released.
 
 ## Tags
 

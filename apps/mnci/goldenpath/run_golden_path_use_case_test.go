@@ -431,8 +431,8 @@ func TestGoldenPath(t *testing.T) {
 	w.write("packages/sdk/src/fix.ts", "export const fixed = true\n")
 	w.git("add", "-A")
 	w.git("commit", "-qm", "fix(sdk): a patch")
-	if plan := w.mnci(true, "release", "--dry-run"); !strings.Contains(plan, "0.1.0 → 0.1.1") {
-		t.Fatalf("a fix must plan a patch:\n%s", plan)
+	if plan := w.mnci(true, "release", "--dry-run", "--notes"); !strings.Contains(plan, "0.1.0 → 0.1.1") || !strings.Contains(plan, "## Fixes\n\n- **sdk:** a patch (") || !strings.Contains(plan, "Thanks to ") {
+		t.Fatalf("a fix must plan a patch, with its notes:\n%s", plan)
 	}
 
 	// 8. Removing projects: one others import is refused; the rest go with

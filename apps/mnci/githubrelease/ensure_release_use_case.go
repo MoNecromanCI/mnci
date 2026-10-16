@@ -3,7 +3,6 @@ package githubrelease
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 )
 
 // Request describes the release of one tag.
@@ -53,17 +52,4 @@ func Ensure(c *Client, repo Repository, req Request) (Outcome, error) {
 		out.Uploaded = append(out.Uploaded, name)
 	}
 	return out, nil
-}
-
-// Notes renders release notes from the releasing commit subjects.
-func Notes(reason string, subjects []string) string {
-	if len(subjects) == 0 {
-		return reason + "\n"
-	}
-	var b strings.Builder
-	b.WriteString("## Changes\n\n")
-	for _, s := range subjects {
-		b.WriteString("- " + s + "\n")
-	}
-	return b.String()
 }

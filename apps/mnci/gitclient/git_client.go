@@ -146,13 +146,13 @@ func (g *Git) TagCommit(tag string) string {
 
 // Commit is one commit's message parts.
 type Commit struct {
-	Hash, Subject, Body string
+	Hash, Author, Subject, Body string
 }
 
 // Log returns commits reachable from HEAD and not from since (all history when
 // since is empty) that touch path ("" means the whole repository), newest first.
 func (g *Git) Log(since string, paths ...string) ([]Commit, error) {
-	args := []string{"log", "-z", "--format=%H%x1f%s%x1f%b"}
+	args := []string{"log", "-z", "--format=%H%x1f%an%x1f%s%x1f%b"}
 	if since != "" {
 		args = append(args, since+"..HEAD")
 	} else {
@@ -173,13 +173,13 @@ func (g *Git) Log(since string, paths ...string) ([]Commit, error) {
 	}
 	var commits []Commit
 	for _, record := range splitNUL(out) {
-		parts := strings.SplitN(record, "\x1f", 3)
-		if len(parts) < 2 {
+		parts := strings.SplitN(record, "\x1f", 4)
+		if len(parts) < 3 {
 			continue
 		}
-		c := Commit{Hash: strings.TrimSpace(parts[0]), Subject: parts[1]}
-		if len(parts) == 3 {
-			c.Body = strings.TrimSpace(parts[2])
+		c := Commit{Hash: strings.TrimSpace(parts[0]), Author: parts[1], Subject: parts[2]}
+		if len(parts) == 4 {
+			c.Body = strings.TrimSpace(parts[3])
 		}
 		commits = append(commits, c)
 	}

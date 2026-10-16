@@ -85,12 +85,3 @@ func TestEnsureReportsAPIErrors(t *testing.T) {
 		t.Fatalf("want a 401 error, got %v", err)
 	}
 }
-
-func TestNotes(t *testing.T) {
-	if got := Notes("dependency x releases", nil); got != "dependency x releases\n" {
-		t.Fatal(got)
-	}
-	if got := Notes("", []string{"feat: a", "fix: b"}); got != "## Changes\n\n- feat: a\n- fix: b\n" {
-		t.Fatal(got)
-	}
-}

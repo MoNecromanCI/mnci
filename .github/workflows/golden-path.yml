@@ -31,7 +31,9 @@ jobs:
         shell: bash
         run: |
           set -e
-          for m in apps/mnci libs/plugin-dotnet libs/plugin-node libs/plugin-node-toolchains libs/plugin-go libs/plugin-python libs/plugin-ruby libs/plugin-rust libs/plugin-vertical-slices packages/plugin-sdk; do
+          # Every module go.work uses, so a new plugin is tested without
+          # listing it here.
+          for m in $(go work edit -json | sed -n 's/.*"DiskPath": "\.\/\(.*\)".*/\1/p'); do
             echo "::group::$m"
             (cd "$m" && go vet ./... && go test -race=false ./...)
             echo "::endgroup::"

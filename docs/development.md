@@ -13,7 +13,7 @@ libs/plugin-node/       the Node language plugin
 libs/plugin-go/         the Go language plugin
 libs/plugin-python/     the Python language plugin
 libs/plugin-vertical-slices/    the vertical-slices structure plugin
-libs/plugin-node-toolchains/   the eslint, jest and vitest toolchain plugins and the node-jest, node-vitest stacks
+libs/plugin-node-toolchains/   the typescript, eslint, jest and vitest plugins and their stacks (node-ts, node-jest, node-vitest)
 install.sh, install.ps1 installers used by people and by generated pipelines
 docs/                   documentation, decisions and research
 ```

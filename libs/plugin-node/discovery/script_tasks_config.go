@@ -1,6 +1,10 @@
 package discovery
 
-import "github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+import (
+	"strings"
+
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+)
 
 // workspaceInputs are root files every Node task depends on.
 var workspaceInputs = []string{
@@ -22,9 +26,18 @@ var scriptTasks = map[string]protocol.Task{
 }
 
 // TaskFor builds the task that runs one package.json script through npm, so
-// node_modules/.bin is on PATH exactly as when a developer runs it.
-func TaskFor(script string) protocol.Task {
+// node_modules/.bin is on PATH exactly as when a developer runs it. A
+// dependency on another script of the same project (start on build) is kept
+// only when the project has that script: plain JavaScript has no build.
+func TaskFor(script string, scripts map[string]string) protocol.Task {
 	t, known := scriptTasks[script]
+	var deps []string
+	for _, d := range t.DependsOn {
+		if _, has := scripts[d]; has || strings.HasPrefix(d, "^") {
+			deps = append(deps, d)
+		}
+	}
+	t.DependsOn = deps
 	t.Command = []string{"npm", "run", script, "--silent"}
 	if known && t.Cache {
 		t.Inputs = workspaceInputs

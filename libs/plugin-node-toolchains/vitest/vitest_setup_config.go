@@ -13,7 +13,8 @@ var stacks = []protocol.Stack{{
 	Name:        "node-vitest",
 	Description: "TypeScript on Node, linted by @mnci/eslint-config, tested with Vitest",
 	Language:    "node",
-	Toolchain:   []string{"eslint", Name},
+	Scaffold:    "typescript",
+	Toolchain:   []string{"typescript", "eslint", Name},
 }}
 
 // New returns the plugin; version is reported in the handshake.

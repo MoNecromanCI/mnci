@@ -35,13 +35,16 @@ func ValidateStack(st protocol.Stack, set *PluginSet) error {
 	for _, n := range st.Deploy {
 		members = append(members, member{n, protocol.RoleDeploy})
 	}
-	seen := map[string]bool{}
+	seen := map[member]bool{}
+	checked := map[string]bool{}
 	providedBy := map[string]string{}
 	for _, m := range members {
-		if seen[m.name] {
-			return fmt.Errorf("%s is listed twice", m.name)
+		// One plugin may play several roles in a stack (typescript is the
+		// scaffold and a toolchain), but each role lists it once.
+		if seen[m] {
+			return fmt.Errorf("%s is listed twice as %s", m.name, m.role)
 		}
-		seen[m.name] = true
+		seen[m] = true
 		c := set.Get(m.name)
 		if c == nil {
 			return fmt.Errorf("plugin %q is not loaded", m.name)
@@ -55,6 +58,10 @@ func ValidateStack(st protocol.Stack, set *PluginSet) error {
 		if m.role == protocol.RoleScaffold && !c.Supports(protocol.MethodGenerate) {
 			return fmt.Errorf("scaffold %s cannot generate projects", m.name)
 		}
+		if checked[m.name] {
+			continue
+		}
+		checked[m.name] = true
 		for _, task := range c.Info.Provides {
 			if other, dup := providedBy[task]; dup {
 				return fmt.Errorf("%s and %s both provide the %s task; keep one", other, m.name, task)

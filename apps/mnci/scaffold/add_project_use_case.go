@@ -66,7 +66,7 @@ func AddProject(s *session.Session, opts AddOptions) (*protocol.GenerateResult, 
 		return nil, fmt.Errorf("%s already exists", dir)
 	}
 	how := language.Info.Plugin.Name
-	if st.Name != "" {
+	if st.Name != "" && st.Name != protocol.NoStack {
 		how = "stack " + st.Name
 	}
 	fmt.Fprintf(opts.Out, "Adding %s %s (%s) in %s\n", opts.Kind, opts.Name, how, dir)
@@ -101,6 +101,14 @@ func AddProject(s *session.Session, opts AddOptions) (*protocol.GenerateResult, 
 
 // chooseStack resolves the language plugin and the stack of a new project.
 func chooseStack(s *session.Session, opts AddOptions) (*host.Client, protocol.Stack, error) {
+	if opts.Stack == protocol.NoStack {
+		lang, err := chooseLanguage(s, opts.Lang)
+		if err != nil {
+			return nil, protocol.Stack{}, err
+		}
+		language, err := s.Plugins.ForLanguage(lang)
+		return language, protocol.Stack{Name: protocol.NoStack}, err
+	}
 	if opts.Stack != "" {
 		st, err := s.Stacks.Get(opts.Stack)
 		if err != nil {
@@ -155,7 +163,9 @@ func chooseLanguage(s *session.Session, lang string) (string, error) {
 func addParts(s *session.Session, project *projectgraph.Project, st protocol.Stack, params protocol.GenerateParams, res *protocol.GenerateResult, out io.Writer) error {
 	var parts []*host.Client
 	for _, n := range st.Plugins() {
-		parts = append(parts, s.Plugins.Get(n))
+		if n != st.Scaffold { // it generated the project
+			parts = append(parts, s.Plugins.Get(n))
+		}
 	}
 	for _, c := range s.Plugins.Clients {
 		name := c.Info.Plugin.Name

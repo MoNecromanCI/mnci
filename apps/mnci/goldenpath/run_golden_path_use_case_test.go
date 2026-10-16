@@ -93,7 +93,7 @@ func TestGoldenPath(t *testing.T) {
 	toml, _ := os.ReadFile(filepath.Join(w.dir, "mnci.toml"))
 	w.write("mnci.toml", string(toml)+"\n[stacks.go-sliced]\nlanguage = \"go\"\nstructure = [\"vertical-slices\"]\n")
 	for _, add := range [][]string{
-		{"app", "web", "--lang", "node"}, {"lib", "ui", "--lang", "node"}, {"package", "sdk", "--stack", "node-vitest"},
+		{"app", "web", "--lang", "node"}, {"lib", "ui", "--lang", "node"}, {"package", "sdk", "--stack", "node-vitest"}, {"app", "hello", "--lang", "node", "--stack", "none"},
 		{"app", "api", "--lang", "go"}, {"lib", "core", "--lang", "go"}, {"package", "gokit", "--stack", "go-sliced"},
 		{"app", "worker", "--lang", "python"}, {"lib", "pyutil", "--lang", "python"}, {"package", "pykit", "--lang", "python"},
 	} {
@@ -103,6 +103,7 @@ func TestGoldenPath(t *testing.T) {
 		"apps/web/package.json":     {`"stack": "node-jest"`, `"test": "jest"`, `"lint": "eslint ."`},
 		"packages/sdk/package.json": {`"stack": "node-vitest"`, `"test": "vitest run"`, `"lint": "eslint ."`},
 		"packages/gokit/go.mod":     {"// mnci:stack go-sliced"},
+		"apps/hello/package.json":   {`"stack": "none"`, `"start": "node src/main.js"`},
 	} {
 		manifest, _ := os.ReadFile(filepath.Join(w.dir, filepath.FromSlash(dir)))
 		for _, s := range want {
@@ -116,7 +117,7 @@ func TestGoldenPath(t *testing.T) {
 	}
 	projects := w.mnci(true, "projects", "--json")
 	var list []struct{ Name, Kind, Language string }
-	if err := json.Unmarshal([]byte(projects[strings.Index(projects, "["):]), &list); err != nil || len(list) != 9 {
+	if err := json.Unmarshal([]byte(projects[strings.Index(projects, "["):]), &list); err != nil || len(list) != 10 {
 		t.Fatalf("projects: %v\n%s", err, projects)
 	}
 
@@ -164,8 +165,8 @@ func TestGoldenPath(t *testing.T) {
 	if err := os.Remove(filepath.Join(w.dir, "libs", "core", "greeting", "extra.go")); err != nil {
 		t.Fatal(err)
 	}
-	out = w.mnci(true, "run", "start", "-p", "web,api,worker", "--parallel", "1")
-	for _, want := range []string{"Hello, ui!", "Hello, core!", "Hello, util!"} {
+	out = w.mnci(true, "run", "start", "-p", "web,api,worker,hello", "--parallel", "1")
+	for _, want := range []string{"Hello, ui!", "Hello, core!", "Hello, util!", "hello:start │ Hello, world!"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("apps must run with their internal deps (%s):\n%s", want, out)
 		}

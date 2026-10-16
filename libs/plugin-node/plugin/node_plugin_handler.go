@@ -23,7 +23,7 @@ func (n *Node) Describe(params protocol.InitializeParams) (protocol.InitializeRe
 	return protocol.InitializeResult{
 		Plugin:    protocol.Peer{Name: "node", Version: n.Version},
 		Kind:      protocol.KindLanguage,
-		Languages: []string{"node", "typescript", "ts"},
+		Languages: []string{"node", "javascript", "js"},
 		Manifests: []string{"package.json"},
 	}, nil
 }

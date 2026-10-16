@@ -56,3 +56,17 @@ func TestDiscoverReportsBadJSON(t *testing.T) {
 		t.Fatal("expected an error naming the bad manifest")
 	}
 }
+
+func TestStartDependsOnBuildOnlyWhenThereIsOne(t *testing.T) {
+	scripts := map[string]string{"start": "node src/main.js"}
+	if deps := TaskFor("start", scripts).DependsOn; len(deps) != 0 {
+		t.Fatalf("plain JavaScript has no build to wait for: %v", deps)
+	}
+	scripts["build"] = "tsc"
+	if deps := TaskFor("start", scripts).DependsOn; len(deps) != 1 || deps[0] != "build" {
+		t.Fatalf("start waits for the project's build: %v", deps)
+	}
+	if deps := TaskFor("test", scripts).DependsOn; len(deps) != 1 || deps[0] != "^build" {
+		t.Fatalf("upstream builds are always kept: %v", deps)
+	}
+}

@@ -130,3 +130,31 @@ func TestCancelStopsTheProcess(t *testing.T) {
 		t.Fatalf("cancel must stop the task promptly: %+v after %s", s.Results, time.Since(began))
 	}
 }
+
+func TestKeyOfMatchesTheRunAndExplainsAMiss(t *testing.T) {
+	f := newFixture(t, "core")
+	s, out := f.run(t)
+	if !s.OK() {
+		t.Fatalf("%s\n%s", s, out)
+	}
+	g, _ := taskgraph.Build(f.pg, []string{"web"}, []string{"build"})
+	opts := Options{Root: f.root, Files: f.files, Projects: f.pg, ToolVersion: "test"}
+	key, _ := KeyOf(g, opts, "web:build")
+	if key != s.Results[1].Key || s.Results[1].Task != "web:build" {
+		t.Fatalf("KeyOf %s, the run used %+v", key, s.Results)
+	}
+
+	_ = os.WriteFile(filepath.Join(f.root, "libs", "core", "src.txt"), []byte("v2"), 0o644)
+	_, now := KeyOf(g, opts, "web:build")
+	last, lastKey, err := taskcache.LastRun(f.store, "web:build")
+	if err != nil || lastKey != key || last.Inputs == nil {
+		t.Fatalf("last run %v %s %v", err, lastKey, last.Inputs)
+	}
+	var got []string
+	for _, d := range taskcache.Diff(*last.Inputs, now) {
+		got = append(got, d.String())
+	}
+	if strings.Join(got, "|") != "upstream   core changed|dependency core:build changed" {
+		t.Fatalf("differences %q", got)
+	}
+}

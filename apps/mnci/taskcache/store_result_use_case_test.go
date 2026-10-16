@@ -18,7 +18,7 @@ func TestSaveLookupRestore(t *testing.T) {
 	_ = os.WriteFile(filepath.Join(dist, "main.js"), []byte("console.log(1)"), 0o644)
 	_ = os.WriteFile(filepath.Join(dist, "sub", "x.js"), []byte("x"), 0o644)
 
-	if err := Save(s, ws, "key1", "web:build", "apps/web", []string{"dist", "missing"}, []byte("built!\n"), time.Second); err != nil {
+	if err := Save(s, ws, "key1", "web:build", "apps/web", []string{"dist", "missing"}, []byte("built!\n"), time.Second, nil); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := Lookup(s, "nope"); !errors.Is(err, ErrMiss) {
@@ -50,7 +50,7 @@ func TestSaveLookupRestore(t *testing.T) {
 	}
 
 	_ = os.WriteFile(filepath.Join(ws, "apps", "web", "file-output"), nil, 0o644)
-	if err := Save(s, ws, "key2", "web:x", "apps/web", []string{"file-output"}, nil, 0); err == nil || !strings.Contains(err.Error(), "directory") {
+	if err := Save(s, ws, "key2", "web:x", "apps/web", []string{"file-output"}, nil, 0, nil); err == nil || !strings.Contains(err.Error(), "directory") {
 		t.Fatalf("a file output must be rejected, got %v", err)
 	}
 }
@@ -62,7 +62,7 @@ func TestPruneKeepsRecentEntries(t *testing.T) {
 		dir := filepath.Join(ws, key)
 		_ = os.MkdirAll(dir, 0o755)
 		_ = os.WriteFile(filepath.Join(dir, "f"), []byte(strings.Repeat(key, 100)), 0o644)
-		if err := Save(s, ws, key, key, key, []string{"."}, []byte(key), 0); err != nil {
+		if err := Save(s, ws, key, key, key, []string{"."}, []byte(key), 0, nil); err != nil {
 			t.Fatal(err)
 		}
 		old := time.Now().Add(time.Duration(i-10) * time.Hour)
@@ -87,12 +87,12 @@ func TestPruneKeepsRecentEntries(t *testing.T) {
 }
 
 func TestKeyIsCanonical(t *testing.T) {
-	a := Key(KeyInputs{Task: "t", Command: []string{"a", "b"}, Env: map[string]string{"X": "1", "Y": "2"}, Files: []FileDigest{{"b", "2"}, {"a", "1"}}, DepKeys: []string{"z", "y"}})
-	b := Key(KeyInputs{Task: "t", Command: []string{"a", "b"}, Env: map[string]string{"Y": "2", "X": "1"}, Files: []FileDigest{{"a", "1"}, {"b", "2"}}, DepKeys: []string{"y", "z"}})
+	a := Key(KeyInputs{Task: "t", Command: []string{"a", "b"}, Env: map[string]string{"X": "1", "Y": "2"}, Files: []FileDigest{{"b", "2"}, {"a", "1"}}, Deps: map[string]string{"p:x": "z", "p:y": "y"}})
+	b := Key(KeyInputs{Task: "t", Command: []string{"a", "b"}, Env: map[string]string{"Y": "2", "X": "1"}, Files: []FileDigest{{"a", "1"}, {"b", "2"}}, Deps: map[string]string{"p:y": "y", "p:x": "z"}})
 	if a != b {
 		t.Fatal("ordering must not change the key")
 	}
-	c := Key(KeyInputs{Task: "t", Command: []string{"ab"}, Env: map[string]string{"X": "1", "Y": "2"}, Files: []FileDigest{{"a", "1"}, {"b", "2"}}, DepKeys: []string{"y", "z"}})
+	c := Key(KeyInputs{Task: "t", Command: []string{"ab"}, Env: map[string]string{"X": "1", "Y": "2"}, Files: []FileDigest{{"a", "1"}, {"b", "2"}}, Deps: map[string]string{"p:x": "y", "p:y": "z"}})
 	if a == c {
 		t.Fatal("argv boundaries must be part of the key")
 	}

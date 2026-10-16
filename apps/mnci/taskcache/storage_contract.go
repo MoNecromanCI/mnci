@@ -13,6 +13,9 @@ type Kind string
 const (
 	AC  Kind = "ac"
 	CAS Kind = "cas"
+	// Last holds, per task, the key of its most recent cached run (keyed by
+	// the SHA-256 of the task id), so a miss can be compared with it.
+	Last Kind = "last"
 )
 
 // ErrMiss is returned by Get when an entry does not exist.

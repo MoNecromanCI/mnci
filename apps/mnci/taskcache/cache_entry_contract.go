@@ -15,6 +15,9 @@ type Entry struct {
 	Log string `json:"log"`
 	// Duration is how long the original run took, shown as time saved.
 	Duration time.Duration `json:"duration"`
+	// Inputs are what the key was computed from, for mnci why-miss. Entries
+	// written before mnci 0.2 have none.
+	Inputs *KeyInputs `json:"inputs,omitempty"`
 }
 
 // OutputFile is one file restored on a hit.

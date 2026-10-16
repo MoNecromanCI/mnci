@@ -38,7 +38,7 @@ Core slices in `apps/mnci`:
 | `nxworkspace`, `convertplan`, `convert` | read an Nx workspace, plan its conversion, apply it (`mnci convert`) |
 | `githubrelease` | GitHub Releases and their assets |
 | `slicecheck` | `mnci slices check`, the vertical-slices convention's check |
-| `doctor`, `explain`, `graphview` | inspection commands |
+| `doctor`, `explain`, `whymiss`, `graphview` | inspection commands |
 | `session` | open a workspace for a command |
 | `gitclient` | every git call |
 | `commandline` | assemble the command tree |

@@ -45,8 +45,8 @@ func Run(ctx context.Context, g *taskgraph.Graph, opts Options) Summary {
 	if opts.Out == nil {
 		opts.Out = os.Stdout
 	}
-	r := &runner{opts: opts, g: g, digests: taskcache.NewFileDigests(opts.Root), sem: make(chan struct{}, opts.Parallel),
-		done: map[string]chan struct{}{}, results: map[string]Result{}, keys: map[string]string{}, upstream: map[string]string{}}
+	r := &runner{opts: opts, g: g, keyer: newKeyer(opts), sem: make(chan struct{}, opts.Parallel),
+		done: map[string]chan struct{}{}, results: map[string]Result{}, keys: map[string]string{}}
 	for _, id := range g.Order {
 		r.done[id] = make(chan struct{})
 	}
@@ -71,18 +71,17 @@ func Run(ctx context.Context, g *taskgraph.Graph, opts Options) Summary {
 }
 
 type runner struct {
-	opts     Options
-	g        *taskgraph.Graph
-	digests  *taskcache.FileDigests
-	sem      chan struct{}
-	done     map[string]chan struct{}
-	mu       sync.Mutex
-	outMu    sync.Mutex
-	results  map[string]Result
-	keys     map[string]string
-	upstream map[string]string
-	failed   bool
-	cancel   context.CancelFunc
+	opts    Options
+	g       *taskgraph.Graph
+	keyer   *keyer
+	sem     chan struct{}
+	done    map[string]chan struct{}
+	mu      sync.Mutex
+	outMu   sync.Mutex
+	results map[string]Result
+	keys    map[string]string
+	failed  bool
+	cancel  context.CancelFunc
 }
 
 func (r *runner) record(res Result) {
@@ -122,12 +121,13 @@ func (r *runner) runTask(ctx context.Context, t *taskgraph.Task) Result {
 	}
 	defer func() { <-r.sem }()
 
-	key := r.key(t)
+	key, inputs := r.key(t)
 	prefix := t.ID + " │ "
 	if t.Def.Cache && !r.opts.NoCache && r.opts.Storage != nil {
 		if entry, err := taskcache.Lookup(r.opts.Storage, key); err == nil {
 			log, err := taskcache.Restore(r.opts.Storage, r.opts.Root, t.Project.Root, t.Def.Outputs, entry)
 			if err == nil {
+				_ = taskcache.Remember(r.opts.Storage, t.ID, key)
 				Replay(prefix, log, r.opts.Out, &r.outMu)
 				r.say("%s ✔ from cache\n", t.ID)
 				return Result{Task: t.ID, Status: Cached, Key: key, Saved: entry.Duration}
@@ -144,7 +144,7 @@ func (r *runner) runTask(ctx context.Context, t *taskgraph.Task) Result {
 	code, err := RunProcess(ctx, Spec{Argv: r.expand(t, t.Def.Command), Dir: r.cwd(t), Env: r.env(t, key), Out: out})
 	out.Flush()
 	took := time.Since(began)
-	r.digests.Forget()
+	r.keyer.digests.Forget()
 	if err != nil || code != 0 {
 		reason := fmt.Sprintf("exited with code %d", code)
 		if err != nil {
@@ -157,7 +157,7 @@ func (r *runner) runTask(ctx context.Context, t *taskgraph.Task) Result {
 		return Result{Task: t.ID, Status: Failed, Key: key, Duration: took, Reason: reason}
 	}
 	if t.Def.Cache && r.opts.Storage != nil {
-		if err := taskcache.Save(r.opts.Storage, r.opts.Root, key, t.ID, t.Project.Root, t.Def.Outputs, out.log.Bytes(), took); err != nil {
+		if err := taskcache.Save(r.opts.Storage, r.opts.Root, key, t.ID, t.Project.Root, t.Def.Outputs, out.log.Bytes(), took, &inputs); err != nil {
 			r.say("%s ! not cached: %v\n", t.ID, err)
 		}
 	}
@@ -165,48 +165,16 @@ func (r *runner) runTask(ctx context.Context, t *taskgraph.Task) Result {
 	return Result{Task: t.ID, Status: Succeeded, Key: key, Duration: took}
 }
 
-// key computes the cache key from the task's inputs, the sources of every
-// project it depends on, and the keys of the tasks it depends on.
-func (r *runner) key(t *taskgraph.Task) string {
-	inputs := taskcache.SelectInputs(r.opts.Files, t.Project.Root, t.Def.Inputs, t.Def.Outputs)
-	files := make([]taskcache.FileDigest, len(inputs))
-	for i, f := range inputs {
-		files[i] = taskcache.FileDigest{Path: f, Digest: r.digests.Digest(f)}
-	}
-	upstream := map[string]string{}
-	for _, dep := range r.opts.Projects.TransitiveDeps(t.Project.Name) {
-		upstream[dep] = r.sources(dep)
-	}
+// key computes the task's cache key once the tasks it depends on have run.
+func (r *runner) key(t *taskgraph.Task) (string, taskcache.KeyInputs) {
 	r.mu.Lock()
-	depKeys := make([]string, 0, len(t.Deps))
+	deps := make(map[string]string, len(t.Deps))
 	for _, d := range t.Deps {
-		depKeys = append(depKeys, r.keys[d])
+		deps[d] = r.keys[d]
 	}
 	r.mu.Unlock()
-	return taskcache.Key(taskcache.KeyInputs{
-		Task: t.ID, Command: t.Def.Command, Env: t.Def.Env, Files: files, Upstream: upstream,
-		DepKeys: depKeys, Platform: Platform, Tool: r.opts.ToolVersion + "/" + t.Project.Plugin,
-	})
-}
-
-func (r *runner) sources(project string) string {
-	r.mu.Lock()
-	if v, ok := r.upstream[project]; ok {
-		r.mu.Unlock()
-		return v
-	}
-	r.mu.Unlock()
-	p := r.opts.Projects.Get(project)
-	files := taskcache.ProjectFiles(r.opts.Files, p.Root)
-	digests := make([]taskcache.FileDigest, len(files))
-	for i, f := range files {
-		digests[i] = taskcache.FileDigest{Path: f, Digest: r.digests.Digest(f)}
-	}
-	v := taskcache.Combine(digests)
-	r.mu.Lock()
-	r.upstream[project] = v
-	r.mu.Unlock()
-	return v
+	in := r.keyer.inputs(t, deps)
+	return taskcache.Key(in), in
 }
 
 func (r *runner) expand(t *taskgraph.Task, argv []string) []string {

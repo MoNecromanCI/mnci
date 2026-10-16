@@ -134,6 +134,17 @@ func TestGoldenPath(t *testing.T) {
 	if strings.Contains(out, "▶") {
 		t.Fatalf("second run executed tasks:\n%s", out)
 	}
+	// why-miss names what would make a task run again.
+	if out := w.mnci(true, "why-miss", "api:build"); !strings.Contains(out, "would come from the cache") {
+		t.Fatalf("why-miss on a cached task:\n%s", out)
+	}
+	w.write("libs/core/greeting/extra.go", "package greeting\n")
+	if out := w.mnci(true, "why-miss", "api:build"); !strings.Contains(out, "upstream   core changed") {
+		t.Fatalf("why-miss must name the changed upstream project:\n%s", out)
+	}
+	if err := os.Remove(filepath.Join(w.dir, "libs", "core", "greeting", "extra.go")); err != nil {
+		t.Fatal(err)
+	}
 	out = w.mnci(true, "run", "start", "-p", "web,api,worker", "--parallel", "1")
 	for _, want := range []string{"Hello, ui!", "Hello, core!", "Hello, util!"} {
 		if !strings.Contains(out, want) {

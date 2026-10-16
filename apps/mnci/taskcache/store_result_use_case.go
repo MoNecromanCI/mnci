@@ -15,10 +15,11 @@ import (
 )
 
 // Save stores a successful run: every file under the task's output
-// directories, and its log. Outputs must be directories (a bare file path is
+// directories, its log and the inputs of its key, and remembers it as the
+// task's last cached run. Outputs must be directories (a bare file path is
 // rejected) so restoring can replace them wholesale.
-func Save(s Storage, root, key, task, projectRoot string, outputs []string, log []byte, took time.Duration) error {
-	entry := Entry{Schema: EntrySchema, Task: task, Created: time.Now().UTC(), Duration: took}
+func Save(s Storage, root, key, task, projectRoot string, outputs []string, log []byte, took time.Duration, inputs *KeyInputs) error {
+	entry := Entry{Schema: EntrySchema, Task: task, Created: time.Now().UTC(), Duration: took, Inputs: inputs}
 	for _, o := range outputs {
 		dir := filepath.Join(root, filepath.FromSlash(path.Join(projectRoot, o)))
 		info, err := os.Stat(dir)
@@ -60,7 +61,10 @@ func Save(s Storage, root, key, task, projectRoot string, outputs []string, log 
 	if err != nil {
 		return err
 	}
-	return s.Put(AC, key, bytes.NewReader(raw))
+	if err := s.Put(AC, key, bytes.NewReader(raw)); err != nil {
+		return err
+	}
+	return Remember(s, task, key)
 }
 
 // Lookup returns the entry for a key, or ErrMiss. A corrupt entry, or one

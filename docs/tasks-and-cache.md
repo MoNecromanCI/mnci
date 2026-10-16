@@ -53,9 +53,26 @@ SHA-256, shared between entries. Writes land by rename, so an interrupted run
 never leaves a half-written entry; an entry with a missing blob is a miss. When
 the cache grows past `max_size_mb`, the least recently used entries go first.
 
+Each entry also keeps what its key was computed from (the files and their
+digests, the command, env, upstream sources and dependency keys), and `last/`
+remembers, per task, the key of its most recent cached run. That is what
+`mnci why-miss` compares with:
+
+```sh
+$ mnci why-miss api:build
+api:build would run: 2 change(s) since its last cached run (2026-10-16 09:12)
+  upstream   core changed
+  dependency core:build changed   (mnci why-miss core:build)
+```
+
+It names added, removed and changed input files, a changed command, env
+variables (names only), the projects upstream whose sources changed, the
+dependency tasks whose keys changed, and a new mnci or plugin version. It runs
+nothing; `--json` prints the same report.
+
 Everything goes through a `Storage` interface (`Has/Get/Put/Delete/Walk/Touch`)
-with a conformance test, so a remote backend (HTTP, S3, Azure Blob — #42) is an
-addition, not a change.
+with a conformance test. It stores three kinds (`ac`, `cas`, `last`), so a
+remote backend (HTTP, S3, Azure Blob — #42) is an addition, not a change.
 
 ## Affected
 

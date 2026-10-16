@@ -1,0 +1,37 @@
+package pipeline
+
+import (
+	"errors"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+)
+
+func TestCI(t *testing.T) {
+	ws := t.TempDir()
+	res := CI(ws, protocol.CIParams{Projects: []protocol.Project{{Kind: protocol.ProjectPackage}}})
+	if res.Toolchains[0].Version != PHPVersion || res.Setup[0].Command[1] != "install" || len(res.Credentials) != 0 {
+		t.Fatalf("%+v", res)
+	}
+	_ = os.WriteFile(filepath.Join(ws, ".php-version"), []byte("8.3\n"), 0o644)
+	if v := Version(ws); v != "8.3" {
+		t.Fatalf(".php-version pins %s", v)
+	}
+}
+
+func TestDoctor(t *testing.T) {
+	real := probe
+	defer func() { probe = real }()
+	probe = func(_ string, argv []string) (string, error) {
+		if argv[0] == "composer" {
+			return "", errors.New("missing")
+		}
+		return "", nil
+	}
+	res := Doctor(t.TempDir(), protocol.DoctorParams{Projects: []protocol.Project{{}}})
+	if len(res.Findings) != 2 || !res.Findings[0].OK || res.Findings[1].OK {
+		t.Fatalf("%+v", res)
+	}
+}

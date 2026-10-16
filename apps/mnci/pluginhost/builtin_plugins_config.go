@@ -9,6 +9,8 @@ import (
 	gop "github.com/MoNecromanCI/mnci/libs/plugin-go/plugin"
 	"github.com/MoNecromanCI/mnci/libs/plugin-go/pluginkit"
 	jvmp "github.com/MoNecromanCI/mnci/libs/plugin-jvm/plugin"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/angular"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/astro"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/eslint"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/jest"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/typescript"
@@ -48,6 +50,8 @@ var BuiltinAddons = map[string]func(version string) serve.Plugin{
 	vitest.Name:     func(v string) serve.Plugin { return vitest.New(v) },
 	typescript.Name: func(v string) serve.Plugin { return typescript.New(v) },
 	vite.Name:       func(v string) serve.Plugin { return vite.New(v) },
+	angular.Name:    func(v string) serve.Plugin { return angular.New(v) },
+	astro.Name:      func(v string) serve.Plugin { return astro.New(v) },
 	pluginkit.Name:  func(v string) serve.Plugin { return pluginkit.New(v) },
 }
 

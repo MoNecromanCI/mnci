@@ -9,16 +9,20 @@ import (
 	"testing"
 )
 
-// TestWebWorkspace scaffolds a browser app with each of the vite plugin's
-// stacks and runs every task: lint, typecheck, test and the Vite build into
-// dist/, then a cache replay.
+// TestWebWorkspace scaffolds a browser app with each web stack (the vite
+// plugin's, angular, docs-site) and runs every task: lint, typecheck, test
+// and the build into dist/, then a cache replay.
 func TestWebWorkspace(t *testing.T) {
 	base := t.TempDir()
 	w := &workspace{t: t, bin: buildMnci(t, base), dir: base, env: identity()}
 	w.mnci(true, "new", "mnci-e2e-web", "--ci", "github")
 	w.dir = filepath.Join(base, "mnci-e2e-web")
-	stacks := []string{"react", "react-p5", "vue", "svelte", "html"}
-	for _, stack := range stacks {
+	all := []string{"lint", "typecheck", "test", "build"}
+	stacks := map[string][]string{
+		"react": all, "react-p5": all, "vue": all, "svelte": all, "html": all, "angular": all,
+		"docs-site": {"lint", "build"},
+	}
+	for stack := range stacks {
 		w.mnci(true, "add", "app", stack, "--stack", stack)
 	}
 	if out := w.mnci(false, "add", "lib", "ui", "--stack", "react"); !strings.Contains(out, "is an app") {
@@ -26,8 +30,8 @@ func TestWebWorkspace(t *testing.T) {
 	}
 
 	out := w.mnci(true, "run", "lint", "typecheck", "test", "build")
-	for _, stack := range stacks {
-		for _, task := range []string{"lint", "typecheck", "test", "build"} {
+	for stack, tasks := range stacks {
+		for _, task := range tasks {
 			if want := stack + ":" + task + " ✔"; !strings.Contains(out, want) {
 				t.Fatalf("%s did not pass:\n%s", want, out)
 			}
@@ -40,10 +44,10 @@ func TestWebWorkspace(t *testing.T) {
 			t.Errorf("apps/%s/dist exists: builds must go to the workspace's dist/", stack)
 		}
 	}
-	if out := w.mnci(true, "run", "lint", "typecheck", "test", "build"); !strings.Contains(out, "(20 from cache") {
+	if out := w.mnci(true, "run", "lint", "typecheck", "test", "build"); !strings.Contains(out, "(26 from cache") {
 		t.Fatalf("a re-run replays from the cache:\n%s", out)
 	}
-	if out := w.mnci(true, "stacks"); !strings.Contains(out, "react-p5") || !strings.Contains(out, "svelte") {
+	if out := w.mnci(true, "stacks"); !strings.Contains(out, "react-p5") || !strings.Contains(out, "docs-site") {
 		t.Fatalf("the vite plugin's stacks are listed:\n%s", out)
 	}
 }

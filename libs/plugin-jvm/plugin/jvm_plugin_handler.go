@@ -11,7 +11,8 @@ import (
 // Name is the plugin's name.
 const Name = "jvm"
 
-// JVM is the JVM language plugin: Java with Maven, Kotlin with Gradle.
+// JVM is the JVM language plugin: Java with Maven, Kotlin and Android with
+// Gradle.
 type JVM struct {
 	Version string
 	root    string
@@ -28,9 +29,10 @@ func (j *JVM) Describe(params protocol.InitializeParams) (protocol.InitializeRes
 		Kind:      protocol.KindLanguage,
 		Languages: []string{"jvm", "java"},
 		Manifests: []string{"pom.xml", "build.gradle.kts", "build.gradle"},
-		Stacks: []protocol.Stack{{
-			Name: scaffolding.KotlinStack, Description: "a Kotlin module built with Gradle, linted with ktlint", Language: Name,
-		}},
+		Stacks: []protocol.Stack{
+			{Name: scaffolding.KotlinStack, Description: "a Kotlin module built with Gradle, linted with ktlint", Language: Name},
+			{Name: scaffolding.AndroidStack, Description: "an Android app in Kotlin, built with Gradle (AGP), linted with ktlint and Android Lint", Language: Name},
+		},
 	}, nil
 }
 

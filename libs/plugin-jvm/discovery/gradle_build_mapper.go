@@ -20,6 +20,8 @@ type GradleBuild struct {
 	// BuildDir is the workspace-relative directory it builds to, when its
 	// script moves the build to dist/.
 	BuildDir string
+	// Android is an Android module (AGP): Android Lint, and no run task.
+	Android bool
 }
 
 // Coordinates is groupId:artifactId when the module publishes, else empty.
@@ -71,11 +73,15 @@ func ParseGradleBuild(root string, script, properties []byte) GradleBuild {
 	for _, m := range projectDependency.FindAllStringSubmatch(src, -1) {
 		b.Projects = append(b.Projects, m[1])
 	}
+	b.Android = strings.Contains(src, "com.android.application") || strings.Contains(src, "com.android.library")
 	switch {
 	case strings.Contains(src, "org.jlleitschuh.gradle.ktlint"):
 		b.Lint = []string{"ktlintCheck"}
 	case strings.Contains(src, "checkstyle"):
 		b.Lint = []string{"checkstyleMain", "checkstyleTest"}
+	}
+	if b.Android {
+		b.Lint = append(b.Lint, "lint")
 	}
 	if m := distBuildDir.FindStringSubmatch(src); m != nil {
 		b.BuildDir = m[1]

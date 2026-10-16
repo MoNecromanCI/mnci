@@ -19,7 +19,8 @@ var gradleInputs = []string{
 // GradleTasks are Gradle's for one module, run from the workspace root and
 // selected by its project path. build assembles it after the modules it
 // depends on (^build); test and start wait for it; lint is what the
-// module's plugins add (ktlint for Kotlin, Checkstyle for Java).
+// module's plugins add (ktlint for Kotlin, Checkstyle for Java, Android
+// Lint for an Android module).
 func GradleTasks(root string, b GradleBuild, kind protocol.ProjectKind) map[string]protocol.Task {
 	gradle := func(tasks ...string) []string {
 		argv := []string{"gradle", "--console=plain", "-q"}
@@ -38,8 +39,18 @@ func GradleTasks(root string, b GradleBuild, kind protocol.ProjectKind) map[stri
 	}
 	if len(b.Lint) > 0 {
 		tasks["lint"] = protocol.Task{Command: gradle(b.Lint...), Cwd: ".", Inputs: gradleInputs, Cache: true, Description: "gradle " + strings.Join(b.Lint, " ")}
+		// Android's tasks compile the same intermediates (assemble runs
+		// lint-vital, lint compiles the unit tests): two Gradle builds of
+		// one Android module at once overwrite each other's outputs, so its
+		// tasks run one after another: build, test, lint.
+		if b.Android {
+			lint := tasks["lint"]
+			lint.DependsOn = []string{"test"}
+			tasks["lint"] = lint
+		}
 	}
-	if kind == protocol.ProjectApp {
+	// An Android app runs on a device, not from Gradle.
+	if kind == protocol.ProjectApp && !b.Android {
 		tasks["start"] = protocol.Task{Command: gradle("run"), Cwd: ".", DependsOn: []string{"build"}, Description: "Run the app (gradle run)"}
 	}
 	return tasks

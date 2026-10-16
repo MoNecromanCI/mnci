@@ -69,3 +69,22 @@ func TestDoctor(t *testing.T) {
 		t.Fatalf("a Gradle module checks Gradle, not Maven: %+v", res)
 	}
 }
+
+func TestAndroid(t *testing.T) {
+	ws := t.TempDir()
+	app := module(t, ws, "apps/mobile", "build.gradle.kts", protocol.ProjectApp)
+	_ = os.WriteFile(filepath.Join(ws, "apps", "mobile", "build.gradle.kts"), []byte(`plugins { id("com.android.application") }`), 0o644)
+	res := CI(ws, protocol.CIParams{Projects: []protocol.Project{app}})
+	if sdk := res.Toolchains[len(res.Toolchains)-1]; sdk.Name != "android-sdk" || !strings.Contains(sdk.Install, "commandlinetools-linux-"+AndroidToolsRevision) {
+		t.Fatalf("%+v", res.Toolchains)
+	}
+	t.Setenv("ANDROID_HOME", "")
+	t.Setenv("ANDROID_SDK_ROOT", "")
+	if androidSDKFound(ws) {
+		t.Fatal("no SDK")
+	}
+	_ = os.WriteFile(filepath.Join(ws, "local.properties"), []byte("sdk.dir="+filepath.ToSlash(ws)+"\n"), 0o644)
+	if !androidSDKFound(ws) {
+		t.Fatal("local.properties names the SDK")
+	}
+}

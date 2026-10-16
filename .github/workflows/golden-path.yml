@@ -60,7 +60,7 @@ jobs:
           python-version: '3.12'
       - name: New workspace, every kind in every language, build, test, release
         working-directory: apps/mnci
-        run: go test -tags e2e -timeout 40m -v -run TestGoldenPath ./goldenpath
+        run: go test -tags e2e -timeout 40m -v -run 'TestGoldenPath|TestExternalLanguagePlugin' ./goldenpath
 
   convert:
     name: convert (${{ matrix.os }})

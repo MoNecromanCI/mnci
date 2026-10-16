@@ -20,6 +20,24 @@ prints the schema of the mnci you run, for tools that want it offline. The
 schema is versioned with the file: its `schema = 1` is the version it
 describes, and `mnci upgrade` migrates older files.
 
+## Changing a setting from the command line
+
+`mnci config` reads and changes the settings of the `[workspace]`, `[ci]`,
+`[release]`, `[cache]` and `[plugins]` tables:
+
+```sh
+mnci config list                          # every setting, its value, what it does
+mnci config get ci.providers
+mnci config set ci.providers github azure # a list takes several values
+mnci config set cache.max_size_mb 4096
+mnci config unset release.branch          # back to the default
+```
+
+Values are checked against the schema before anything is written. mnci
+changes only that setting's value, so comments and every other line stay as
+they are, and it refuses to write a file that would not load. Edit stacks,
+conventions, tasks and projects in the file itself.
+
 ```toml
 schema = 1
 
@@ -138,6 +156,3 @@ See [Releasing](releasing.md#apps).
 | `MNCI_BASE` | base branch for `--affected` and `mnci ci verify` |
 | `MNCI_RELEASE_ANY_BRANCH` | allow a real release from another branch |
 | `MNCI_PYPI_SIMPLE_URL` | the simple index to check before uploading to a custom Python index |
-
-The TUI configuration editor (epic #15) and a published JSON Schema (#47) are
-planned.

@@ -105,6 +105,15 @@ func TestGoldenPath(t *testing.T) {
 	if err := json.Unmarshal([]byte(w.mnci(true, "schema")), &schemaDoc); err != nil || schemaDoc["title"] != "mnci.toml" {
 		t.Fatalf("mnci schema: %v %v", err, schemaDoc["title"])
 	}
+	// One setting changes; the file's comments and schema line stay.
+	w.mnci(true, "config", "set", "cache.max_size_mb", "4096")
+	if got := strings.TrimSpace(w.mnci(true, "config", "get", "cache.max_size_mb")); got != "4096" {
+		t.Fatalf("config get: %q", got)
+	}
+	if cfg, _ := os.ReadFile(filepath.Join(w.dir, "mnci.toml")); !strings.HasPrefix(string(cfg), "#:schema https://") || !strings.Contains(string(cfg), "# Pipelines to generate") {
+		t.Fatalf("config set rewrote the file:\n%s", cfg)
+	}
+	w.mnci(false, "config", "set", "ci.providers", "gitlab")
 
 	// 2. An app, a lib and a package in each language. Each project picks its
 	// stack: the language default (node-jest), a published one (node-vitest),

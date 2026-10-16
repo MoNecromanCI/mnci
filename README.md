@@ -19,7 +19,7 @@ mnci add package sdk --lang python  # published on release
 
 mnci build                          # every project, in dependency order, cached
 mnci test --affected                # only what changed since main
-mnci graph                          # how projects depend on each other
+mnci graph                          # how projects depend on each other (--format tui to browse)
 mnci release --dry-run              # what the next release would publish
 mnci doctor                         # is the workspace healthy?
 ```

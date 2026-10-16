@@ -23,20 +23,20 @@ func sample(t *testing.T) *projectgraph.Graph {
 
 func TestRenderers(t *testing.T) {
 	g := sample(t)
-	text := Text(g)
+	text := Text(g, nil)
 	if !strings.Contains(text, "web  app · node · x/web\n  ├─ ui\n  └─ sdk\n") && !strings.Contains(text, "  ├─ sdk\n  └─ ui\n") {
 		t.Fatalf("text:\n%s", text)
 	}
 	var parsed struct {
 		Projects []Node `json:"projects"`
 	}
-	if err := json.Unmarshal([]byte(JSON(g)), &parsed); err != nil || len(parsed.Projects) != 3 || parsed.Projects[0].Tasks[0] != "build" {
+	if err := json.Unmarshal([]byte(JSON(g, nil)), &parsed); err != nil || len(parsed.Projects) != 3 || parsed.Projects[0].Tasks[0] != "build" {
 		t.Fatalf("json %v %+v", err, parsed)
 	}
-	if dot := DOT(g); !strings.Contains(dot, `"web" -> "ui"`) {
+	if dot := DOT(g, nil); !strings.Contains(dot, `"web" -> "ui"`) {
 		t.Fatalf("dot:\n%s", dot)
 	}
-	page := HTML(g, "acme <&>")
+	page := HTML(g, "acme <&>", nil)
 	for _, want := range []string{"<svg", "acme &lt;&amp;&gt;", "prefers-color-scheme: dark", "marker-end"} {
 		if !strings.Contains(page, want) {
 			t.Errorf("html lacks %q", want)

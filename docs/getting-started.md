@@ -63,7 +63,18 @@ from acme_pyutil.greeting import greet
 
 npm workspaces, `go.work` and the workspace's Python venv (editable installs)
 make every project importable by every other; mnci reads the imports to learn
-the dependency graph (`mnci graph`).
+the dependency graph:
+
+```sh
+mnci graph                         # a tree in the terminal
+mnci graph --format tui            # browse it: what a project uses, what uses it
+mnci graph --focus web             # web, everything it uses and everything that uses it
+mnci graph --affected              # what changes since main affect, the changed ones marked
+mnci graph --format html -o graph.html   # a page to share; also json and dot
+```
+
+Every format shows the same projects; `--focus` and `--affected` narrow all
+of them the same way.
 
 ## Run tasks
 

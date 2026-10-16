@@ -28,6 +28,9 @@ type Node struct {
 	Tasks     []string `json:"tasks"`
 	Targets   []string `json:"targets"`
 	Tags      []string `json:"tags,omitempty"`
+	// Marked is set on the projects a view is about: the one --focus names,
+	// or the changed ones of --affected.
+	Marked bool `json:"marked,omitempty"`
 }
 
 // ecosystems names a language plugin's package ecosystem as the TypeScript
@@ -43,7 +46,7 @@ func Ecosystem(plugin string) string {
 }
 
 // Nodes converts the graph, sorted by name.
-func Nodes(g *projectgraph.Graph) []Node {
+func Nodes(g *projectgraph.Graph, marked map[string]bool) []Node {
 	out := make([]Node, 0, len(g.Projects))
 	for _, p := range g.Projects {
 		tasks := make([]string, 0, len(p.Tasks))
@@ -58,25 +61,31 @@ func Nodes(g *projectgraph.Graph) []Node {
 		out = append(out, Node{
 			Name: p.Name, Root: p.Root, Dir: p.Root, Kind: string(p.Kind), Language: p.Language, Ecosystem: Ecosystem(p.Plugin),
 			Plugin: p.Plugin, Stack: p.Stack, Version: p.Version, Deps: deps, Tasks: tasks, Targets: tasks, Tags: p.Tags,
+			Marked: marked[p.Name],
 		})
 	}
 	return out
 }
 
 // JSON renders {"projects": [...]}.
-func JSON(g *projectgraph.Graph) string {
-	raw, _ := json.MarshalIndent(map[string]any{"projects": Nodes(g)}, "", "  ")
+func JSON(g *projectgraph.Graph, marked map[string]bool) string {
+	raw, _ := json.MarshalIndent(map[string]any{"projects": Nodes(g, marked)}, "", "  ")
 	return string(raw) + "\n"
 }
 
-// Text renders each project with the projects it depends on beneath it.
-func Text(g *projectgraph.Graph) string {
+// Text renders each project with the projects it depends on beneath it; a
+// marked project is starred.
+func Text(g *projectgraph.Graph, marked map[string]bool) string {
 	var b strings.Builder
 	if len(g.Projects) == 0 {
 		return "No projects yet. Add one: mnci add app web --lang node\n"
 	}
-	for _, n := range Nodes(g) {
-		fmt.Fprintf(&b, "%s  %s · %s · %s\n", n.Name, n.Kind, n.Language, n.Root)
+	for _, n := range Nodes(g, marked) {
+		star := ""
+		if n.Marked {
+			star = " *"
+		}
+		fmt.Fprintf(&b, "%s%s  %s · %s · %s\n", n.Name, star, n.Kind, n.Language, n.Root)
 		for i, d := range n.Deps {
 			branch := "├─"
 			if i == len(n.Deps)-1 {
@@ -88,12 +97,16 @@ func Text(g *projectgraph.Graph) string {
 	return b.String()
 }
 
-// DOT renders Graphviz.
-func DOT(g *projectgraph.Graph) string {
+// DOT renders Graphviz; a marked project is drawn bold.
+func DOT(g *projectgraph.Graph, marked map[string]bool) string {
 	var b strings.Builder
 	b.WriteString("digraph mnci {\n  rankdir=BT;\n  node [shape=box, style=rounded];\n")
-	for _, n := range Nodes(g) {
-		fmt.Fprintf(&b, "  %q [label=%q];\n", n.Name, n.Name+"\n"+n.Kind+" · "+n.Language)
+	for _, n := range Nodes(g, marked) {
+		bold := ""
+		if n.Marked {
+			bold = `, style="rounded,bold", penwidth=2`
+		}
+		fmt.Fprintf(&b, "  %q [label=%q%s];\n", n.Name, n.Name+"\n"+n.Kind+" · "+n.Language, bold)
 		for _, d := range n.Deps {
 			fmt.Fprintf(&b, "  %q -> %q;\n", n.Name, d)
 		}
@@ -103,9 +116,9 @@ func DOT(g *projectgraph.Graph) string {
 }
 
 // HTML renders a self-contained page: projects in layers, each above the
-// projects it depends on, with arrows to them.
-func HTML(g *projectgraph.Graph, title string) string {
-	nodes := Nodes(g)
+// projects it depends on, with arrows to them; a marked project is filled.
+func HTML(g *projectgraph.Graph, title string, marked map[string]bool) string {
+	nodes := Nodes(g, marked)
 	layer := map[string]int{}
 	var depth func(string) int
 	depth = func(name string) int {
@@ -153,8 +166,12 @@ func HTML(g *projectgraph.Graph, title string) string {
 	}
 	for _, n := range nodes {
 		p := pos[n.Name]
-		fmt.Fprintf(&svg, `<g><title>%s</title><rect x="%d" y="%d" width="%d" height="%d" rx="8" fill="none" stroke="%s" stroke-width="2"/><text x="%d" y="%d" text-anchor="middle" font-weight="600">%s</text><text x="%d" y="%d" text-anchor="middle" font-size="12" opacity=".7">%s · %s</text></g>`,
-			html.EscapeString(n.Root), p[0], p[1], w, h, colors[n.Kind], p[0]+w/2, p[1]+22, html.EscapeString(n.Name), p[0]+w/2, p[1]+40, n.Kind, html.EscapeString(n.Language))
+		fill := "none"
+		if n.Marked {
+			fill = colors[n.Kind] + "33"
+		}
+		fmt.Fprintf(&svg, `<g><title>%s</title><rect x="%d" y="%d" width="%d" height="%d" rx="8" fill="%s" stroke="%s" stroke-width="2"/><text x="%d" y="%d" text-anchor="middle" font-weight="600">%s</text><text x="%d" y="%d" text-anchor="middle" font-size="12" opacity=".7">%s · %s</text></g>`,
+			html.EscapeString(n.Root), p[0], p[1], w, h, fill, colors[n.Kind], p[0]+w/2, p[1]+22, html.EscapeString(n.Name), p[0]+w/2, p[1]+40, n.Kind, html.EscapeString(n.Language))
 	}
 	svg.WriteString("</svg>")
 	return fmt.Sprintf(`<!doctype html>

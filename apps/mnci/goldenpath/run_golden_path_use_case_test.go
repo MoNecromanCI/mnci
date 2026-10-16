@@ -230,6 +230,27 @@ func TestGoldenPath(t *testing.T) {
 	if !strings.Contains(affected, "ui") || !strings.Contains(affected, "web") || strings.Contains(affected, "api") {
 		t.Fatalf("affected:\n%s", affected)
 	}
+	// The graph shows the same set, the changed project marked, in any format.
+	var view struct {
+		Projects []struct {
+			Name   string
+			Marked bool
+		}
+	}
+	graphJSON := w.mnci(true, "graph", "--affected", "--base", "base", "--format", "json")
+	if err := json.Unmarshal([]byte(graphJSON[strings.Index(graphJSON, "{"):]), &view); err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]bool{}
+	for _, p := range view.Projects {
+		got[p.Name] = p.Marked
+	}
+	if marked, ok := got["ui"]; !ok || !marked || got["web"] || len(got) != 2 {
+		t.Fatalf("graph --affected: %v", got)
+	}
+	if text := w.mnci(true, "graph", "--focus", "core"); !strings.Contains(text, "core *") || !strings.Contains(text, "api") || strings.Contains(text, "web") {
+		t.Fatalf("graph --focus core:\n%s", text)
+	}
 	_ = os.Remove(filepath.Join(w.dir, "libs", "ui", "src", "greeting", "extra.ts"))
 
 	// 6. Release: preview, a release interrupted halfway, and a resume.

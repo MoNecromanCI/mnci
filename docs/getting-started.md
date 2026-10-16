@@ -88,6 +88,24 @@ mnci graph --format html -o graph.html   # a page to share; also json and dot
 Every format shows the same projects; `--focus` and `--affected` narrow all
 of them the same way.
 
+## Add dependencies
+
+Each project owns its dependencies, so adding one names the project:
+
+```sh
+mnci install -w web zod                    # npm install zod --workspace apps/web
+mnci install -w worker -D pytest-cov       # pyproject.toml's dev extra, into .venv
+mnci install -w api github.com/pkg/errors  # go get, in apps/api
+mnci uninstall -w web zod
+```
+
+`-w` takes a project's name or its directory, and can be repeated. `-D` adds a
+development dependency: an npm devDependency, the Python `dev` extra, or a Go
+tool (`go get -tool`). A bare `mnci install` installs everything a fresh clone
+needs: `npm install`, the Python venv with every project in it, and
+`go mod download`. Without `-w`, a package is refused instead of being added
+at the root.
+
 ## Run tasks
 
 ```sh

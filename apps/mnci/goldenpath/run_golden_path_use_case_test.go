@@ -161,6 +161,22 @@ func TestGoldenPath(t *testing.T) {
 			t.Fatalf("graph lacks %s → %s:\n%s", edge[0], edge[1], graph)
 		}
 	}
+	// A dependency belongs to one project: worker requires its sibling, then
+	// stops; pip resolves it from the venv's editable install, offline.
+	pyproject, _ := os.ReadFile(filepath.Join(w.dir, "apps", "worker", "pyproject.toml"))
+	if out := w.mnci(false, "install", "acme-pyutil"); !strings.Contains(out, "needs a target project") {
+		t.Fatalf("install without -w:\n%s", out)
+	}
+	if out := w.mnci(true, "install", "-w", "apps/worker", "acme-pyutil"); !strings.Contains(out, "✔ worker: added acme-pyutil (.venv") && !strings.Contains(out, "✔ worker: added acme-pyutil (apps/worker/pyproject.toml)") {
+		t.Fatalf("install:\n%s", out)
+	}
+	if after, _ := os.ReadFile(filepath.Join(w.dir, "apps", "worker", "pyproject.toml")); !strings.Contains(string(after), `dependencies = ["acme-pyutil"]`) {
+		t.Fatalf("pyproject:\n%s", after)
+	}
+	w.mnci(true, "uninstall", "-w", "worker", "acme-pyutil")
+	if after, _ := os.ReadFile(filepath.Join(w.dir, "apps", "worker", "pyproject.toml")); string(after) != string(pyproject) {
+		t.Fatalf("uninstall did not restore pyproject.toml:\n%s", after)
+	}
 
 	// 4. Everything lints, type-checks, tests and builds; a re-run is all cache.
 	out := w.mnci(true, "run", "lint", "typecheck", "test", "build")

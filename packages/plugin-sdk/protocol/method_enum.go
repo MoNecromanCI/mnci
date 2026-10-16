@@ -18,4 +18,8 @@ const (
 	// MethodPublished asks for the newest version a registry has of a
 	// project, so release can check its tags against it.
 	MethodPublished = "published"
+	// MethodInstall adds packages to a project, or installs a workspace.
+	MethodInstall = "dependencies/install"
+	// MethodUninstall removes packages from a project.
+	MethodUninstall = "dependencies/uninstall"
 )

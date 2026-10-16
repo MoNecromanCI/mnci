@@ -182,6 +182,8 @@ func (c *Client) Supports(method string) bool {
 		return caps.Remove
 	case protocol.MethodPublished:
 		return caps.Published
+	case protocol.MethodInstall, protocol.MethodUninstall:
+		return caps.Dependencies
 	}
 	return method == protocol.MethodInitialize || method == protocol.MethodShutdown
 }

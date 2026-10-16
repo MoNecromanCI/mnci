@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"github.com/MoNecromanCI/mnci/libs/plugin-python/dependencies"
 	"github.com/MoNecromanCI/mnci/libs/plugin-python/discovery"
 	"github.com/MoNecromanCI/mnci/libs/plugin-python/pipeline"
 	"github.com/MoNecromanCI/mnci/libs/plugin-python/releasing"
@@ -66,4 +67,14 @@ func (p *Python) Doctor(params protocol.DoctorParams) (protocol.DoctorResult, er
 // Remove implements serve.Remover.
 func (p *Python) Remove(params protocol.RemoveParams) (protocol.RemoveResult, error) {
 	return scaffolding.Remove(p.root, params)
+}
+
+// Install implements serve.DependencyManager.
+func (p *Python) Install(params protocol.InstallParams) (protocol.DependencyResult, error) {
+	return dependencies.Install(p.root, params)
+}
+
+// Uninstall implements serve.DependencyManager.
+func (p *Python) Uninstall(params protocol.UninstallParams) (protocol.DependencyResult, error) {
+	return dependencies.Uninstall(p.root, params)
 }

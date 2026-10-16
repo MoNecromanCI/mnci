@@ -1,6 +1,9 @@
 package plugin
 
-import "github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+import (
+	"github.com/monosmith-app/monosmith/libs/plugin-vertical-slices/languages"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+)
 
 // Name is the convention's name in smith.toml ([conventions.vertical-slices]).
 const Name = "vertical-slices"
@@ -18,7 +21,7 @@ func (v *VerticalSlices) Describe(protocol.InitializeParams) (protocol.Initializ
 	return protocol.InitializeResult{
 		Plugin:    protocol.Peer{Name: Name, Version: v.Version},
 		Kind:      protocol.KindConvention,
-		Languages: []string{"go", "python"},
+		Languages: languages.Names(),
 	}, nil
 }
 
@@ -27,10 +30,11 @@ func (v *VerticalSlices) Describe(protocol.InitializeParams) (protocol.Initializ
 func (v *VerticalSlices) Contribute(params protocol.ContributeParams) (protocol.ContributeResult, error) {
 	res := protocol.ContributeResult{Projects: map[string]protocol.Contribution{}}
 	for _, p := range params.Projects {
-		if _, ok := sources[p.Language]; !ok {
+		rules, ok := languages.For(p.Language)
+		if !ok {
 			continue
 		}
-		c := protocol.Contribution{Tasks: map[string]protocol.Task{TaskName: sliceCheck(p.Language)}}
+		c := protocol.Contribution{Tasks: map[string]protocol.Task{TaskName: sliceCheck(rules)}}
 		if _, ok := p.Tasks["lint"]; ok {
 			c.DependsOn = map[string][]string{"lint": {TaskName}}
 		}

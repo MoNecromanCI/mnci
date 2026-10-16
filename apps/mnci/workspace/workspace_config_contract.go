@@ -55,6 +55,13 @@ type CISection struct {
 	// toolchains CI installs, at the same versions. Default: false (mnci new
 	// turns it on).
 	Devcontainer bool `toml:"devcontainer"`
+	// NativeRunners are the machines the native job runs on, one per OS,
+	// as the provider names them. Default: ubuntu-latest, windows-latest,
+	// macos-latest.
+	NativeRunners []string `toml:"native_runners"`
+	// NativeLinuxPackages are apt packages the native job installs on
+	// Linux before building (libraries a cgo app links).
+	NativeLinuxPackages []string `toml:"native_linux_packages"`
 }
 
 // ReleaseSection configures `mnci release`.

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/affected"
+	"github.com/MoNecromanCI/mnci/apps/mnci/nativebuild"
 	"github.com/MoNecromanCI/mnci/apps/mnci/release"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/MoNecromanCI/mnci/apps/mnci/taskrun"
@@ -27,7 +28,7 @@ const PackTask = "package"
 const DropDir = "dist/drop"
 
 // Phases lists `mnci ci` phases in pipeline order.
-var Phases = []string{"setup", "audit", "verify", "pack", "release"}
+var Phases = []string{"setup", "audit", "verify", "pack", "native", "release"}
 
 // RunPhase runs one CI phase.
 func RunPhase(ctx context.Context, s *session.Session, phase string, out io.Writer) error {
@@ -81,7 +82,8 @@ func runPhase(ctx context.Context, s *session.Session, phase string, out io.Writ
 		return runSteps(ctx, s.Root, steps, out)
 	case "verify":
 		base := affected.BaseFromEnv()
-		summary, err := taskrun.RunInWorkspace(ctx, s, taskrun.Request{Tasks: VerifyTasks, Affected: base != "", Base: base, Out: out})
+		// Native projects are verified by the native job, on every OS.
+		summary, err := taskrun.RunInWorkspace(ctx, s, taskrun.Request{Tasks: VerifyTasks, Projects: []string{"!tag:" + release.NativeTag}, Affected: base != "", Base: base, Out: out})
 		if err != nil {
 			return err
 		}
@@ -107,7 +109,8 @@ func runPhase(ctx context.Context, s *session.Session, phase string, out io.Writ
 			fmt.Fprintln(out, "nothing to pack: no project has a package task")
 			return nil
 		}
-		summary, err := taskrun.RunInWorkspace(ctx, s, taskrun.Request{Tasks: []string{PackTask}, Out: out})
+		// Native projects are packed by the native job, on each OS.
+		summary, err := taskrun.RunInWorkspace(ctx, s, taskrun.Request{Tasks: []string{PackTask}, Projects: []string{"!tag:" + release.NativeTag}, Out: out})
 		if err != nil {
 			return err
 		}
@@ -117,6 +120,8 @@ func runPhase(ctx context.Context, s *session.Session, phase string, out io.Writ
 		}
 		fmt.Fprintf(out, "packed into %s\n", DropDir)
 		return nil
+	case "native":
+		return nativebuild.Run(ctx, s, out)
 	case "release":
 		ensureIdentity(s)
 		plan, err := release.MakePlan(s.Git, s.Graph)

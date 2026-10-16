@@ -35,6 +35,7 @@ can run locally.
 | `mnci ci verify` | `lint`, `typecheck`, `test`, `build` — affected projects only on a pull request, everything otherwise |
 | `mnci release --dry-run --comment` | on a pull request: the release preview, in the job summary and as a comment on the pull request |
 | `mnci ci pack` | on a push to the release branch: every project's `package` task into `dist/drop`, kept as the run's `drop` artifact |
+| `mnci ci native` | in a job per OS, after the ci job: lint, test, build and package the projects tagged native |
 | `mnci ci release` | on a push to the release branch: version, publish and tag |
 
 On GitHub Actions and Azure Pipelines output is grouped, failures are annotated,
@@ -86,6 +87,31 @@ and doctor report it when it is out of date.
 `mnci doctor` compares the tools on your machine with the pins: an older Go
 than `go.work` requires fails; a different Node.js major, venv Python or
 golangci-lint warns, since results may then differ from CI's.
+
+## Native projects
+
+A project tagged `native` must be built on each operating system rather than
+cross-compiled: a Go app using cgo, marked with a `// mnci:native` line at the
+top of its `go.mod` (its tasks then build with `CGO_ENABLED=1`). `mnci ci
+verify` and `mnci ci pack` leave native projects out; the generated pipelines
+add a `native` job that runs after the ci job on each OS and calls `mnci ci
+native`, which lints, tests, builds and packages them there and keeps
+`dist/drop` as the `native-<os>` artifact.
+
+A native app that releases (`[projects.<name>.release]`) gets no
+cross-compiled assets from the release: on a push that released it, each
+native job builds the app for its own platform and attaches the archive to
+the app's GitHub Release (GitHub Actions; the job needs `GITHUB_TOKEN`).
+
+```toml
+[ci]
+native_runners = ["ubuntu-latest", "windows-latest", "macos-latest"]  # the default
+native_linux_packages = ["libsqlite3-dev"]   # apt packages installed before building on Linux
+```
+
+On Azure Pipelines a workspace with a native project gets a `jobs:` pipeline:
+the ci job, and the native job with a matrix of runner images. Steps kept in
+the `mnci:slot` markers move with the job.
 
 ## Installing mnci in CI
 

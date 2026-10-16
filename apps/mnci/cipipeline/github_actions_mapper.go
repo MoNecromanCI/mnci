@@ -81,6 +81,49 @@ jobs:
 			fmt.Fprintf(&b, "          %s: ${{ secrets.%s }}\n", c.Env, c.Env)
 		}
 	}
+	if m.Native {
+		b.WriteString(githubNativeJob(m))
+	}
+	return b.String()
+}
+
+// githubNativeJob builds the native projects on every OS after the ci job,
+// so a release made there gets each platform's build attached.
+func githubNativeJob(m Model) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, `
+  native:
+    needs: ci
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [%s]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+`, strings.Join(m.NativeRunners, ", "))
+	for _, t := range m.Toolchains {
+		b.WriteString(githubSetup(t))
+	}
+	fmt.Fprintf(&b, `      - name: Install mnci
+        shell: bash
+        run: curl -fsSL %s | sh -s -- "$MNCI_VERSION"
+        env:
+          MNCI_VERSION: %s
+      - name: Setup
+        run: mnci ci setup
+      - name: Native
+        run: mnci ci native
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.os }}
+          path: dist/drop
+          if-no-files-found: ignore
+`, InstallScriptURL, m.MnciVersion)
 	return b.String()
 }
 

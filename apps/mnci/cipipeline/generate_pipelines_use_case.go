@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/MoNecromanCI/mnci/apps/mnci/release"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
@@ -39,7 +40,11 @@ func Collect(s *session.Session) (Contributions, error) {
 		if _, ok := p.Tasks[PackTask]; ok {
 			c.Pack = true
 		}
+		if release.Native(p) {
+			c.Native = true
+		}
 	}
+	c.NativeRunners, c.NativeLinuxPackages = s.Config.CI.NativeRunners, s.Config.CI.NativeLinuxPackages
 	if s.Config.Release.GitHubReleases {
 		c.Add(protocol.CIResult{Credentials: []protocol.Credential{{Env: "GITHUB_TOKEN", Description: "creates GitHub Releases and uploads their assets", Required: true}}})
 	}

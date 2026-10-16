@@ -19,7 +19,16 @@ type Model struct {
 	// Pack is true when a project has a package task: pushes to the release
 	// branch then run mnci ci pack and keep dist/drop as the "drop" artifact.
 	Pack bool
+	// Native is true when a project is tagged native: a job per OS then runs
+	// mnci ci native.
+	Native bool
+	// NativeRunners and NativeLinuxPackages configure that job.
+	NativeRunners       []string
+	NativeLinuxPackages []string
 }
+
+// DefaultNativeRunners build native projects on each OS.
+var DefaultNativeRunners = []string{"ubuntu-latest", "windows-latest", "macos-latest"}
 
 // Contributions are every plugin's CI needs for this workspace.
 type Contributions struct {
@@ -29,6 +38,10 @@ type Contributions struct {
 	Credentials []protocol.Credential
 	// Pack is true when a project has a package task.
 	Pack bool
+	// Native is true when a project is tagged native.
+	Native              bool
+	NativeRunners       []string
+	NativeLinuxPackages []string
 }
 
 // Add merges one plugin's contribution, keeping the first of duplicates.
@@ -56,7 +69,11 @@ func NewModel(c Contributions, mnciVersion, releaseBranch string) Model {
 	if mnciVersion == "" || mnciVersion == "dev" {
 		mnciVersion = "latest"
 	}
-	m := Model{MnciVersion: mnciVersion, ReleaseBranch: releaseBranch, Pack: c.Pack}
+	m := Model{MnciVersion: mnciVersion, ReleaseBranch: releaseBranch, Pack: c.Pack, Native: c.Native,
+		NativeRunners: c.NativeRunners, NativeLinuxPackages: c.NativeLinuxPackages}
+	if len(m.NativeRunners) == 0 {
+		m.NativeRunners = DefaultNativeRunners
+	}
 	m.Toolchains = append(m.Toolchains, c.Toolchains...)
 	sort.Slice(m.Toolchains, func(i, j int) bool { return m.Toolchains[i].Name < m.Toolchains[j].Name })
 	m.Credentials = append(m.Credentials, c.Credentials...)

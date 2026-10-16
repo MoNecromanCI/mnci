@@ -24,6 +24,10 @@ func Tasks(kind protocol.ProjectKind, importName string, mypy bool) map[string]p
 		tasks["build"] = protocol.Task{Command: []string{py, "-m", "build", "--outdir", "dist", "."}, Inputs: inputs, Outputs: []string{"dist"}, Cache: true, Description: "Build the wheel and sdist into dist/"}
 	case protocol.ProjectApp:
 		tasks["start"] = protocol.Task{Command: []string{py, "-m", importName}, Description: "Run the app"}
+		tasks["package"] = protocol.Task{
+			Command:     []string{py, "-m", "build", "--wheel", "--outdir", "{workspaceRoot}/dist/drop", "."},
+			Description: "Build the app's wheel into dist/drop (mnci ci pack)",
+		}
 	}
 	return tasks
 }

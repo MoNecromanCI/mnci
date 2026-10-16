@@ -43,15 +43,27 @@ steps:
     displayName: Verify
 `)
 	b.WriteString(slot("  ", "after-verify"))
-	fmt.Fprintf(&b, `  - bash: mnci release --dry-run --comment
+	b.WriteString(`  - bash: mnci release --dry-run --comment
     displayName: Release preview
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-  - bash: mnci ci release
+`)
+	onPush := fmt.Sprintf("and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'), eq(variables['Build.SourceBranch'], 'refs/heads/%s'))", m.ReleaseBranch)
+	if m.Pack {
+		fmt.Fprintf(&b, `  - bash: mnci ci pack
+    displayName: Pack
+    condition: %[1]s
+  - publish: dist/drop
+    artifact: drop
+    displayName: Keep the packed apps
+    condition: %[1]s
+`, onPush)
+	}
+	fmt.Fprintf(&b, `  - bash: mnci ci release
     displayName: Release
-    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'), eq(variables['Build.SourceBranch'], 'refs/heads/%s'))
-`, m.ReleaseBranch)
+    condition: %s
+`, onPush)
 	if len(m.Credentials) > 0 {
 		b.WriteString("    env:\n")
 		for _, c := range m.Credentials {

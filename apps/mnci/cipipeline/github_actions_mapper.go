@@ -53,12 +53,25 @@ jobs:
         run: mnci ci verify
 `)
 	b.WriteString(slot("      ", "after-verify"))
-	fmt.Fprintf(&b, `      - name: Release preview
+	b.WriteString(`      - name: Release preview
         if: github.event_name == 'pull_request'
         run: mnci release --dry-run --comment
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Release
+`)
+	if m.Pack {
+		fmt.Fprintf(&b, `      - name: Pack
+        if: github.event_name == 'push' && github.ref_name == '%[1]s'
+        run: mnci ci pack
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && github.ref_name == '%[1]s'
+        with:
+          name: drop
+          path: dist/drop
+          if-no-files-found: ignore
+`, m.ReleaseBranch)
+	}
+	fmt.Fprintf(&b, `      - name: Release
         if: github.event_name == 'push' && github.ref_name == '%s'
         run: mnci ci release
 `, m.ReleaseBranch)

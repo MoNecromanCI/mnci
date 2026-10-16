@@ -124,3 +124,25 @@ func TestThePreviewIsPostedOnPullRequests(t *testing.T) {
 		t.Errorf("Azure pipeline lacks the preview comment step:\n%s", az)
 	}
 }
+
+func TestPackOnlyWhenAProjectPackages(t *testing.T) {
+	m := model()
+	if strings.Contains(RenderGitHub(m), "mnci ci pack") || strings.Contains(RenderAzure(m), "mnci ci pack") {
+		t.Fatal("no project packages: no pack step")
+	}
+	m.Pack = true
+	gh, az := RenderGitHub(m), RenderAzure(m)
+	for _, want := range []string{"run: mnci ci pack", "uses: actions/upload-artifact@v4", "name: drop", "path: dist/drop", "if-no-files-found: ignore"} {
+		if !strings.Contains(gh, want) {
+			t.Errorf("GitHub workflow lacks %q", want)
+		}
+	}
+	for _, want := range []string{"bash: mnci ci pack", "publish: dist/drop", "artifact: drop", "refs/heads/main"} {
+		if !strings.Contains(az, want) {
+			t.Errorf("Azure pipeline lacks %q", want)
+		}
+	}
+	if strings.Index(gh, "mnci ci pack") > strings.Index(gh, "mnci ci release") {
+		t.Error("pack runs before release")
+	}
+}

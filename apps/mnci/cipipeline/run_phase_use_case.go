@@ -20,8 +20,14 @@ import (
 // VerifyTasks are what a pull request must pass.
 var VerifyTasks = []string{"lint", "typecheck", "test", "build"}
 
+// PackTask is the task that builds what a project deploys into dist/drop.
+const PackTask = "package"
+
+// DropDir is where packed deliverables go, workspace-relative.
+const DropDir = "dist/drop"
+
 // Phases lists `mnci ci` phases in pipeline order.
-var Phases = []string{"setup", "audit", "verify", "release"}
+var Phases = []string{"setup", "audit", "verify", "pack", "release"}
 
 // RunPhase runs one CI phase.
 func RunPhase(ctx context.Context, s *session.Session, phase string, out io.Writer) error {
@@ -34,8 +40,28 @@ func RunPhase(ctx context.Context, s *session.Session, phase string, out io.Writ
 		status = "failed"
 		annotate(out, phase, err)
 	}
-	fmt.Fprintf(out, "mnci ci %s %s in %s\n", phase, status, time.Since(begin).Round(time.Second))
+	took := time.Since(begin).Round(100 * time.Millisecond)
+	fmt.Fprintf(out, "mnci ci %s %s in %s\n", phase, status, took)
+	summarise(phase, err, took)
 	return err
+}
+
+// summarise adds the phase's outcome to the GitHub Actions job summary.
+func summarise(phase string, err error, took time.Duration) {
+	file := os.Getenv("GITHUB_STEP_SUMMARY")
+	if file == "" {
+		return
+	}
+	line := fmt.Sprintf("- ✅ **%s** passed in %s\n", phase, took)
+	if err != nil {
+		line = fmt.Sprintf("- ❌ **%s** failed after %s\n", phase, took)
+	}
+	f, openErr := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if openErr != nil {
+		return
+	}
+	defer func() { _ = f.Close() }()
+	_, _ = f.WriteString(line)
 }
 
 func runPhase(ctx context.Context, s *session.Session, phase string, out io.Writer) error {
@@ -65,6 +91,31 @@ func runPhase(ctx context.Context, s *session.Session, phase string, out io.Writ
 		if !summary.OK() {
 			return taskrun.ErrTasksFailed
 		}
+		return nil
+	case "pack":
+		// The directory always exists, so the artifact upload has a path.
+		if err := os.MkdirAll(filepath.Join(s.Root, filepath.FromSlash(DropDir)), 0o755); err != nil {
+			return err
+		}
+		packing := false
+		for _, p := range s.Graph.Projects {
+			if _, ok := p.Tasks[PackTask]; ok {
+				packing = true
+			}
+		}
+		if !packing {
+			fmt.Fprintln(out, "nothing to pack: no project has a package task")
+			return nil
+		}
+		summary, err := taskrun.RunInWorkspace(ctx, s, taskrun.Request{Tasks: []string{PackTask}, Out: out})
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(out, summary.String())
+		if !summary.OK() {
+			return taskrun.ErrTasksFailed
+		}
+		fmt.Fprintf(out, "packed into %s\n", DropDir)
 		return nil
 	case "release":
 		ensureIdentity(s)

@@ -63,6 +63,9 @@ func describe(workspaceRoot, root, manifest string) (protocol.Project, error) {
 	for script := range pkg.Scripts {
 		project.Tasks[script] = TaskFor(script, pkg.Scripts)
 	}
+	if _, own := pkg.Scripts["package"]; !own && project.Kind == protocol.ProjectApp {
+		project.Tasks["package"] = PackageTask(pkg.Scripts)
+	}
 	return project, nil
 }
 

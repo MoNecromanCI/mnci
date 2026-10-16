@@ -126,6 +126,9 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 		return err
 	}
 	res.Published, res.Registry, res.Publish, res.Assets = pr.Published, pr.Registry, pr.Skipped, pr.Assets
+	if err := deploy(s, p, item, opts.DryRun, say); err != nil {
+		return err
+	}
 	if opts.DryRun {
 		say("would release %s (%s)", item.Next, item.Reason)
 		if len(pr.Assets) > 0 {
@@ -208,6 +211,26 @@ func publish(s *session.Session, p *projectgraph.Project, item Item, dryRun bool
 		pr.Skipped = "published by its tag"
 	}
 	return pr, nil
+}
+
+// deploy publishes the project with each deploy plugin that ships it (a
+// container image to push), after its own plugin published it.
+func deploy(s *session.Session, p *projectgraph.Project, item Item, dryRun bool, say func(string, ...any)) error {
+	for _, plugin := range p.Deployers {
+		params := protocol.PublishParams{Project: p.Project, Version: item.Next, DryRun: dryRun}
+		var pr protocol.PublishResult
+		ok, err := s.Plugins.Call(plugin, protocol.MethodPublish, params, &pr, 30*time.Minute)
+		switch {
+		case err != nil:
+			return fmt.Errorf("deploying with %s: %w", plugin, err)
+		case !ok:
+		case pr.Published:
+			say("%s published %s to %s", plugin, item.Next, pr.Registry)
+		case pr.Skipped != "":
+			say("%s: %s", plugin, pr.Skipped)
+		}
+	}
+	return nil
 }
 
 // AssetSpec is what a plugin needs to build an app's release assets, or nil

@@ -79,6 +79,9 @@ func ApplyStacks(projects []*Project, plugins *pluginhost.PluginSet, catalog *pl
 		}
 		for _, n := range st.Plugins() {
 			merge(p, contributed[n].Projects[p.Name], fmt.Sprintf("plugin %s (stack %s)", n, st.Name))
+			if c := plugins.Get(n); c != nil {
+				p.addDeployer(n, c.Info, contributed[n].Projects[p.Name])
+			}
 		}
 	}
 	return nil

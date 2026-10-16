@@ -92,3 +92,27 @@ func TestApplyOverridesRecordsSources(t *testing.T) {
 		t.Fatal("an override of a missing task without a command must fail")
 	}
 }
+
+func TestDeployersRelease(t *testing.T) {
+	deploy := protocol.InitializeResult{Roles: []protocol.Role{protocol.RoleDeploy}}
+	image := protocol.Contribution{Tasks: map[string]protocol.Task{"image": {}}}
+	app := &Project{Project: protocol.Project{Kind: protocol.ProjectApp}}
+	if app.Releases() {
+		t.Fatal("an app releases only when it opts in or ships")
+	}
+	app.addDeployer("lint-only", protocol.InitializeResult{}, image)
+	app.addDeployer("docker", deploy, protocol.Contribution{})
+	if app.Releases() {
+		t.Fatal("a plugin without the deploy role, or a deploy plugin that added nothing, ships nothing")
+	}
+	app.addDeployer("docker", deploy, image)
+	app.addDeployer("docker", deploy, image)
+	if !app.Releases() || len(app.Deployers) != 1 {
+		t.Fatalf("an app a deploy plugin ships releases: %v", app.Deployers)
+	}
+	lib := &Project{Project: protocol.Project{Kind: protocol.ProjectLib}}
+	lib.addDeployer("docker", deploy, image)
+	if lib.Releases() {
+		t.Fatal("a lib never releases")
+	}
+}

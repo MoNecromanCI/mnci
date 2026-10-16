@@ -6,6 +6,7 @@ import (
 	bicepp "github.com/MoNecromanCI/mnci/libs/plugin-bicep/plugin"
 	cppp "github.com/MoNecromanCI/mnci/libs/plugin-cpp/plugin"
 	dartp "github.com/MoNecromanCI/mnci/libs/plugin-dart/plugin"
+	dockerp "github.com/MoNecromanCI/mnci/libs/plugin-docker/plugin"
 	dotnetp "github.com/MoNecromanCI/mnci/libs/plugin-dotnet/plugin"
 	gop "github.com/MoNecromanCI/mnci/libs/plugin-go/plugin"
 	"github.com/MoNecromanCI/mnci/libs/plugin-go/pluginkit"
@@ -57,6 +58,7 @@ var BuiltinAddons = map[string]func(version string) serve.Plugin{
 	astro.Name:      func(v string) serve.Plugin { return astro.New(v) },
 	vscode.Name:     func(v string) serve.Plugin { return vscode.New(v) },
 	pluginkit.Name:  func(v string) serve.Plugin { return pluginkit.New(v) },
+	dockerp.Name:    func(v string) serve.Plugin { return dockerp.New(v) },
 }
 
 // Builtin returns the constructor of a built-in plugin.

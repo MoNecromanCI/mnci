@@ -220,6 +220,23 @@ func TestGoldenPath(t *testing.T) {
 	}
 	w.mnci(true, "ci", "generate", "--check")
 
+	// mnci upgrade keeps the files mnci owns in line with mnci.toml: dropping
+	// a CI provider deletes its pipeline, which --check reports first.
+	toml, _ = os.ReadFile(filepath.Join(w.dir, "mnci.toml"))
+	w.write("mnci.toml", strings.Replace(string(toml), `providers = ["github", "azure"]`, `providers = ["github"]`, 1))
+	if out := w.mnci(false, "upgrade", "--check"); !strings.Contains(out, "would change: azure-pipelines.yml") {
+		t.Fatalf("upgrade --check:\n%s", out)
+	}
+	if out := w.mnci(true, "upgrade"); !strings.Contains(out, "upgraded: azure-pipelines.yml") {
+		t.Fatalf("upgrade:\n%s", out)
+	}
+	if _, err := os.Stat(filepath.Join(w.dir, "azure-pipelines.yml")); !os.IsNotExist(err) {
+		t.Fatal("the dropped provider's pipeline is deleted")
+	}
+	if out := w.mnci(true, "upgrade", "--check"); !strings.Contains(out, "up to date") {
+		t.Fatalf("upgrade --check after upgrade:\n%s", out)
+	}
+
 	// The phases the generated pipeline runs, exactly as CI runs them.
 	// probe is native (cgo): verify leaves it to the native job, which
 	// builds it on each OS.

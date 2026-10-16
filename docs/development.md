@@ -40,6 +40,7 @@ Core slices in `apps/mnci`:
 | `cipipeline` | pipeline model, renderers, `mnci ci` |
 | `nativebuild` | `mnci ci native`: build native (cgo) projects on each OS and attach their release assets |
 | `scaffold` | `mnci new`, `mnci add` |
+| `upgrade` | `mnci upgrade`: migrate mnci.toml, regenerate what mnci owns |
 | `nxworkspace`, `convertplan`, `convert` | read an Nx workspace, plan its conversion, apply it (`mnci convert`) |
 | `githubrelease` | GitHub Releases and their assets |
 | `slicecheck` | `mnci slices check`, the vertical-slices convention's check |

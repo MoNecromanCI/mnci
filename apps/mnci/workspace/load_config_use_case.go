@@ -76,6 +76,9 @@ func Validate(cfg *Config) error {
 	if cfg.Schema > SchemaVersion {
 		return fmt.Errorf("%s uses schema %d; this mnci reads up to %d, upgrade mnci", FileName, cfg.Schema, SchemaVersion)
 	}
+	if cfg.Schema < SchemaVersion {
+		return fmt.Errorf("%s uses schema %d, this mnci schema %d: run `mnci upgrade`", FileName, cfg.Schema, SchemaVersion)
+	}
 	if strings.TrimSpace(cfg.Workspace.Name) == "" {
 		return fmt.Errorf("%s: [workspace] name is required", FileName)
 	}

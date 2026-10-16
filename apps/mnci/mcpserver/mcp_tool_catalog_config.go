@@ -1,0 +1,240 @@
+package mcpserver
+
+import (
+	"fmt"
+	"strings"
+)
+
+// Tool is one MCP tool: what a client lists, and how its input becomes the
+// mnci arguments.
+type Tool struct {
+	Name        string
+	Description string
+	InputSchema map[string]any
+	// ReadOnly tools change nothing, so a client may run them without asking.
+	ReadOnly bool
+	Args     func(input map[string]any) ([]string, error)
+}
+
+func object(props map[string]any, required ...string) map[string]any {
+	s := map[string]any{"type": "object", "properties": props, "additionalProperties": false}
+	if len(required) > 0 {
+		s["required"] = required
+	}
+	return s
+}
+
+func str(description string) map[string]any {
+	return map[string]any{"type": "string", "description": description}
+}
+
+func boolean(description string) map[string]any {
+	return map[string]any{"type": "boolean", "description": description}
+}
+
+func list(description string) map[string]any {
+	return map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": description}
+}
+
+// word reads a string input that becomes one argument: no spaces, and not an
+// option, so an input cannot smuggle a flag in.
+func word(input map[string]any, key string) (string, error) {
+	v, ok := input[key].(string)
+	if !ok || v == "" || strings.HasPrefix(v, "-") || strings.ContainsAny(v, " \t\r\n") {
+		return "", fmt.Errorf("%q must be a non-empty string with no spaces that does not start with '-'", key)
+	}
+	return v, nil
+}
+
+func optional(input map[string]any, key string) (string, bool, error) {
+	if _, present := input[key]; !present {
+		return "", false, nil
+	}
+	v, err := word(input, key)
+	return v, err == nil, err
+}
+
+func words(input map[string]any, key string, required bool) ([]string, error) {
+	raw, present := input[key]
+	if !present {
+		if required {
+			return nil, fmt.Errorf("%q must list at least one value", key)
+		}
+		return nil, nil
+	}
+	items, ok := raw.([]any)
+	if !ok || (required && len(items) == 0) {
+		return nil, fmt.Errorf("%q must be a list of strings", key)
+	}
+	var out []string
+	for _, item := range items {
+		v, err := word(map[string]any{key: item}, key)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, v)
+	}
+	return out, nil
+}
+
+func flag(input map[string]any, key string) bool { v, _ := input[key].(bool); return v }
+
+func fixed(args ...string) func(map[string]any) ([]string, error) {
+	return func(map[string]any) ([]string, error) { return args, nil }
+}
+
+var noInput = object(map[string]any{})
+
+// Tools are the tools mnci mcp serves.
+var Tools = []Tool{
+	{Name: "mnci_projects", Description: "List the workspace's projects as JSON: name, directory, kind, language, stack, dependencies, tasks.", InputSchema: noInput, ReadOnly: true, Args: fixed("projects", "--json")},
+	{Name: "mnci_graph", Description: "The project graph as JSON (who imports whom); with focus, only those projects and everything connected to them.", ReadOnly: true,
+		InputSchema: object(map[string]any{"focus": list("projects to focus on: names, globs, kind:x, lang:x")}),
+		Args: func(in map[string]any) ([]string, error) {
+			focus, err := words(in, "focus", false)
+			args := []string{"graph", "--format", "json"}
+			if len(focus) > 0 {
+				args = append(args, "--focus", strings.Join(focus, ","))
+			}
+			return args, err
+		}},
+	{Name: "mnci_affected", Description: "The projects a change affects, as JSON, compared with a base branch (default: the release branch).", ReadOnly: true,
+		InputSchema: object(map[string]any{"base": str("the branch or commit to compare with")}),
+		Args: func(in map[string]any) ([]string, error) {
+			base, ok, err := optional(in, "base")
+			args := []string{"affected", "--json"}
+			if ok {
+				args = append(args, "--base", base)
+			}
+			return args, err
+		}},
+	{Name: "mnci_kinds", Description: "The kinds of project mnci_add_project can create, as JSON.", InputSchema: noInput, ReadOnly: true, Args: fixed("kinds", "--json")},
+	{Name: "mnci_stacks", Description: "The stacks a project can be built with (the plugins of each), and which projects use them.", InputSchema: noInput, ReadOnly: true, Args: fixed("stacks")},
+	{Name: "mnci_commands", Description: "Every mnci command with its arguments and options, as JSON.", InputSchema: noInput, ReadOnly: true, Args: fixed("commands", "--json")},
+	{Name: "mnci_info", Description: "The workspace and the mnci serving it, as JSON.", InputSchema: noInput, ReadOnly: true, Args: fixed("info", "--json")},
+	{Name: "mnci_doctor", Description: "Check the workspace's health, as JSON; every failed check names its remedy.", InputSchema: noInput, ReadOnly: true, Args: fixed("doctor", "--json")},
+	{Name: "mnci_release_preview", Description: "What the next release would version, tag and publish, as JSON; changes nothing.", InputSchema: noInput, ReadOnly: true, Args: fixed("release", "--dry-run", "--json")},
+	{Name: "mnci_updates", Description: "Declared dependencies with newer releases, grouped patch, minor and major, and the tools mnci pins against their newest releases, as JSON; changes nothing.", InputSchema: noInput, ReadOnly: true, Args: fixed("up", "--json")},
+	{Name: "mnci_run", Description: "Run tasks (build, test, lint, typecheck, or any task a project has) in dependency order, from the cache when nothing changed.",
+		InputSchema: object(map[string]any{
+			"tasks":    list("the tasks to run"),
+			"projects": list("the projects: names, globs, kind:x, lang:x; default every project"),
+			"affected": boolean("only the projects affected by changes since the release branch"),
+		}, "tasks"),
+		Args: func(in map[string]any) ([]string, error) {
+			tasks, err := words(in, "tasks", true)
+			if err != nil {
+				return nil, err
+			}
+			projects, err := words(in, "projects", false)
+			args := append([]string{"run"}, tasks...)
+			if len(projects) > 0 {
+				args = append(args, "-p", strings.Join(projects, ","))
+			}
+			if flag(in, "affected") {
+				args = append(args, "--affected")
+			}
+			return args, err
+		}},
+	{Name: "mnci_add_project", Description: "Add a project: kind app (deployed), lib (imported internally) or package (published), or a combined kind from mnci_kinds (node-app). Writes files, installs packages and regenerates the pipelines.",
+		InputSchema: object(map[string]any{
+			"kind":  str("app, lib, package, or a combined kind such as node-app"),
+			"name":  str("the project name, kebab-case"),
+			"lang":  str("node, go, python, or a language a plugin adds"),
+			"stack": str("the stack to build it with (see mnci_stacks); none for the language plugin alone"),
+		}, "kind", "name"),
+		Args: func(in map[string]any) ([]string, error) {
+			kind, err := word(in, "kind")
+			if err != nil {
+				return nil, err
+			}
+			name, err := word(in, "name")
+			if err != nil {
+				return nil, err
+			}
+			args := []string{"add", kind, name}
+			for _, key := range []string{"lang", "stack"} {
+				v, ok, err := optional(in, key)
+				if err != nil {
+					return nil, err
+				}
+				if ok {
+					args = append(args, "--"+key, v)
+				}
+			}
+			return args, nil
+		}},
+	{Name: "mnci_remove_project", Description: "Remove a project and its traces (go.work, the lockfile, the venv, mnci.toml). Refused while another project imports it. With dry_run, only says what would change.",
+		InputSchema: object(map[string]any{"name": str("the project"), "dry_run": boolean("report only")}, "name"),
+		Args: func(in map[string]any) ([]string, error) {
+			name, err := word(in, "name")
+			if flag(in, "dry_run") {
+				return []string{"remove", name, "--dry-run"}, err
+			}
+			return []string{"remove", name, "--yes"}, err
+		}},
+	{Name: "mnci_install", Description: "Add a package to one or more projects with each project's own toolchain (npm, pip, go). A dependency always belongs to a project, never the root.",
+		InputSchema: object(map[string]any{"package": str("the package, optionally with a version"), "projects": list("the projects, by name or directory"), "dev": boolean("a development dependency")}, "package", "projects"),
+		Args: func(in map[string]any) ([]string, error) {
+			pkg, err := word(in, "package")
+			if err != nil {
+				return nil, err
+			}
+			projects, err := words(in, "projects", true)
+			if err != nil {
+				return nil, err
+			}
+			args := []string{"install"}
+			for _, p := range projects {
+				args = append(args, "-w", p)
+			}
+			if flag(in, "dev") {
+				args = append(args, "-D")
+			}
+			return append(args, pkg), nil
+		}},
+	{Name: "mnci_uninstall", Description: "Remove a package from one or more projects with each project's own toolchain.",
+		InputSchema: object(map[string]any{"package": str("the package"), "projects": list("the projects, by name or directory")}, "package", "projects"),
+		Args: func(in map[string]any) ([]string, error) {
+			pkg, err := word(in, "package")
+			if err != nil {
+				return nil, err
+			}
+			projects, err := words(in, "projects", true)
+			if err != nil {
+				return nil, err
+			}
+			args := []string{"uninstall"}
+			for _, p := range projects {
+				args = append(args, "-w", p)
+			}
+			return append(args, pkg), nil
+		}},
+	{Name: "mnci_sync", Description: "Make every project declare a shared dependency at the same version, then install. With check, only report.",
+		InputSchema: object(map[string]any{"check": boolean("report without writing")}),
+		Args: func(in map[string]any) ([]string, error) {
+			if flag(in, "check") {
+				return []string{"sync", "--check"}, nil
+			}
+			return []string{"sync"}, nil
+		}},
+	{Name: "mnci_pipeline", Description: "Add a ready-made CI pipeline (e2e, package-zip, deploy-pages, deploy-azure-function); without a template, list them.",
+		InputSchema: object(map[string]any{"template": str("the template"), "project": str("the app a deploy template works on"), "ci": map[string]any{"type": "string", "enum": []string{"github", "azure", "both"}}}),
+		Args: func(in map[string]any) ([]string, error) {
+			args := []string{"pipeline"}
+			for _, key := range []string{"template", "project", "ci"} {
+				v, ok, err := optional(in, key)
+				if err != nil {
+					return nil, err
+				}
+				switch {
+				case !ok:
+				case key == "template":
+					args = append(args, v)
+				default:
+					args = append(args, "--"+key, v)
+				}
+			}
+			return args, nil
+		}},
+}

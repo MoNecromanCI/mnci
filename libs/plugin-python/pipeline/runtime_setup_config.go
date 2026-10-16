@@ -8,5 +8,8 @@ func runtime(version string) protocol.Toolchain {
 		Name: "python", Version: version,
 		GitHub: &protocol.ActionStep{Uses: "actions/setup-python@v5", Inputs: []protocol.Input{{Name: "python-version", Value: version}}},
 		Azure:  &protocol.ActionStep{Uses: "UsePythonVersion@0", Inputs: []protocol.Input{{Name: "versionSpec", Value: version}}},
+		Devcontainer: &protocol.DevcontainerFeature{
+			ID: "ghcr.io/devcontainers/features/python:1", Options: map[string]string{"version": version},
+		},
 	}
 }

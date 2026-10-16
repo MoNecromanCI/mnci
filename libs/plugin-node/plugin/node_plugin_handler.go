@@ -60,5 +60,5 @@ func (n *Node) CI(params protocol.CIParams) (protocol.CIResult, error) {
 
 // Doctor implements serve.DoctorContributor.
 func (n *Node) Doctor(params protocol.DoctorParams) (protocol.DoctorResult, error) {
-	return pipeline.Doctor(n.root, params), nil
+	return pipeline.Doctor(n.root, params, scaffolding.NodeVersion), nil
 }

@@ -9,13 +9,15 @@ import (
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
 
-// Doctor checks that dependencies are installed and that every Node project is
-// covered by the root package.json workspaces.
-func Doctor(workspaceRoot string, params protocol.DoctorParams) protocol.DoctorResult {
+// Doctor checks that Node.js is the version CI installs (nodeVersion), that
+// dependencies are installed and that every Node project is covered by the
+// root package.json workspaces.
+func Doctor(workspaceRoot string, params protocol.DoctorParams, nodeVersion string) protocol.DoctorResult {
 	var findings []protocol.Finding
 	if len(params.Projects) == 0 {
 		return protocol.DoctorResult{Findings: []protocol.Finding{}}
 	}
+	findings = append(findings, CheckNodeVersion(workspaceRoot, nodeVersion))
 	_, err := os.Stat(filepath.Join(workspaceRoot, "node_modules"))
 	findings = append(findings, protocol.Finding{
 		Check:  "Node dependencies are installed",

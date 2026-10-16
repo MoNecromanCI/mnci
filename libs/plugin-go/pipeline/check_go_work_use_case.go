@@ -30,11 +30,20 @@ func Doctor(workspaceRoot string, params protocol.DoctorParams) protocol.DoctorR
 			Detail: entry + " is listed in go.work but has no go.mod", Remedy: "remove `" + entry + "` from go.work (`go work edit -dropuse=./" + entry + "`)",
 		})
 	}
+	lints := false
 	for _, p := range params.Projects {
 		findings = append(findings, protocol.Finding{
 			Check: "go.work lists " + p.Root, OK: listed[p.Root],
 			Detail: p.Root + " has a go.mod but go.work does not use it", Remedy: "run `go work use ./" + p.Root + "`",
 		})
+		if lint, ok := p.Tasks["lint"]; ok && len(lint.Command) > 0 && lint.Command[0] == "golangci-lint" {
+			lints = true
+		}
 	}
+	required := work.GoVersion
+	if required == "" {
+		required = DefaultGoVersion
+	}
+	findings = append(findings, CheckToolVersions(workspaceRoot, required, lints)...)
 	return protocol.DoctorResult{Findings: findings}
 }

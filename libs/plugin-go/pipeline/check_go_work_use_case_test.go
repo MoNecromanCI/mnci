@@ -27,7 +27,7 @@ func TestDoctorFindsStaleAndMissingEntries(t *testing.T) {
 	for _, f := range res.Findings {
 		got[f.Check] = f.OK
 	}
-	want := map[string]bool{"go.work entry apps/api exists": true, "go.work entry libs/gone exists": false, "go.work lists apps/api": true, "go.work lists libs/new": false}
+	want := map[string]bool{"go.work entry apps/api exists": true, "go.work entry libs/gone exists": false, "go.work lists apps/api": true, "go.work lists libs/new": false, "Go is at least 1.24 (go.work)": true}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %v", got)
 	}
@@ -54,5 +54,44 @@ func TestCIInstallsGolangciLintOnlyWhenUsed(t *testing.T) {
 	}})
 	if len(res.Setup) != 2 || res.Setup[1].Command[2] != "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@"+GolangciLintVersion {
 		t.Fatalf("one pinned install: %+v", res.Setup)
+	}
+}
+
+func TestCheckToolVersions(t *testing.T) {
+	answers := map[string]string{}
+	real := probe
+	defer func() { probe = real }()
+	probe = func(_ string, argv []string) (string, error) {
+		if v, ok := answers[argv[0]]; ok {
+			return v, nil
+		}
+		return "", os.ErrNotExist
+	}
+	byCheck := func(fs []protocol.Finding) map[string]protocol.Finding {
+		m := map[string]protocol.Finding{}
+		for _, f := range fs {
+			m[f.Check] = f
+		}
+		return m
+	}
+	answers["go"] = "go1.23.4\n"
+	answers["golangci-lint"] = "golangci-lint has version 2.13.0 built with go1.26\n"
+	got := byCheck(CheckToolVersions(".", "1.24", true))
+	if f := got["Go is at least 1.24 (go.work)"]; f.OK || f.Warning {
+		t.Fatalf("an older Go fails: %+v", f)
+	}
+	if f := got["golangci-lint is 2.14.0, as in CI"]; f.OK || !f.Warning || f.Detail != "found: golangci-lint has version 2.13.0 built with go1.26" {
+		t.Fatalf("another golangci-lint warns: %+v", f)
+	}
+	answers["go"] = "go1.26.0"
+	answers["golangci-lint"] = "golangci-lint has version 2.14.0 built with go1.26"
+	for check, f := range byCheck(CheckToolVersions(".", "1.24", true)) {
+		if !f.OK {
+			t.Errorf("%s: %+v", check, f)
+		}
+	}
+	delete(answers, "go")
+	if f := byCheck(CheckToolVersions(".", "1.24", false))["Go is installed"]; f.OK {
+		t.Fatalf("a missing Go fails: %+v", f)
 	}
 }

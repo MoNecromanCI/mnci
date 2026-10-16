@@ -45,7 +45,7 @@ type Rules struct {
 	Production func(name string, in Dir) bool
 }
 
-var all = []Rules{goRules, pythonRules, dartRules, rustRules, rubyRules, cppRules, dotnetRules}
+var all = []Rules{goRules, pythonRules, dartRules, rustRules, rubyRules, cppRules, dotnetRules, jvmRules}
 
 // For returns a language's rules.
 func For(language string) (Rules, bool) {

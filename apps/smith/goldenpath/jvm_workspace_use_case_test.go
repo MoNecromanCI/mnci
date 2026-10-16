@@ -45,7 +45,7 @@ func TestJvmWorkspace(t *testing.T) {
 			t.Fatalf("%s did not pass:\n%s", want, out)
 		}
 	}
-	if out := w.smith(true, "run", "lint", "test"); !strings.Contains(out, "(4 from cache") {
+	if out := w.smith(true, "run", "lint", "test"); !strings.Contains(out, "(6 from cache") {
 		t.Fatalf("a re-run replays from the cache:\n%s", out)
 	}
 	if out := w.smith(true, "run", "start", "-p", "api"); !strings.Contains(out, "Hello, world! Hello, core!") {

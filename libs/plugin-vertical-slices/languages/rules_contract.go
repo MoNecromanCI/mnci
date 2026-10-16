@@ -1,0 +1,74 @@
+package languages
+
+import (
+	"regexp"
+	"sort"
+	"strings"
+)
+
+// Roles are the role suffixes a file may carry, in snake_case; a PascalCase
+// language spells them UseCase, Handler and so on.
+var Roles = []string{"handler", "use_case", "algorithm", "policy", "model", "contract", "mapper", "validator", "repository", "client", "store", "middleware", "error", "config", "enum"}
+
+// ForbiddenFolders are junk drawers: a folder is named for the outcome it
+// serves.
+var ForbiddenFolders = map[string]bool{"util": true, "utils": true, "helper": true, "helpers": true, "common": true, "shared": true, "manager": true, "processor": true, "data": true, "misc": true}
+
+// Dir is a folder being checked.
+type Dir struct {
+	// Rel is its path from the project root, with forward slashes; "" is
+	// the root.
+	Rel string
+	// Files are the names of the files in it.
+	Files map[string]bool
+	// Parent is the folder it is in; nil at the root.
+	Parent *Dir
+}
+
+// Rules are one language's vertical-slice layout. Every function is
+// optional except File.
+type Rules struct {
+	// Name is the language as its plugin names it (go, python, dart).
+	Name string
+	// Inputs are the globs the check reads, which key its cache.
+	Inputs []string
+	// Skip reports whether a folder holds nothing the rules check.
+	Skip func(name string, in Dir) bool
+	// Folder says why a folder's name breaks the rules, or "".
+	Folder func(name string, in Dir) string
+	// Source reports whether the rules look at a file at all.
+	Source func(name string, in Dir) bool
+	// File says why a source file breaks the rules, or "".
+	File func(name string, in Dir) string
+	// Production reports whether a source file counts toward its slice's
+	// size: code, not a test or a barrel.
+	Production func(name string, in Dir) bool
+}
+
+var all = []Rules{goRules, pythonRules}
+
+// For returns a language's rules.
+func For(language string) (Rules, bool) {
+	for _, r := range all {
+		if r.Name == language {
+			return r, true
+		}
+	}
+	return Rules{}, false
+}
+
+// Names lists the languages that have rules, sorted.
+func Names() []string {
+	var names []string
+	for _, r := range all {
+		names = append(names, r.Name)
+	}
+	sort.Strings(names)
+	return names
+}
+
+var (
+	roleAlternation = strings.Join(Roles, "|")
+	snakeName       = `[a-z][a-z0-9]*(?:_[a-z0-9]+)*`
+	snakeCase       = regexp.MustCompile(`^` + snakeName + `$`)
+)

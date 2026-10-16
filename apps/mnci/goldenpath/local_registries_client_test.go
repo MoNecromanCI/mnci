@@ -52,7 +52,18 @@ func startServer(t *testing.T, dir string, argv ...string) {
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = cmd.Process.Kill(); _ = cmd.Wait(); _ = log.Close() })
+	t.Cleanup(func() {
+		_ = cmd.Process.Kill()
+		_ = cmd.Wait()
+		_ = log.Close()
+		// A failed run shows what the server said: a registry that stopped
+		// answering otherwise leaves only the client's ECONNREFUSED.
+		if t.Failed() {
+			if text, err := os.ReadFile(log.Name()); err == nil {
+				t.Logf("%s server log:\n%s", filepath.Base(dir), text)
+			}
+		}
+	})
 }
 
 func waitFor(t *testing.T, url string) {
@@ -87,8 +98,10 @@ func startRegistries(t *testing.T, base string) registries {
 	config := "storage: ./storage\nauth:\n  htpasswd:\n    file: ./htpasswd\n    max_users: 100\nuplinks: {}\npackages:\n  '**':\n    access: $all\n    publish: $authenticated\nlog: { type: stdout, format: pretty, level: warn }\n"
 	_ = os.WriteFile(filepath.Join(npmDir, "config.yaml"), []byte(config), 0o644)
 	npmPort := freePort(t)
-	startServer(t, npmDir, "node", filepath.Join(npmDir, "node_modules", "verdaccio", "bin", "verdaccio"), "--config", "./config.yaml", "--listen", fmt.Sprint(npmPort))
-	npmURL := fmt.Sprintf("http://localhost:%d/", npmPort)
+	startServer(t, npmDir, "node", filepath.Join(npmDir, "node_modules", "verdaccio", "bin", "verdaccio"), "--config", "./config.yaml", "--listen", fmt.Sprintf("127.0.0.1:%d", npmPort))
+	// 127.0.0.1, not localhost: Node may resolve localhost to ::1 first,
+	// where nothing listens.
+	npmURL := fmt.Sprintf("http://127.0.0.1:%d/", npmPort)
 	waitFor(t, npmURL+"-/ping")
 	req, _ := http.NewRequest(http.MethodPut, npmURL+"-/user/org.couchdb.user:ci", strings.NewReader(`{"name":"ci","password":"ci-pass"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -114,8 +127,8 @@ func startRegistries(t *testing.T, base string) registries {
 	}
 	run(t, pyDir, py, "-m", "pip", "install", "--quiet", "pypiserver", "passlib")
 	pyPort := freePort(t)
-	startServer(t, pyDir, py, "-m", "pypiserver", "run", "-p", fmt.Sprint(pyPort), "-a", ".", "-P", ".", "packages")
-	pypiURL := fmt.Sprintf("http://localhost:%d/", pyPort)
+	startServer(t, pyDir, py, "-m", "pypiserver", "run", "-i", "127.0.0.1", "-p", fmt.Sprint(pyPort), "-a", ".", "-P", ".", "packages")
+	pypiURL := fmt.Sprintf("http://127.0.0.1:%d/", pyPort)
 	waitFor(t, pypiURL)
 	return registries{npmURL: npmURL, npmToken: user.Token, pypiURL: pypiURL}
 }

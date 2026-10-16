@@ -178,6 +178,8 @@ func (c *Client) Supports(method string) bool {
 		return caps.Doctor
 	case protocol.MethodContribute:
 		return caps.Contribute
+	case protocol.MethodRemove:
+		return caps.Remove
 	case protocol.MethodPublished:
 		return caps.Published
 	}

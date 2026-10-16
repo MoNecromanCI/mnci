@@ -13,6 +13,8 @@ const (
 	MethodDoctor     = "doctor"
 	// MethodContribute asks a convention plugin for its additions.
 	MethodContribute = "contribute"
+	// MethodRemove lets a plugin clean up after a project is removed.
+	MethodRemove = "remove"
 	// MethodPublished asks for the newest version a registry has of a
 	// project, so release can check its tags against it.
 	MethodPublished = "published"

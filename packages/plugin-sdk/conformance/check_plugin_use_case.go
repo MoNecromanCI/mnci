@@ -135,6 +135,11 @@ func generate(c *host.Client, ws string, r *Report) {
 			err := c.Call(protocol.MethodVersion, protocol.VersionParams{Project: p, Version: "1.2.3", DryRun: true}, &v, time.Minute)
 			r.add("writes the "+string(params.Kind)+"'s version (dry run)", err == nil, "%v", err)
 		}
+		if c.Supports(protocol.MethodRemove) {
+			var rm protocol.RemoveResult
+			err := c.Call(protocol.MethodRemove, protocol.RemoveParams{Project: p, DryRun: true}, &rm, time.Minute)
+			r.add("would remove the "+string(params.Kind)+" (dry run)", err == nil, "%v", err)
+		}
 		if params.Kind == protocol.ProjectPackage && c.Supports(protocol.MethodPublish) {
 			var pub protocol.PublishResult
 			err := c.Call(protocol.MethodPublish, protocol.PublishParams{Project: p, Version: "1.2.3", DryRun: true}, &pub, 5*time.Minute)

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
@@ -41,7 +42,7 @@ func TestCI(t *testing.T) {
 func TestCIWithGradle(t *testing.T) {
 	ws := t.TempDir()
 	res := CI(ws, protocol.CIParams{Projects: []protocol.Project{module(t, ws, "api", "build.gradle.kts", protocol.ProjectApp)}})
-	if len(res.Toolchains) != 2 || res.Toolchains[1].Name != "gradle" || res.Toolchains[1].GitHub.Inputs[0].Value != GradleVersion {
+	if g := res.Toolchains[len(res.Toolchains)-1]; len(res.Toolchains) != 2 || g.Name != "gradle" || g.GitHub != nil || !strings.Contains(g.Install, "gradle-"+GradleVersion+"-bin.zip") || !strings.Contains(g.Install, "GITHUB_PATH") {
 		t.Fatalf("Gradle is installed: %+v", res.Toolchains)
 	}
 	if res.Toolchains[0].GitHub.Inputs[2].Value != "gradle" || len(res.Setup) != 0 || len(res.Credentials) != 0 {

@@ -64,7 +64,7 @@ func TestKotlinWorkspace(t *testing.T) {
 	if out := w.mnci(true, "doctor"); !strings.Contains(out, "✔ Gradle is installed") || !strings.Contains(out, "✔ every build writes to dist/") {
 		t.Fatalf("doctor:\n%s", out)
 	}
-	if ci := w.read(".github/workflows/ci.yml"); !strings.Contains(ci, "gradle/actions/setup-gradle") || !strings.Contains(ci, "MAVEN_REPOSITORY_URL") {
+	if ci := w.read(".github/workflows/ci.yml"); !strings.Contains(ci, "gradle-9.8.1-bin.zip") || !strings.Contains(ci, "MAVEN_REPOSITORY_URL") {
 		t.Fatalf("ci.yml installs Gradle and passes the repository:\n%s", ci)
 	}
 

@@ -75,17 +75,20 @@ func runtime(version string, used buildTools) protocol.Toolchain {
 	}
 }
 
-// gradle installs Gradle at GradleVersion: setup-gradle on GitHub, the
-// distribution elsewhere. Azure runs the same script, so it also prepends
-// the path for the later steps (a logging command; plain output elsewhere).
+// gradle installs the Gradle distribution at GradleVersion on every
+// provider, and puts only its bin/ first on PATH: for the later steps on
+// GitHub ($GITHUB_PATH) and Azure (a logging command), for the rest of the
+// script elsewhere. setup-gradle is not used: when a Gradle is already on
+// PATH (/usr/bin on GitHub's Ubuntu image) it puts that directory first,
+// ahead of the Ruby, Python or .NET other steps installed.
 func gradle() protocol.Toolchain {
 	bin := "$HOME/gradle-" + GradleVersion + "/bin"
 	return protocol.Toolchain{
 		Name: "gradle", Version: GradleVersion,
-		GitHub: &protocol.ActionStep{Uses: "gradle/actions/setup-gradle@v6", Inputs: []protocol.Input{{Name: "gradle-version", Value: GradleVersion}}},
 		Install: "curl -fsSLo /tmp/gradle.zip https://services.gradle.org/distributions/gradle-" + GradleVersion + "-bin.zip\n" +
-			"unzip -q -d \"$HOME\" /tmp/gradle.zip && rm /tmp/gradle.zip\n" +
+			"unzip -q -o -d \"$HOME\" /tmp/gradle.zip && rm /tmp/gradle.zip\n" +
 			"export PATH=\"" + bin + ":$PATH\"\n" +
+			"if [ -n \"$GITHUB_PATH\" ]; then echo \"" + bin + "\" >> \"$GITHUB_PATH\"; fi\n" +
 			"echo \"##vso[task.prependpath]" + bin + "\"",
 	}
 }

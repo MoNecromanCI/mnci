@@ -50,6 +50,12 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+      # The jvm plugin's kotlin stack's e2e. First: where a Gradle is already
+      # on PATH (/usr/bin on Ubuntu) setup-gradle puts that directory first,
+      # and every later setup step must still win over it (setup-ruby).
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '9.8.1'
       - uses: actions/setup-go@v5
         with:
           go-version: '1.26'
@@ -87,10 +93,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      # The jvm plugin's kotlin stack's e2e.
-      - uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: '9.8.1'
       - name: New workspace, every kind in every language, build, test, release
         working-directory: apps/mnci
         run: go test -tags e2e -timeout 40m -v -skip 'TestConvert' ./goldenpath

@@ -54,6 +54,11 @@ type PublishResult struct {
 	// Assets are the workspace-relative files built for the release, in
 	// upload order; in a dry run, the files that would be built.
 	Assets []string `json:"assets,omitempty"`
+	// AssetPlatforms maps each archive among Assets to the "os/arch" it was
+	// built for, so the host can describe them (package manager manifests).
+	AssetPlatforms map[string]string `json:"assetPlatforms,omitempty"`
+	// Binary is the executable's name inside each archive, without ".exe".
+	Binary string `json:"binary,omitempty"`
 }
 
 // PublishedParams asks which version of a project its registry has.

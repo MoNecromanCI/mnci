@@ -122,7 +122,11 @@
               "platforms": { "type": "array", "items": { "type": "string", "pattern": "^[^/]+/[^/]+$" }, "description": "os/arch pairs." },
               "os_alias": { "type": "object", "additionalProperties": { "type": "string" } },
               "arch_alias": { "type": "object", "additionalProperties": { "type": "string" } },
-              "version_variable": { "type": "string", "description": "The symbol the version is stamped into. Default for Go: main.version." }
+              "version_variable": { "type": "string", "description": "The symbol the version is stamped into. Default for Go: main.version." },
+              "package_managers": { "type": "array", "items": { "enum": ["homebrew", "scoop", "winget"] }, "uniqueItems": true, "description": "Manifests generated from the assets and attached to the GitHub Release." },
+              "description": { "type": "string", "description": "What the app is, for the package manager manifests." },
+              "homepage": { "type": "string", "description": "The app's homepage. Default: the GitHub repository." },
+              "license": { "type": "string", "description": "An SPDX license identifier, e.g. MIT." }
             }
           },
           "tasks": { "type": "object", "additionalProperties": { "$ref": "#/definitions/task" } }

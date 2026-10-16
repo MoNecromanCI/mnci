@@ -46,6 +46,7 @@ func BuildAssets(workspaceRoot string, params protocol.PublishParams) (protocol.
 	}
 	outDir := filepath.Join(workspaceRoot, filepath.FromSlash(spec.OutDir))
 	var assets []string
+	platforms := map[string]string{}
 	var sums strings.Builder
 	if !params.DryRun {
 		if err := os.RemoveAll(outDir); err != nil {
@@ -65,6 +66,7 @@ func BuildAssets(workspaceRoot string, params protocol.PublishParams) (protocol.
 			return protocol.PublishResult{}, err
 		}
 		assets = append(assets, path.Join(spec.OutDir, name))
+		platforms[path.Join(spec.OutDir, name)] = platform
 		if params.DryRun {
 			continue
 		}
@@ -102,7 +104,7 @@ func BuildAssets(workspaceRoot string, params protocol.PublishParams) (protocol.
 	if native {
 		// Each OS attaches its own archive; one checksums file cannot cover
 		// builds made on different runners.
-		return protocol.PublishResult{Published: !params.DryRun, Assets: assets}, nil
+		return protocol.PublishResult{Published: !params.DryRun, Assets: assets, AssetPlatforms: platforms, Binary: p.Name}, nil
 	}
 	assets = append(assets, path.Join(spec.OutDir, ChecksumsFile))
 	if !params.DryRun {
@@ -110,7 +112,7 @@ func BuildAssets(workspaceRoot string, params protocol.PublishParams) (protocol.
 			return protocol.PublishResult{}, err
 		}
 	}
-	return protocol.PublishResult{Published: !params.DryRun, Assets: assets}, nil
+	return protocol.PublishResult{Published: !params.DryRun, Assets: assets, AssetPlatforms: platforms, Binary: p.Name}, nil
 }
 
 // zipFile writes an archive holding one executable at its root.

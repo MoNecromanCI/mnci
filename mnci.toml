@@ -24,6 +24,10 @@ github_releases = true
 [projects.mnci.release]
 asset_name = "{product}_{version}_{os}_{arch}.{ext}"
 product = "mnci"
+# Attached to each GitHub Release, ready for a tap, a bucket and winget-pkgs.
+package_managers = ["homebrew", "scoop", "winget"]
+description = "Runs a monorepo in Node, Go and Python: tasks from a cache, CI and releases"
+license = "MIT"
 
 [projects.mnci.tasks.build-dev]
 command = ["go", "build", "-gcflags=all=-N -l", "-o", "../../dist/dev/apps/mnci/mnci", "."]

@@ -57,7 +57,7 @@ generates CI pipelines, and releases packages from conventional commits.`,
 // Execute runs mnci and returns the process exit code.
 func Execute(version string, args []string) int {
 	if len(args) == 0 && tui.Interactive() {
-		chosen, err := tui.Choose(version, os.Stdout)
+		chosen, err := tui.Choose(version, os.Stdout, clicontract.DescribeCommands(Root(version)))
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "mnci: "+err.Error())
 			return 1

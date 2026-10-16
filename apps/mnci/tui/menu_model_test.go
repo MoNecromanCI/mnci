@@ -9,22 +9,27 @@ import (
 
 func keys(m tea.Model, ks ...string) tea.Model {
 	for _, k := range ks {
-		var msg tea.KeyMsg
-		switch k {
-		case "enter":
-			msg = tea.KeyMsg{Type: tea.KeyEnter}
-		case "down":
-			msg = tea.KeyMsg{Type: tea.KeyDown}
-		case "esc":
-			msg = tea.KeyMsg{Type: tea.KeyEsc}
-		case "space":
-			msg = tea.KeyMsg{Type: tea.KeySpace, Runes: []rune{' '}}
-		default:
-			msg = tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(k)}
-		}
-		m, _ = m.Update(msg)
+		m, _ = m.Update(keyMsg(k))
 	}
 	return m
+}
+
+func keyMsg(k string) tea.KeyMsg {
+	switch k {
+	case "enter":
+		return tea.KeyMsg{Type: tea.KeyEnter}
+	case "down":
+		return tea.KeyMsg{Type: tea.KeyDown}
+	case "esc":
+		return tea.KeyMsg{Type: tea.KeyEsc}
+	case "tab":
+		return tea.KeyMsg{Type: tea.KeyTab}
+	case "shift+tab":
+		return tea.KeyMsg{Type: tea.KeyShiftTab}
+	case "space":
+		return tea.KeyMsg{Type: tea.KeySpace, Runes: []rune{' '}}
+	}
+	return tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(k)}
 }
 
 func menu() Model {

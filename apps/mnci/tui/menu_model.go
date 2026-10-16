@@ -29,6 +29,13 @@ type Model struct {
 	err     string
 	// Argv is the chosen command, empty when the user quit.
 	Argv []string
+	// done is set when the menu has finished: a command chosen, or quit.
+	done bool
+}
+
+func (m Model) quit() (tea.Model, tea.Cmd) {
+	m.done = true
+	return m, tea.Quit
 }
 
 // NewModel builds the menu.
@@ -70,16 +77,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	switch key.String() {
 	case "ctrl+c":
-		return m, tea.Quit
+		return m.quit()
 	case "esc":
 		if m.action == nil {
-			return m, tea.Quit
+			return m.quit()
 		}
 		m.action, m.step, m.cursor, m.err = nil, 0, 0, ""
 		return m, nil
 	case "q":
 		if m.action == nil {
-			return m, tea.Quit
+			return m.quit()
 		}
 		m.action, m.step, m.cursor = nil, 0, 0
 		return m, nil
@@ -144,7 +151,7 @@ func (m Model) advance() (tea.Model, tea.Cmd) {
 	step := m.current()
 	if step == nil {
 		m.Argv = m.action.Argv(m.answers)
-		return m, tea.Quit
+		return m.quit()
 	}
 	if step.Multi {
 		for i, o := range step.Options {
@@ -161,8 +168,12 @@ func (m Model) advance() (tea.Model, tea.Cmd) {
 
 // View implements tea.Model.
 func (m Model) View() string {
+	return titleStyle.Render(m.header) + "\n\n" + m.body()
+}
+
+// body is the menu without its header line, for the shell.
+func (m Model) body() string {
 	var b strings.Builder
-	b.WriteString(titleStyle.Render(m.header) + "\n\n")
 	step := m.current()
 	switch {
 	case m.action == nil:

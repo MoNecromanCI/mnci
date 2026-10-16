@@ -32,8 +32,20 @@ curl -fsSL https://raw.githubusercontent.com/MoNecromanCI/mnci/main/install.sh |
 irm https://raw.githubusercontent.com/MoNecromanCI/mnci/main/install.ps1 | iex           # Windows PowerShell
 ```
 
+Or with the package manager of your language:
+
+```sh
+npm install --global mnci      # or @mnci/cli
+pipx install mnci              # or: uv tool install mnci, pip install mnci
+uvx mnci --version             # run it without installing
+go install github.com/MoNecromanCI/mnci/apps/mnci@latest
+```
+
 Or download a zip from the [releases](https://github.com/MoNecromanCI/mnci/releases).
-npm, PyPI, Homebrew and Scoop packages are planned (epic #18).
+A zip downloaded in a browser is not signed: macOS needs
+`xattr -d com.apple.quarantine mnci` before the first run, and Windows
+SmartScreen asks once. The other ways are not affected.
+Homebrew, Scoop, NuGet and pub.dev packages are planned (epic #18).
 
 ## What it does
 

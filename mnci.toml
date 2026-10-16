@@ -26,6 +26,10 @@ asset_name = "{product}_{version}_{os}_{arch}.{ext}"
 product = "mnci"
 # Attached to each GitHub Release, ready for a tap, a bucket and winget-pkgs.
 package_managers = ["homebrew", "scoop", "winget"]
+# Published from the same archives: npm i -g mnci (or @mnci/cli), and
+# pipx install mnci / uvx mnci.
+npm = ["@mnci/cli", "mnci"]
+pypi = "mnci"
 description = "Runs a monorepo in Node, Go and Python: tasks from a cache, CI and releases"
 license = "MIT"
 

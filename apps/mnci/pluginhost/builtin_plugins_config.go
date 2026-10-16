@@ -3,6 +3,7 @@ package pluginhost
 import (
 	"sort"
 
+	dotnetp "github.com/MoNecromanCI/mnci/libs/plugin-dotnet/plugin"
 	gop "github.com/MoNecromanCI/mnci/libs/plugin-go/plugin"
 	"github.com/MoNecromanCI/mnci/libs/plugin-go/pluginkit"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/eslint"
@@ -20,6 +21,7 @@ import (
 var Builtins = map[string]func(version string) serve.Plugin{
 	"node":   func(v string) serve.Plugin { return nodep.New(v) },
 	"go":     func(v string) serve.Plugin { return gop.New(v) },
+	"dotnet": func(v string) serve.Plugin { return dotnetp.New(v) },
 	"python": func(v string) serve.Plugin { return pythonp.New(v) },
 	"rust":   func(v string) serve.Plugin { return rustp.New(v) },
 }

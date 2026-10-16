@@ -164,7 +164,7 @@ func manifests(ws string, names []string) []string {
 		if d.IsDir() && p != ws && (strings.HasPrefix(d.Name(), ".") || d.Name() == "node_modules" || d.Name() == "__pycache__") {
 			return filepath.SkipDir
 		}
-		if !d.IsDir() && slices.Contains(names, d.Name()) {
+		if !d.IsDir() && protocol.IsManifest(names, d.Name()) {
 			rel, _ := filepath.Rel(ws, p)
 			if path.Dir(filepath.ToSlash(rel)) != "." {
 				out = append(out, filepath.ToSlash(rel))

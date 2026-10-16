@@ -4,8 +4,8 @@
 
 - **git**, always.
 - The toolchain of each language you use: **Node 24** (with npm), **Go 1.26**,
-  **Python 3.12+**, **Rust** (with clippy and rustfmt). mnci tells you what is
-  missing.
+  **Python 3.12+**, **Rust** (with clippy and rustfmt), the **.NET 10 SDK**.
+  mnci tells you what is missing.
 
 ## Create a workspace
 

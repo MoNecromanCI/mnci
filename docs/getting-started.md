@@ -22,6 +22,31 @@ Options: `--scope @acme` (npm scope), `--module-prefix github.com/acme/acme`
 (Go module prefix; by default it is derived from the `origin` remote) and
 `--ci github,azure`.
 
+## Or adopt an existing repository
+
+A repository with npm workspaces, Go modules or Python projects, but no
+`mnci.toml`, can be adopted (an Nx workspace is `mnci convert`'s):
+
+```sh
+mnci adopt                 # read-only: what adopting involves
+mnci adopt --tags --init   # take the steps
+```
+
+The report lists the projects mnci would see, then each blocker and warning
+with the step that clears it. For example, a project whose release tags were
+made under another name (`core@1.2.0` where mnci expects `libs/core/v1.2.0`)
+would otherwise start its next release from scratch. A pipeline of yours sits
+at a path mnci's uses. Root `package.json` runtime dependencies belong to the
+projects that import them. `mnci adopt` exits non-zero while something blocks.
+
+Both steps need a clean git tree. `--tags` creates the missing tags locally, on
+the same commits; pushing them is yours. `--init` writes `mnci.toml` (the
+name comes from the directory, the npm scope from the root `package.json`,
+and the CI providers are the ones the repository already uses) and the root
+files mnci needs, keeping yours and adding `.mnci/` to your `.gitignore`. It
+keeps your pipeline as `<file>.pre-mnci`, generates mnci's for the projects
+it found, and commits it all as `chore: adopt mnci`.
+
 ## Add projects
 
 ```sh

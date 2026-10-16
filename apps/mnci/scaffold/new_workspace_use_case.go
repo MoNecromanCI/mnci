@@ -25,6 +25,9 @@ type NewOptions struct {
 	Providers    []string
 	Version      string
 	Out          io.Writer
+	// NoCommit leaves the files uncommitted (mnci adopt commits once, after
+	// generating the pipelines for the projects it found).
+	NoCommit bool
 }
 
 // NewWorkspace creates a workspace: mnci.toml, the root files, a git
@@ -84,6 +87,11 @@ func NewWorkspace(opts NewOptions) (string, error) {
 		p := filepath.Join(dir, name)
 		if _, err := os.Stat(p); err == nil && name != workspace.FileName {
 			fmt.Fprintf(opts.Out, "  kept your %s\n", name)
+			if name == ".gitignore" {
+				if err := ignoreCache(p, opts.Out); err != nil {
+					return "", err
+				}
+			}
 			continue
 		} else if err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return "", err
@@ -100,12 +108,38 @@ func NewWorkspace(opts NewOptions) (string, error) {
 	for _, f := range written {
 		fmt.Fprintf(opts.Out, "  wrote %s\n", f)
 	}
+	if opts.NoCommit {
+		return dir, nil
+	}
 	if err := git.CommitAll("chore: create the " + opts.Name + " workspace with mnci"); err != nil {
 		fmt.Fprintf(opts.Out, "  not committed (%v); commit when ready\n", firstLine(err.Error()))
 	} else {
 		fmt.Fprintln(opts.Out, "  committed")
 	}
 	return dir, nil
+}
+
+// ignoreCache adds .mnci/ (the task cache) to a .gitignore mnci kept, unless
+// it already ignores it.
+func ignoreCache(path string, out io.Writer) error {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	for _, line := range strings.Split(string(raw), "\n") {
+		if l := strings.TrimSpace(line); l == ".mnci/" || l == ".mnci" || l == "/.mnci/" || l == "/.mnci" {
+			return nil
+		}
+	}
+	text := string(raw)
+	if text != "" && !strings.HasSuffix(text, "\n") {
+		text += "\n"
+	}
+	if err := os.WriteFile(path, []byte(text+"\n# mnci\n.mnci/\n"), 0o644); err != nil {
+		return err
+	}
+	fmt.Fprintln(out, "  added .mnci/ to your .gitignore")
+	return nil
 }
 
 // modulePrefixFromRemote derives github.com/<owner>/<repo> from the origin

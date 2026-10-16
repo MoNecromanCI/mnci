@@ -8,6 +8,15 @@ type Finding struct {
 	Message string `json:"message"`
 	// Blocking stops a release; otherwise it is a warning.
 	Blocking bool `json:"blocking"`
+	// Baseline is the tag that resolves it, when one can be made without
+	// asking anyone: the same commit, under the current name.
+	Baseline *Baseline `json:"baseline,omitempty"`
+}
+
+// Baseline is a release tag to create: Name on the commit Target names.
+type Baseline struct {
+	Name   string `json:"name"`
+	Target string `json:"target"`
 }
 
 // Subject is what the checks know about one releasable project.

@@ -3,6 +3,7 @@ package commandline
 import (
 	"errors"
 	"fmt"
+	"github.com/MoNecromanCI/mnci/apps/mnci/adoption"
 	"github.com/MoNecromanCI/mnci/apps/mnci/pipelinetemplate"
 	"os"
 
@@ -49,7 +50,7 @@ generates CI pipelines, and releases packages from conventional commits.`,
 			root.AddCommand(c)
 		}
 	}
-	add("start", scaffold.NewCommand(version), scaffold.AddCommand(version), scaffold.RemoveCommand(version), convert.Command(version), configedit.Command(), upgrade.Command(version))
+	add("start", scaffold.NewCommand(version), scaffold.AddCommand(version), scaffold.RemoveCommand(version), convert.Command(version), configedit.Command(), upgrade.Command(version), adoption.Command(version))
 	add("work", taskrun.Commands(version)...)
 	add("work", dependencies.Commands(version)...)
 	add("ship", release.Command(version), cipipeline.Command(version), pipelinetemplate.Command(version))
@@ -75,7 +76,7 @@ func Execute(version string, args []string) int {
 	root := Root(version)
 	root.SetArgs(args)
 	if err := root.Execute(); err != nil {
-		if !errors.Is(err, taskrun.ErrTasksFailed) && !errors.Is(err, doctor.ErrUnhealthy) {
+		if !errors.Is(err, taskrun.ErrTasksFailed) && !errors.Is(err, doctor.ErrUnhealthy) && !errors.Is(err, adoption.ErrBlocked) {
 			fmt.Fprintln(os.Stderr, "mnci: "+err.Error())
 		}
 		return 1

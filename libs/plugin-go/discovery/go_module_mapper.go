@@ -8,6 +8,7 @@ import (
 var (
 	modulePattern = regexp.MustCompile(`(?m)^module\s+"?([^\s"]+)"?\s*$`)
 	kindPattern   = regexp.MustCompile(`(?m)^//\s*mnci:kind\s+(\w+)\s*$`)
+	nativePattern = regexp.MustCompile(`(?m)^//\s*mnci:native\s*$`)
 	stackPattern  = regexp.MustCompile(`(?m)^//\s*mnci:stack\s+([\w.@/-]+)\s*$`)
 )
 
@@ -18,6 +19,9 @@ type Module struct {
 	Kind string
 	// Stack is the value of a "// mnci:stack <stack>" comment, if present.
 	Stack string
+	// Native is set by a "// mnci:native" comment: the module uses cgo, so
+	// it is built on each OS rather than cross-compiled.
+	Native bool
 }
 
 // ParseModule reads the module path, the declared kind and the stack from
@@ -34,5 +38,6 @@ func ParseModule(src string) (Module, error) {
 	if s := stackPattern.FindStringSubmatch(src); s != nil {
 		mod.Stack = s[1]
 	}
+	mod.Native = nativePattern.MatchString(src)
 	return mod, nil
 }

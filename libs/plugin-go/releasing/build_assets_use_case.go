@@ -9,8 +9,11 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
+	"slices"
 	"strings"
 
+	"github.com/MoNecromanCI/mnci/libs/plugin-go/discovery"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
 )
@@ -33,6 +36,7 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 func BuildAssets(workspaceRoot string, params protocol.PublishParams) (protocol.PublishResult, error) {
 	spec := *params.Assets
 	p := params.Project
+	native := slices.Contains(p.Tags, discovery.NativeTag)
 	if len(spec.Platforms) == 0 {
 		return protocol.PublishResult{}, fmt.Errorf("%s: no platforms to build assets for", p.Name)
 	}
@@ -71,7 +75,15 @@ func BuildAssets(workspaceRoot string, params protocol.PublishParams) (protocol.
 		built := filepath.Join(outDir, goos+"-"+goarch, binary)
 		argv := []string{"go", "build", "-trimpath", "-ldflags", "-s -w -X " + variable + "=" + params.Version, "-o", built, "."}
 		dir := filepath.Join(workspaceRoot, filepath.FromSlash(p.Root))
-		if err := toolrun.Run(dir, argv, "CGO_ENABLED=0", "GOOS="+goos, "GOARCH="+goarch); err != nil {
+		cgo := "CGO_ENABLED=0"
+		if native {
+			// cgo cannot cross-compile: a native app is built on each OS.
+			if goos != runtime.GOOS || goarch != runtime.GOARCH {
+				return protocol.PublishResult{}, fmt.Errorf("%s is native (cgo): build %s on a %s runner (mnci ci native)", p.Name, platform, platform)
+			}
+			cgo = "CGO_ENABLED=1"
+		}
+		if err := toolrun.Run(dir, argv, cgo, "GOOS="+goos, "GOARCH="+goarch); err != nil {
 			return protocol.PublishResult{}, fmt.Errorf("building %s: %w", platform, err)
 		}
 		archive := filepath.Join(outDir, name)
@@ -86,6 +98,11 @@ func BuildAssets(workspaceRoot string, params protocol.PublishParams) (protocol.
 		if err := os.RemoveAll(filepath.Dir(built)); err != nil {
 			return protocol.PublishResult{}, err
 		}
+	}
+	if native {
+		// Each OS attaches its own archive; one checksums file cannot cover
+		// builds made on different runners.
+		return protocol.PublishResult{Published: !params.DryRun, Assets: assets}, nil
 	}
 	assets = append(assets, path.Join(spec.OutDir, ChecksumsFile))
 	if !params.DryRun {

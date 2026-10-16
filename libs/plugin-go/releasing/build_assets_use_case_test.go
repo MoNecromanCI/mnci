@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -92,5 +93,33 @@ func TestBuildAssetsIsReproducible(t *testing.T) {
 	}
 	if first, second := build(), build(); first != second {
 		t.Fatalf("two builds differ:\n%s\n%s", first, second)
+	}
+}
+
+// A native (cgo) app is built on each OS: only for the runner's own
+// platform, without a checksums file one runner cannot complete.
+func TestBuildAssetsOfANativeApp(t *testing.T) {
+	if _, err := exec.LookPath("go"); err != nil {
+		t.Skip("go unavailable")
+	}
+	root := t.TempDir()
+	app := filepath.Join(root, "apps", "probe")
+	_ = os.MkdirAll(app, 0o755)
+	_ = os.WriteFile(filepath.Join(app, "go.mod"), []byte("// mnci:native\nmodule example.com/probe\n\ngo 1.26.0\n"), 0o644)
+	_ = os.WriteFile(filepath.Join(app, "main.go"), []byte("package main\n\nfunc main() {}\n"), 0o644)
+	host := runtime.GOOS + "/" + runtime.GOARCH
+	project := protocol.Project{Name: "probe", Root: "apps/probe", Tags: []string{"native"}}
+	params := protocol.PublishParams{Project: project, Version: "1.0.0", Assets: &protocol.AssetSpec{Platforms: []string{host}, OutDir: "dist/release/probe"}}
+	res, err := Publish(root, params)
+	if err != nil || len(res.Assets) != 1 || strings.Contains(res.Assets[0], "checksums") {
+		t.Fatalf("%+v %v", res, err)
+	}
+	other := "linux/arm64"
+	if host == other {
+		other = "windows/amd64"
+	}
+	params.Assets.Platforms = []string{other}
+	if _, err := Publish(root, params); err == nil || !strings.Contains(err.Error(), "native (cgo)") {
+		t.Fatalf("a native app cannot be cross-compiled: %v", err)
 	}
 }

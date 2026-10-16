@@ -50,6 +50,15 @@ func (w *workspace) write(rel, body string) {
 	}
 }
 
+func (w *workspace) read(rel string) string {
+	w.t.Helper()
+	b, err := os.ReadFile(filepath.Join(w.dir, filepath.FromSlash(rel)))
+	if err != nil {
+		w.t.Fatal(err)
+	}
+	return string(b)
+}
+
 func (w *workspace) git(args ...string) string {
 	w.t.Helper()
 	cmd := exec.Command("git", args...)
@@ -96,7 +105,7 @@ func TestGoldenPath(t *testing.T) {
 	w.write("mnci.toml", string(toml)+"\n[stacks.go-sliced]\nlanguage = \"go\"\nstructure = [\"vertical-slices\"]\n")
 	for _, add := range [][]string{
 		{"app", "web", "--lang", "node"}, {"lib", "ui", "--lang", "node"}, {"package", "sdk", "--stack", "node-vitest"}, {"app", "hello", "--lang", "node", "--stack", "none"},
-		{"app", "api", "--lang", "go"}, {"lib", "core", "--lang", "go"}, {"package", "gokit", "--stack", "go-sliced"},
+		{"app", "api", "--lang", "go"}, {"lib", "core", "--lang", "go"}, {"package", "gokit", "--stack", "go-sliced"}, {"app", "probe", "--lang", "go"},
 		{"app", "worker", "--lang", "python"}, {"python-lib", "pyutil"}, {"package", "pykit", "--lang", "python"},
 	} {
 		w.mnci(true, append([]string{"add"}, add...)...)
@@ -130,7 +139,7 @@ func TestGoldenPath(t *testing.T) {
 		t.Fatalf("projects --json lacks the extension's fields:\n%s", projects)
 	}
 	var list []struct{ Name, Kind, Language string }
-	if err := json.Unmarshal([]byte(projects[strings.Index(projects, "["):]), &list); err != nil || len(list) != 10 {
+	if err := json.Unmarshal([]byte(projects[strings.Index(projects, "["):]), &list); err != nil || len(list) != 11 {
 		t.Fatalf("projects: %v\n%s", err, projects)
 	}
 
@@ -195,9 +204,23 @@ func TestGoldenPath(t *testing.T) {
 	w.mnci(true, "ci", "generate", "--check")
 
 	// The phases the generated pipeline runs, exactly as CI runs them.
-	for _, phase := range []string{"setup", "audit", "verify", "pack"} {
-		if out := w.mnci(true, "ci", phase); !strings.Contains(out, "mnci ci "+phase+" passed") {
+	// probe is native (cgo): verify leaves it to the native job, which
+	// builds it on each OS.
+	gomod, _ := os.ReadFile(filepath.Join(w.dir, "apps", "probe", "go.mod"))
+	w.write("apps/probe/go.mod", "// mnci:native\n"+string(gomod))
+	if out := w.mnci(true, "ci", "generate"); !strings.Contains(w.read(".github/workflows/ci.yml"), "run: mnci ci native") {
+		t.Fatalf("no native job:\n%s", out)
+	}
+	for _, phase := range []string{"setup", "audit", "verify", "pack", "native"} {
+		out := w.mnci(true, "ci", phase)
+		if !strings.Contains(out, "mnci ci "+phase+" passed") {
 			t.Fatalf("ci %s:\n%s", phase, out)
+		}
+		if phase == "verify" && strings.Contains(out, "probe:") {
+			t.Fatalf("verify ran the native project:\n%s", out)
+		}
+		if phase == "native" && !strings.Contains(out, "probe:build") {
+			t.Fatalf("native did not build probe:\n%s", out)
 		}
 	}
 	// pack leaves each app's deliverable in dist/drop: an npm tarball with
@@ -211,7 +234,7 @@ func TestGoldenPath(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		exe = ".exe"
 	}
-	for _, want := range []string{filepath.Join("api", "api"+exe), "acme_worker-0.0.0-py3-none-any.whl", "acme-hello-0.0.0.tgz"} {
+	for _, want := range []string{filepath.Join("api", "api"+exe), filepath.Join("probe", "probe"+exe), "acme_worker-0.0.0-py3-none-any.whl", "acme-hello-0.0.0.tgz"} {
 		if _, err := os.Stat(filepath.Join(drop, want)); err != nil {
 			entries, _ := os.ReadDir(drop)
 			t.Fatalf("dist/drop lacks %s: %v", want, entries)

@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -146,10 +147,22 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 	return nil
 }
 
+// NativeTag marks a project built on each OS (mnci ci native), whose release
+// assets each native job attaches for its own platform.
+const NativeTag = "native"
+
+// Native reports whether a project is built on each OS.
+func Native(p *projectgraph.Project) bool { return slices.Contains(p.Tags, NativeTag) }
+
 // publish asks the project's plugin to publish it; an app with a release
-// configuration gets its assets built instead.
+// configuration gets its assets built instead, except a native app's, which
+// the native jobs build and attach.
 func publish(s *session.Session, p *projectgraph.Project, item Item, dryRun bool) (protocol.PublishResult, error) {
-	params := protocol.PublishParams{Project: p.Project, Version: item.Next, DryRun: dryRun, Assets: AssetSpec(p)}
+	spec := AssetSpec(p)
+	if Native(p) {
+		spec = nil
+	}
+	params := protocol.PublishParams{Project: p.Project, Version: item.Next, DryRun: dryRun, Assets: spec}
 	var pr protocol.PublishResult
 	ok, err := s.Plugins.Call(p.Plugin, protocol.MethodPublish, params, &pr, 30*time.Minute)
 	if err != nil {
@@ -209,7 +222,7 @@ func publishGitHubRelease(s *session.Session, p *projectgraph.Project, item Item
 	if err != nil {
 		return err
 	}
-	if assets == nil && p.Release != nil {
+	if assets == nil && p.Release != nil && !Native(p) {
 		existing, found, err := client.ReleaseByTag(repo, item.Tag)
 		if err != nil {
 			return err

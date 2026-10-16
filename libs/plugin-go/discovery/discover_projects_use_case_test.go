@@ -64,3 +64,18 @@ func TestParseModule(t *testing.T) {
 		t.Fatalf("%+v %v", m, err)
 	}
 }
+
+func TestANativeModuleIsTaggedAndBuildsWithCgo(t *testing.T) {
+	mod, err := ParseModule("// mnci:kind app\n// mnci:native\nmodule example.com/probe\n")
+	if err != nil || !mod.Native || mod.Kind != "app" {
+		t.Fatalf("%+v %v", mod, err)
+	}
+	if plain, _ := ParseModule("module example.com/x\n"); plain.Native {
+		t.Fatal("a module without the comment is not native")
+	}
+	for name, task := range Tasks("probe", protocol.ProjectApp, true) {
+		if task.Env["CGO_ENABLED"] != "1" {
+			t.Errorf("%s does not build with cgo", name)
+		}
+	}
+}

@@ -38,6 +38,7 @@ Core slices in `apps/mnci`:
 | `releaselineage` | decide whether release tags can be trusted: old names, published but untagged, behind the registry |
 | `releasepreview` | post the release preview on the pull request (GitHub, Azure Repos) |
 | `cipipeline` | pipeline model, renderers, `mnci ci` |
+| `nativebuild` | `mnci ci native`: build native (cgo) projects on each OS and attach their release assets |
 | `scaffold` | `mnci new`, `mnci add` |
 | `nxworkspace`, `convertplan`, `convert` | read an Nx workspace, plan its conversion, apply it (`mnci convert`) |
 | `githubrelease` | GitHub Releases and their assets |

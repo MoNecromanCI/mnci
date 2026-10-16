@@ -23,6 +23,8 @@ func Command(version string) *cobra.Command {
   verify   lint, typecheck, test and build — only affected projects on a pull request
   pack     run every project's package task into dist/drop, kept as the pipeline's
            "drop" artifact on pushes to the release branch
+  native   lint, test, build and package the projects tagged native (cgo) on this
+           OS; the pipeline runs it on each OS and, on a release, attaches the build
   release  version, publish and tag every package with releasable commits`,
 	}
 	for _, phase := range Phases {

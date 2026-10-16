@@ -1,3 +1,4 @@
+#:schema https://raw.githubusercontent.com/MoNecromanCI/mnci/main/apps/mnci/workspace/mnci.schema.json
 # mnci workspace configuration. Written by `mnci convert`; edit it freely or with the TUI.
 # Every setting is optional except [workspace] name; see docs/configuration.md.
 schema = 1

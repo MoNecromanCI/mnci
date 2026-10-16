@@ -80,7 +80,19 @@ func Commands(version string) []*cobra.Command {
 		},
 	}
 	info.Flags().BoolVar(&infoJSON, "json", false, "print the report as one JSON document")
-	return []*cobra.Command{commands, kinds, info}
+	schema := &cobra.Command{
+		Use:   "schema",
+		Short: "Print the JSON Schema of mnci.toml, for editors",
+		Long: `Print the JSON Schema of mnci.toml. Editors that read TOML schemas (Even Better
+TOML in VS Code) pick it up from the #:schema line mnci new writes at the top
+of mnci.toml; it is served at ` + workspace.SchemaURL + `.`,
+		Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			_, err := cmd.OutOrStdout().Write(workspace.Schema)
+			return err
+		},
+	}
+	return []*cobra.Command{commands, kinds, info, schema}
 }
 
 // plugins are the workspace's plugins, or the built-in ones outside a

@@ -4,6 +4,22 @@ One file at the workspace root, and the only one mnci reads. Its presence marks
 the workspace root. Every setting has a default; a typo in a key is an error,
 never a silently ignored setting.
 
+## Editor support
+
+`mnci.toml` has a JSON Schema: completion, hover docs and validation in any
+editor that reads TOML schemas. `mnci new` and `mnci convert` write its
+address as the first line,
+
+```toml
+#:schema https://raw.githubusercontent.com/MoNecromanCI/mnci/main/apps/mnci/workspace/mnci.schema.json
+```
+
+which Even Better TOML (VS Code) and other Taplo-based editors pick up. Add
+the line to an older workspace's `mnci.toml` to get the same. `mnci schema`
+prints the schema of the mnci you run, for tools that want it offline. The
+schema is versioned with the file: its `schema = 1` is the version it
+describes, and `mnci upgrade` migrates older files.
+
 ```toml
 schema = 1
 

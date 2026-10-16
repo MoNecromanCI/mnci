@@ -1,6 +1,9 @@
 package scaffold
 
-const configTemplate = `# mnci workspace configuration. Every setting below has a default; most
+import "github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+
+const configTemplate = `#:schema ` + workspace.SchemaURL + `
+# mnci workspace configuration. Every setting below has a default; most
 # workspaces need nothing more than a name. See docs/configuration.md.
 schema = 1
 

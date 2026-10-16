@@ -36,18 +36,32 @@ type Options struct {
 	Version string
 	// Log receives plugin output; nil means stderr.
 	Log io.Writer
+	// Preview opens Dir itself with this configuration instead of finding
+	// mnci.toml: a look at a repository before it is a workspace (mnci adopt).
+	Preview *workspace.Config
 }
 
 // Open finds the workspace containing opts.Dir and loads everything a command
 // needs. The caller must Close it.
 func Open(opts Options) (*Session, error) {
-	root, err := workspace.FindRoot(opts.Dir)
-	if err != nil {
-		return nil, err
-	}
-	cfg, err := workspace.Load(root)
-	if err != nil {
-		return nil, err
+	var root string
+	var cfg workspace.Config
+	if opts.Preview != nil {
+		dir, err := filepath.Abs(opts.Dir)
+		if err != nil {
+			return nil, err
+		}
+		root, cfg = dir, *opts.Preview
+	} else {
+		found, err := workspace.FindRoot(opts.Dir)
+		if err != nil {
+			return nil, err
+		}
+		loaded, err := workspace.Load(found)
+		if err != nil {
+			return nil, err
+		}
+		root, cfg = found, loaded
 	}
 	git := gitclient.New(root)
 	if !git.IsRepository() {

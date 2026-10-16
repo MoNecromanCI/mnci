@@ -199,6 +199,35 @@ func TestCheckCpp(t *testing.T) {
 	}
 }
 
+func TestCheckDotnet(t *testing.T) {
+	root := tree(t,
+		"Kit.csproj", "Program.cs", "GlobalUsings.cs", "Loose.cs",
+		"Greeting/Greeting.cs", "Greeting/GreetUseCase.cs", "Greeting/Stuff.cs", "Greeting/GreetForm.Designer.cs",
+		"Orders/IOrderRepository.cs", "orders_lower/PlaceOrderUseCase.cs", "Helpers/FormatMapper.cs",
+		"tests/Kit.Tests.csproj", "tests/Greeting/GreetUseCaseTests.cs", "tests/Testing/FakeClock.cs", "tests/Sample.cs",
+		"bin/Debug/x.cs", "obj/x.cs", "Properties/AssemblyInfo.cs",
+	)
+	r, err := Check(root, "dotnet")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := strings.Join(r.Problems, "\n")
+	for _, want := range []string{
+		"Loose.cs - the project's root holds Program.cs",
+		"Greeting/Stuff.cs - a file in a slice is <Name><Role>.cs",
+		"orders_lower/ - a .NET folder is a PascalCase namespace",
+		`Helpers/ - "Helpers" is a junk drawer`,
+		"tests/Sample.cs - a test is <Name>Tests.cs",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q in:\n%s", want, got)
+		}
+	}
+	if len(r.Problems) != 5 {
+		t.Errorf("want 5 problems, got:\n%s", got)
+	}
+}
+
 func TestCheckWarnsAboutLargeSlices(t *testing.T) {
 	var files []string
 	for i := range SliceSize + 1 {

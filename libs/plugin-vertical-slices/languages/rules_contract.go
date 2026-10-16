@@ -10,8 +10,8 @@ import (
 // language spells them UseCase, Handler and so on.
 var Roles = []string{"handler", "use_case", "algorithm", "policy", "model", "contract", "mapper", "validator", "repository", "client", "store", "middleware", "error", "config", "enum"}
 
-// ForbiddenFolders are junk drawers: a folder is named for the outcome it
-// serves.
+// ForbiddenFolders are junk drawers, in lowercase (Helpers/ is one too): a
+// folder is named for the outcome it serves.
 var ForbiddenFolders = map[string]bool{"util": true, "utils": true, "helper": true, "helpers": true, "common": true, "shared": true, "manager": true, "processor": true, "data": true, "misc": true}
 
 // Dir is a folder being checked.
@@ -45,7 +45,7 @@ type Rules struct {
 	Production func(name string, in Dir) bool
 }
 
-var all = []Rules{goRules, pythonRules, dartRules, rustRules, rubyRules, cppRules}
+var all = []Rules{goRules, pythonRules, dartRules, rustRules, rubyRules, cppRules, dotnetRules}
 
 // For returns a language's rules.
 func For(language string) (Rules, bool) {

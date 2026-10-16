@@ -18,14 +18,18 @@ var npm = struct {
 	run:    func(dir string, argv []string) error { return toolrun.Run(dir, argv) },
 }
 
-// Publish publishes one package with npm. A version the registry already has
-// is skipped, which is what makes a re-run after a partial release safe.
+// Publish publishes one package with npm, or a VS Code extension to the
+// Marketplace. A version the registry already has is skipped, which is what
+// makes a re-run after a partial release safe.
 func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.PublishResult, error) {
 	if len(params.Project.Exports) == 0 {
 		return protocol.PublishResult{}, errors.New("package.json has no name")
 	}
 	name := params.Project.Exports[0]
 	dir := filepath.Join(workspaceRoot, filepath.FromSlash(params.Project.Root))
+	if _, ok := Extension(dir); ok {
+		return publishExtension(workspaceRoot, params)
+	}
 	// npm refuses config and view inside a workspace package, so ask at the root.
 	registry, _ := npm.output(workspaceRoot, []string{"npm", "config", "get", "registry"})
 	result := protocol.PublishResult{Registry: strings.TrimSpace(registry)}

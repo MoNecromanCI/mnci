@@ -4,5 +4,5 @@
 // node-jest and node-vitest. typescript, vite, angular and astro scaffold
 // projects and build them: vite's are browser apps (its react, react-p5,
 // vue, svelte and html stacks), angular's an Angular app, astro's a
-// documentation site (docs-site).
+// documentation site (docs-site), vscode's a VS Code extension.
 package nodetoolchains

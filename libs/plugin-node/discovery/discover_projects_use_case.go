@@ -63,7 +63,9 @@ func describe(workspaceRoot, root, manifest string) (protocol.Project, error) {
 	for script := range pkg.Scripts {
 		project.Tasks[script] = TaskFor(script, root, pkg.Scripts)
 	}
-	if _, own := pkg.Scripts["package"]; !own && project.Kind == protocol.ProjectApp {
+	// An app, or a VS Code extension, is packed into dist/drop: the
+	// deliverable mnci ci pack keeps (a .vsix for an extension).
+	if _, own := pkg.Scripts["package"]; !own && (project.Kind == protocol.ProjectApp || pkg.Engines.VSCode != "") {
 		project.Tasks["package"] = PackageTask(root, pkg.Scripts)
 	}
 	return project, nil

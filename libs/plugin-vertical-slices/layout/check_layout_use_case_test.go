@@ -77,6 +77,38 @@ func TestCheckPython(t *testing.T) {
 	}
 }
 
+func TestCheckDart(t *testing.T) {
+	root := tree(t,
+		"pubspec.yaml",
+		"lib/kit.dart", "lib/main.dart",
+		"lib/src/greeting/greeting.dart", "lib/src/greeting/greet_use_case.dart", "lib/src/greeting/greeting_model.g.dart",
+		"lib/src/greeting/stuff.dart", "lib/src/loose.dart", "lib/src/Orders/place_order_use_case.dart", "lib/src/helpers/x_mapper.dart",
+		"bin/main.dart",
+		"test/src/greeting/greet_use_case_test.dart", "test/widget_test.dart", "test/testing/fake_clock.dart", "test/sample.dart",
+		"integration_test/app_test.dart",
+		"android/app/src/main/kotlin/Main.dart", "example/lib/whatever.dart", ".dart_tool/x.dart", "build/x.dart",
+	)
+	r, err := Check(root, "dart")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := strings.Join(r.Problems, "\n")
+	for _, want := range []string{
+		"lib/src/greeting/stuff.dart - a Dart file in a slice is <name>_<role>.dart",
+		"lib/src/loose.dart - lib/src holds slice folders",
+		"lib/src/Orders/ - a Dart folder is lowercase_with_underscores",
+		`lib/src/helpers/ - "helpers" is a junk drawer`,
+		"test/sample.dart - a test is <basename>_test.dart",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q in:\n%s", want, got)
+		}
+	}
+	if len(r.Problems) != 5 {
+		t.Errorf("want 5 problems, got:\n%s", got)
+	}
+}
+
 func TestCheckWarnsAboutLargeSlices(t *testing.T) {
 	var files []string
 	for i := range SliceSize + 1 {

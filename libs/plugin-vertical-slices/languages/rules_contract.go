@@ -45,7 +45,7 @@ type Rules struct {
 	Production func(name string, in Dir) bool
 }
 
-var all = []Rules{goRules, pythonRules}
+var all = []Rules{goRules, pythonRules, dartRules}
 
 // For returns a language's rules.
 func For(language string) (Rules, bool) {

@@ -228,6 +228,36 @@ func TestCheckDotnet(t *testing.T) {
 	}
 }
 
+func TestCheckJvm(t *testing.T) {
+	root := tree(t,
+		"build.gradle.kts", "settings.gradle.kts", "buildSrc/src/main/kotlin/Conventions.kt",
+		"src/main/kotlin/com/acme/kit/Main.kt", "src/main/kotlin/com/acme/kit/MainActivity.kt",
+		"src/main/kotlin/com/acme/kit/greeting/GreetUseCase.kt", "src/main/kotlin/com/acme/kit/greeting/Stuff.kt",
+		"src/main/java/com/acme/kit/orders/OrderTotalPolicy.java", "src/main/java/com/acme/kit/BadPkg/PlaceOrderUseCase.java",
+		"src/main/kotlin/com/acme/kit/util/FormatMapper.kt", "src/main/res/layout/x.kt",
+		"src/test/kotlin/com/acme/kit/greeting/GreetUseCaseTest.kt", "src/test/kotlin/com/acme/kit/testing/FakeClock.kt",
+		"src/test/kotlin/com/acme/kit/Sample.kt", "src/androidTest/kotlin/com/acme/kit/GreetIT.kt",
+	)
+	r, err := Check(root, "jvm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := strings.Join(r.Problems, "\n")
+	for _, want := range []string{
+		"src/main/kotlin/com/acme/kit/greeting/Stuff.kt - a class in a slice is <Name><Role>",
+		"src/main/java/com/acme/kit/BadPkg/ - a package is lowercase",
+		`src/main/kotlin/com/acme/kit/util/ - "util" is a junk drawer`,
+		"src/test/kotlin/com/acme/kit/Sample.kt - a test is <Name>Test",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q in:\n%s", want, got)
+		}
+	}
+	if len(r.Problems) != 4 {
+		t.Errorf("want 4 problems, got:\n%s", got)
+	}
+}
+
 func TestCheckWarnsAboutLargeSlices(t *testing.T) {
 	var files []string
 	for i := range SliceSize + 1 {

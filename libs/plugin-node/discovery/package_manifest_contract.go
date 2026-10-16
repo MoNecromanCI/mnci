@@ -10,7 +10,10 @@ type PackageManifest struct {
 	DevDependencies      map[string]string `json:"devDependencies"`
 	PeerDependencies     map[string]string `json:"peerDependencies"`
 	OptionalDependencies map[string]string `json:"optionalDependencies"`
-	Mnci                 struct {
+	Engines              struct {
+		VSCode string `json:"vscode"`
+	} `json:"engines"`
+	Mnci struct {
 		Kind  string `json:"kind"`
 		Stack string `json:"stack"`
 	} `json:"mnci"`

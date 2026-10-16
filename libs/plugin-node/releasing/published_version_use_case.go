@@ -1,6 +1,7 @@
 package releasing
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
@@ -13,11 +14,14 @@ var capture = func(dir string, argv []string) (string, string, error) {
 }
 
 // Published asks the registry .npmrc points at for the newest version of a
-// package. A package the registry does not know (E404) is not published yet;
+// package, or the Marketplace for a VS Code extension's. A package the registry does not know (E404) is not published yet;
 // any other failure means the registry could not be asked.
 func Published(workspaceRoot string, params protocol.PublishedParams) (protocol.PublishedResult, error) {
 	if len(params.Project.Exports) == 0 {
 		return protocol.PublishedResult{}, nil
+	}
+	if m, ok := Extension(filepath.Join(workspaceRoot, filepath.FromSlash(params.Project.Root))); ok {
+		return publishedExtension(workspaceRoot, m), nil
 	}
 	name := params.Project.Exports[0]
 	registry, _, _ := capture(workspaceRoot, []string{"npm", "config", "get", "registry"})

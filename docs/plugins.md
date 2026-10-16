@@ -86,6 +86,11 @@ that have commands. In Go, run the same checks in your tests with
 `conformance.Check` (`packages/plugin-sdk/conformance`) over an in-process
 connection. Every built-in plugin passes it.
 
+The quickest start is a scaffold: `mnci add app my-plugin --stack
+go-mnci-plugin` writes a Go module that is a working plugin (a structure
+plugin giving projects a `hello` task) on the SDK, with a conformance test,
+and its README says how to declare it.
+
 In Go, the SDK (`github.com/MoNecromanCI/mnci/packages/plugin-sdk`) does the
 protocol for you:
 

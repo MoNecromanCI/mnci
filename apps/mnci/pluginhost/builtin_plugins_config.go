@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	gop "github.com/MoNecromanCI/mnci/libs/plugin-go/plugin"
+	"github.com/MoNecromanCI/mnci/libs/plugin-go/pluginkit"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/eslint"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/jest"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/typescript"
@@ -31,6 +32,7 @@ var BuiltinAddons = map[string]func(version string) serve.Plugin{
 	jest.Name:       func(v string) serve.Plugin { return jest.New(v) },
 	vitest.Name:     func(v string) serve.Plugin { return vitest.New(v) },
 	typescript.Name: func(v string) serve.Plugin { return typescript.New(v) },
+	pluginkit.Name:  func(v string) serve.Plugin { return pluginkit.New(v) },
 }
 
 // Builtin returns the constructor of a built-in plugin.

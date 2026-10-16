@@ -1,5 +1,7 @@
 package protocol
 
+import "path"
+
 // InitializeParams is sent once, first, by the host.
 type InitializeParams struct {
 	// ProtocolVersions lists every major version the host can speak.
@@ -18,8 +20,9 @@ type InitializeResult struct {
 	Capabilities    Capabilities `json:"capabilities"`
 	// Languages are the values a user passes to --lang to reach this plugin.
 	Languages []string `json:"languages,omitempty"`
-	// Manifests are file base names (package.json, go.mod) whose presence in a
-	// directory may make it a project of this plugin.
+	// Manifests are file base names (package.json, go.mod), or patterns of
+	// them (*.csproj), whose presence in a directory may make it a project of
+	// this plugin.
 	Manifests []string `json:"manifests,omitempty"`
 	// Roles are what the plugin can be in a stack. Empty means the default
 	// of its kind (see DefaultRoles).
@@ -77,4 +80,18 @@ type Capabilities struct {
 	Declarations bool `json:"declarations,omitempty"`
 	// Latest reports the newest releases of dependencies and pinned tools.
 	Latest bool `json:"latest,omitempty"`
+}
+
+// IsManifest reports whether a file's base name is one of a plugin's
+// manifests: equal to a name, or matching a pattern (*.csproj).
+func IsManifest(manifests []string, base string) bool {
+	for _, m := range manifests {
+		if m == base {
+			return true
+		}
+		if ok, _ := path.Match(m, base); ok {
+			return true
+		}
+	}
+	return false
 }

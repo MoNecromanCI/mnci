@@ -23,13 +23,9 @@ func Discover(files []string, plugins *pluginhost.PluginSet, catalog *pluginhost
 		if !c.Info.Capabilities.Discover {
 			continue
 		}
-		wanted := map[string]bool{}
-		for _, m := range c.Info.Manifests {
-			wanted[m] = true
-		}
 		var manifests []string
 		for _, f := range files {
-			if wanted[path.Base(f)] {
+			if protocol.IsManifest(c.Info.Manifests, path.Base(f)) {
 				manifests = append(manifests, f)
 			}
 		}

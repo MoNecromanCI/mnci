@@ -12,6 +12,7 @@ with through its [stack](stacks.md).
 |---|---|---|---|
 | `node` | language (+ default toolchain, scaffold) | `package.json` projects (npm workspaces); every package.json script is a task; scaffolds plain JavaScript | `npm publish`, skipping an existing version |
 | `go` | language (+ default toolchain, scaffold) | `go.mod` projects (in a root `go.work`); `go build`, `go test`, `go vet` | a `<dir>/vX.Y.Z` module tag |
+| `dotnet` | language (+ default toolchain, scaffold) | `*.csproj`/`*.fsproj` projects, each with its `tests/` project; `dotnet build`, `test`, `format --verify-no-changes` (lint), `pack`; bin/ and obj/ under `dist/dotnet` | `dotnet nuget push` of packages (`NUGET_API_KEY`), skipping a version the feed has |
 | `python` | language (+ default toolchain, scaffold) | `pyproject.toml` projects (src layout); one root `.venv`, Ruff, pytest, PyPA `build` | `twine upload` of files the index lacks |
 | `rust` | language (+ default toolchain, scaffold) | `Cargo.toml` crates in a root Cargo workspace; `cargo build`, `test`, `clippy` (lint), `check` (typecheck), `fmt --check` (format), `package`; every build under `dist/cargo` | `cargo publish` of package crates (`CARGO_REGISTRY_TOKEN`) |
 | `typescript` | scaffold and toolchain, provides `build`, `typecheck`; publishes `node-ts` | scaffolds TypeScript projects that build and type-check with `tsc` | — |

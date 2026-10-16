@@ -31,7 +31,9 @@ jobs:
         shell: bash
         run: |
           set -e
-          for m in apps/mnci libs/plugin-dotnet libs/plugin-node libs/plugin-node-toolchains libs/plugin-go libs/plugin-python libs/plugin-rust libs/plugin-vertical-slices packages/plugin-sdk; do
+          # Every module go.work uses, so a new plugin is tested without
+          # listing it here.
+          for m in $(go work edit -json | sed -n 's/.*"DiskPath": "\.\/\(.*\)".*/\1/p'); do
             echo "::group::$m"
             (cd "$m" && go vet ./... && go test -race=false ./...)
             echo "::endgroup::"
@@ -62,6 +64,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      # The ruby plugin's e2e.
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
       - name: New workspace, every kind in every language, build, test, release
         working-directory: apps/mnci
         run: go test -tags e2e -timeout 40m -v -skip 'TestConvert' ./goldenpath

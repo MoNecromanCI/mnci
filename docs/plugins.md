@@ -14,6 +14,7 @@ with through its [stack](stacks.md).
 | `go` | language (+ default toolchain, scaffold) | `go.mod` projects (in a root `go.work`); `go build`, `go test`, `go vet` | a `<dir>/vX.Y.Z` module tag |
 | `dotnet` | language (+ default toolchain, scaffold) | `*.csproj`/`*.fsproj` projects, each with its `tests/` project; `dotnet build`, `test`, `format --verify-no-changes` (lint), `pack`; bin/ and obj/ under `dist/dotnet` | `dotnet nuget push` of packages (`NUGET_API_KEY`), skipping a version the feed has |
 | `python` | language (+ default toolchain, scaffold) | `pyproject.toml` projects (src layout); one root `.venv`, Ruff, pytest, PyPA `build` | `twine upload` of files the index lacks |
+| `ruby` | language (+ default toolchain, scaffold) | gems (`*.gemspec`) the root `Gemfile` lists with `gemspec path:`, one Bundler resolution; RuboCop (lint), RSpec (test), `exe/` (start) | `gem build` into `dist/<gem dir>`, then `gem push` (`GEM_HOST_API_KEY`) |
 | `rust` | language (+ default toolchain, scaffold) | `Cargo.toml` crates in a root Cargo workspace; `cargo build`, `test`, `clippy` (lint), `check` (typecheck), `fmt --check` (format), `package`; every build under `dist/cargo` | `cargo publish` of package crates (`CARGO_REGISTRY_TOKEN`) |
 | `typescript` | scaffold and toolchain, provides `build`, `typecheck`; publishes `node-ts` | scaffolds TypeScript projects that build and type-check with `tsc` | — |
 | `eslint` | toolchain, provides `lint` | Node projects lint with ESLint and `@mnci/eslint-config` (TypeScript rules, Standard style, vertical slices) | — |

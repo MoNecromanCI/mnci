@@ -30,7 +30,7 @@ with through its [stack](stacks.md).
 | `jest` | toolchain, provides `test`; publishes `node-jest` | Node projects test with Jest (`ts-jest`) | — |
 | `vitest` | toolchain, provides `test`; publishes `node-vitest` | Node projects test with Vitest | — |
 | `docker` | deploy, a convention for every language (`[conventions.docker]`) | an `image` task (`docker build`, the workspace as context, after `build`) for every app with a `Dockerfile`; writes one for a new Go app (built in Docker, shipped on distroless) or static web app (nginx serving `dist/<app dir>`) | the release builds the image tagged with the version and `latest` and pushes both to `CONTAINER_REGISTRY` (`CONTAINER_USERNAME`, `CONTAINER_PASSWORD`); an app with a `Dockerfile` releases without a `[release]` section |
-| `vertical-slices` | structure | a `slice-check` task for Go and Python projects, run before `lint` | — |
+| `vertical-slices` | structure | a `slice-check` task for Go, Python, Dart, Rust, Ruby, C++, .NET, JVM and PHP projects, run before `lint`, in each language's own file-naming style | — |
 
 Built-in plugins ship inside the `smith` binary but still run as separate
 processes (`smith plugin serve <name>`), speaking the same protocol an external

@@ -20,6 +20,7 @@ import (
 	"github.com/MoNecromanCI/mnci/apps/mnci/stackview"
 	"github.com/MoNecromanCI/mnci/apps/mnci/taskrun"
 	"github.com/MoNecromanCI/mnci/apps/mnci/tui"
+	"github.com/MoNecromanCI/mnci/apps/mnci/upgrade"
 	"github.com/MoNecromanCI/mnci/apps/mnci/whymiss"
 	"github.com/spf13/cobra"
 )
@@ -47,7 +48,7 @@ generates CI pipelines, and releases packages from conventional commits.`,
 			root.AddCommand(c)
 		}
 	}
-	add("start", scaffold.NewCommand(version), scaffold.AddCommand(version), scaffold.RemoveCommand(version), convert.Command(version), configedit.Command())
+	add("start", scaffold.NewCommand(version), scaffold.AddCommand(version), scaffold.RemoveCommand(version), convert.Command(version), configedit.Command(), upgrade.Command(version))
 	add("work", taskrun.Commands(version)...)
 	add("work", dependencies.Commands(version)...)
 	add("ship", release.Command(version), cipipeline.Command(version))

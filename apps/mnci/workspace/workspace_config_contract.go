@@ -150,6 +150,13 @@ type ProjectRelease struct {
 	// VersionVariable is the symbol the version is stamped into. Default for
 	// Go: main.version.
 	VersionVariable string `toml:"version_variable"`
+	// PackageManagers are the manifests generated from the assets and
+	// attached to the GitHub Release: homebrew, scoop, winget.
+	PackageManagers []string `toml:"package_managers"`
+	// Description, Homepage and License describe the app in those manifests.
+	Description string `toml:"description"`
+	Homepage    string `toml:"homepage"`
+	License     string `toml:"license"`
 }
 
 // TaskOverride replaces individual fields of a plugin-inferred task. Unset

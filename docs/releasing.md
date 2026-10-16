@@ -60,6 +60,31 @@ caused only by a dependency says so. The notes end by thanking the commits'
 authors, bots aside. `mnci release --dry-run --notes` prints them before
 anything is released.
 
+## Package managers
+
+An app released with assets can also get the manifests package managers
+install it from, generated from the archives and their checksums, and attached
+to the GitHub Release beside them:
+
+```toml
+[projects.cli.release]
+package_managers = ["homebrew", "scoop", "winget"]
+description = "What the app does"
+license = "MIT"
+homepage = "https://cli.acme.dev"   # default: the GitHub repository
+```
+
+| Manager | Files | Where they go |
+|---|---|---|
+| Homebrew | `<product>.rb` (macOS and Linux, Apple silicon and Intel) | `Formula/` in your tap |
+| Scoop | `<product>.json` (64-bit and arm64) | your bucket |
+| winget | `<Owner>.<product>.yaml`, `.installer.yaml`, `.locale.en-US.yaml` (a portable zip) | a pull request to `microsoft/winget-pkgs` |
+
+They point at the release's own archives with their SHA-256, so each one can
+be copied into a tap, a bucket or winget-pkgs as it is. A manager whose
+platforms the release has no archive for is skipped, and the release says so.
+Native apps attach one archive per OS from separate jobs and get no manifests.
+
 ## Tags
 
 | Language | Tag | Why |

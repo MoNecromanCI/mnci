@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/githubrelease"
+	"github.com/MoNecromanCI/mnci/apps/mnci/packagemanifests"
 	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/MoNecromanCI/mnci/apps/mnci/taskrun"
@@ -142,9 +143,41 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 		return err
 	}
 	if s.Config.Release.GitHubReleases {
-		return publishGitHubRelease(s, p, item, res, say, pr.Assets)
+		assets := append(pr.Assets, packageManifests(s, p, item, pr, say)...)
+		return publishGitHubRelease(s, p, item, res, say, assets)
 	}
 	return nil
+}
+
+// packageManifests writes the package manager manifests a release asks for
+// beside its archives, to attach to the GitHub Release; a problem is said,
+// never fatal: the release itself is done.
+func packageManifests(s *session.Session, p *projectgraph.Project, item Item, pr protocol.PublishResult, say func(string, ...any)) []string {
+	if p.Release == nil || len(p.Release.PackageManagers) == 0 || Native(p) || len(pr.AssetPlatforms) == 0 {
+		return nil
+	}
+	repo, err := Repository(s)
+	if err != nil {
+		say("no package manager manifests: %v", err)
+		return nil
+	}
+	product := p.Release.Product
+	if product == "" {
+		product = p.Name
+	}
+	binary := pr.Binary
+	if binary == "" {
+		binary = p.Name
+	}
+	r := packagemanifests.Release{Product: product, Binary: binary, Version: item.Next, Description: p.Release.Description, Homepage: p.Release.Homepage, License: p.Release.License, Owner: repo.Owner, Repo: repo.Name, Tag: item.Tag}
+	written, skipped, err := packagemanifests.Write(s.Root, packagemanifests.Built{Assets: pr.Assets, Platforms: pr.AssetPlatforms}, r, p.Release.PackageManagers)
+	for _, why := range skipped {
+		say("no %s manifest", why)
+	}
+	if err != nil {
+		say("package manager manifests: %v", err)
+	}
+	return written
 }
 
 // NativeTag marks a project built on each OS (mnci ci native), whose release

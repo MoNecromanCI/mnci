@@ -8,6 +8,7 @@ import (
 	dotnetp "github.com/MoNecromanCI/mnci/libs/plugin-dotnet/plugin"
 	gop "github.com/MoNecromanCI/mnci/libs/plugin-go/plugin"
 	"github.com/MoNecromanCI/mnci/libs/plugin-go/pluginkit"
+	jvmp "github.com/MoNecromanCI/mnci/libs/plugin-jvm/plugin"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/eslint"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/jest"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/typescript"
@@ -30,6 +31,7 @@ var Builtins = map[string]func(version string) serve.Plugin{
 	"php":    func(v string) serve.Plugin { return phpp.New(v) },
 	"cpp":    func(v string) serve.Plugin { return cppp.New(v) },
 	"dart":   func(v string) serve.Plugin { return dartp.New(v) },
+	"jvm":    func(v string) serve.Plugin { return jvmp.New(v) },
 	"python": func(v string) serve.Plugin { return pythonp.New(v) },
 	"rust":   func(v string) serve.Plugin { return rustp.New(v) },
 }

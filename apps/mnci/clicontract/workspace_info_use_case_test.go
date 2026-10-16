@@ -11,7 +11,7 @@ import (
 
 func TestWorkspaceReport(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = io.WriteString(w, `[{"tag_name": "packages/plugin-sdk/v0.9.0"}, {"tag_name": "mnci@2.0.0-rc.1", "prerelease": true}, {"tag_name": "mnci@1.4.0"}]`)
+		_, _ = io.WriteString(w, `[{"tag_name": "packages/plugin-sdk/v0.9.0"}, {"tag_name": "mnci@2.0.0-rc.1", "prerelease": true}, {"tag_name": "mnci@1.4.0"}, {"tag_name": "mnci@1.10.0"}, {"tag_name": "mnci@1.9.0"}]`)
 	}))
 	defer srv.Close()
 	releasesURL = srv.URL
@@ -22,7 +22,7 @@ func TestWorkspaceReport(t *testing.T) {
 	ws := t.TempDir()
 	_ = os.WriteFile(filepath.Join(ws, "mnci.toml"), []byte("[workspace]\nname = \"acme\"\n"), 0o644)
 	info := WorkspaceReport("1.2.0", ws)
-	if info.CLI.Latest == nil || *info.CLI.Latest != "1.4.0" || !info.CLI.UpdateAvailable {
+	if info.CLI.Latest == nil || *info.CLI.Latest != "1.10.0" || !info.CLI.UpdateAvailable {
 		t.Fatalf("cli %+v", info.CLI)
 	}
 	if info.Workspace == nil || info.Workspace.Config["workspace"].(map[string]any)["name"] != "acme" {

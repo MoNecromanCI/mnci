@@ -1,7 +1,8 @@
 package protocol
 
-// ContributeParams hands a convention plugin the projects it applies to:
-// those of the languages it supports that mnci.toml enables it for.
+// ContributeParams hands a plugin the projects it applies to: those whose
+// stack includes it, or, for a workspace-wide convention, those of the
+// languages it supports that mnci.toml enables it for.
 type ContributeParams struct {
 	Projects []Project `json:"projects"`
 }
@@ -15,6 +16,9 @@ type ContributeResult struct {
 type Contribution struct {
 	// Tasks are new tasks. A task the project already has is kept as it is.
 	Tasks map[string]Task `json:"tasks,omitempty"`
+	// Replace are tasks that replace the project's task of the same name,
+	// or are added when it has none.
+	Replace map[string]Task `json:"replace,omitempty"`
 	// DependsOn adds dependencies to tasks the project already has, by task
 	// name ({"lint": ["slice-check"]}).
 	DependsOn map[string][]string `json:"dependsOn,omitempty"`

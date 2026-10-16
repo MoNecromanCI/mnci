@@ -21,6 +21,22 @@ type InitializeResult struct {
 	// Manifests are file base names (package.json, go.mod) whose presence in a
 	// directory may make it a project of this plugin.
 	Manifests []string `json:"manifests,omitempty"`
+	// Roles are what the plugin can be in a stack. Empty means the default
+	// of its kind (see DefaultRoles).
+	Roles []Role `json:"roles,omitempty"`
+	// Provides are the task names a toolchain plugin owns ("test" for a test
+	// runner). Two plugins of one stack may not provide the same task.
+	Provides []string `json:"provides,omitempty"`
+	// Stacks are ready-made stacks the plugin publishes.
+	Stacks []Stack `json:"stacks,omitempty"`
+}
+
+// EffectiveRoles are the plugin's roles, or the default of its kind.
+func (r InitializeResult) EffectiveRoles() []Role {
+	if len(r.Roles) > 0 {
+		return r.Roles
+	}
+	return DefaultRoles(r.Kind)
 }
 
 // Peer names one side of the connection.
@@ -30,7 +46,8 @@ type Peer struct {
 }
 
 // PluginKind separates plugins that understand a language from plugins that
-// impose a convention on top of one.
+// add to projects a language plugin discovered (toolchains, structure rules,
+// scaffolds, deploy targets), which are all of kind convention.
 type PluginKind string
 
 // Plugin kinds.

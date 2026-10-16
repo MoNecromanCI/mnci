@@ -1,7 +1,10 @@
 package session
 
 import (
+	"fmt"
+
 	"errors"
+	"github.com/MoNecromanCI/mnci/apps/mnci/remotecache"
 	"io"
 	"os"
 	"path/filepath"
@@ -80,7 +83,29 @@ func (s *Session) Storage() (taskcache.Storage, error) {
 	if !filepath.IsAbs(dir) {
 		dir = filepath.Join(s.Root, filepath.FromSlash(dir))
 	}
-	return taskcache.NewLocalStorage(dir)
+	local, err := taskcache.NewLocalStorage(dir)
+	if err != nil {
+		return nil, err
+	}
+	remote := s.Config.Cache.Remote
+	if env := os.Getenv("MNCI_CACHE_REMOTE"); env != "" {
+		remote = env
+	}
+	if remote == "" {
+		return local, nil
+	}
+	warn := func(msg string) { fmt.Fprintln(os.Stderr, "mnci: "+msg) }
+	secret := os.Getenv("MNCI_CACHE_KEY")
+	if secret == "" {
+		warn("the remote cache is off: MNCI_CACHE_KEY is not set, and nothing is shared unsigned")
+		return local, nil
+	}
+	store, err := remotecache.Open(remote)
+	if err != nil {
+		warn("the remote cache is off: " + err.Error())
+		return local, nil
+	}
+	return &remotecache.Tiered{Local: local, Remote: store, Secret: []byte(secret), ReadOnly: s.Config.Cache.RemoteReadOnly || os.Getenv("MNCI_CACHE_READ_ONLY") != "", Warn: warn}, nil
 }
 
 // Refresh re-reads files and rebuilds the graph, after a command changed the

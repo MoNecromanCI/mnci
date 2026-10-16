@@ -82,6 +82,12 @@ type CacheSection struct {
 	Dir string `toml:"dir"`
 	// MaxSizeMB triggers pruning of the least recently used entries. Default: 2048.
 	MaxSizeMB int `toml:"max_size_mb"`
+	// Remote is a shared cache behind the local one: https://, s3:// or
+	// azblob://. Objects are signed with MNCI_CACHE_KEY. Default: none.
+	Remote string `toml:"remote"`
+	// RemoteReadOnly reads the remote without writing to it (a developer's
+	// machine, while CI fills it). Default: false.
+	RemoteReadOnly bool `toml:"remote_read_only"`
 }
 
 // PluginsSection chooses plugins.

@@ -76,6 +76,36 @@ Everything goes through a `Storage` interface (`Has/Get/Put/Delete/Walk/Touch`)
 with a conformance test. It stores three kinds (`ac`, `cas`, `last`), so a
 remote backend (HTTP, S3, Azure Blob — #42) is an addition, not a change.
 
+### Remote cache
+
+A remote store behind the local cache shares results between machines. CI
+builds once and every developer's next run replays it:
+
+```toml
+[cache]
+remote = "s3://acme-mnci-cache/main"   # or https://cache.acme.dev/mnci, azblob://acme/mnci
+remote_read_only = false               # true on developer machines, if only CI should write
+```
+
+Every object is signed with HMAC-SHA256 under `MNCI_CACHE_KEY`, a secret the
+team shares (a CI secret, a developer's environment), and the signature covers
+the object's name too. A local miss asks the remote, and a hit is verified, and
+for blobs digest-checked, before it is kept locally and used. An object that
+fails verification is a miss, said once. So is a remote that cannot be
+reached, and a remote that cannot be written is only a warning. A remote cache
+can make a run slower, never wrong. Without `MNCI_CACHE_KEY` the remote is
+off: nothing is shared unsigned.
+
+| Store | `remote` | Credentials |
+|---|---|---|
+| any server taking PUT, GET and HEAD | `https://host/path` | `MNCI_CACHE_TOKEN`, sent as a bearer token, when set |
+| S3 | `s3://bucket/prefix` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_REGION`; `AWS_ENDPOINT_URL_S3` for an S3-compatible store |
+| Azure Blob | `azblob://account/container/prefix` | `AZURE_STORAGE_SAS_TOKEN` |
+
+`MNCI_CACHE_REMOTE` and `MNCI_CACHE_READ_ONLY=1` override the settings for
+one machine. The remote holds results only: which run was last (for
+`mnci why-miss`) and pruning stay local.
+
 ## Affected
 
 ```sh

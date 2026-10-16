@@ -153,6 +153,10 @@ See [Releasing](releasing.md#apps).
 |---|---|
 | `MNCI_WORKSPACE_ROOT` | use this workspace instead of searching upward |
 | `MNCI_CACHE_DIR` | cache directory, overriding `[cache] dir` |
+| `MNCI_CACHE_REMOTE` | remote cache, overriding `[cache] remote` |
+| `MNCI_CACHE_KEY` | the secret remote cache objects are signed with; without it the remote is off |
+| `MNCI_CACHE_READ_ONLY` | read the remote cache without writing to it |
+| `MNCI_CACHE_TOKEN` | bearer token for an `https://` remote cache |
 | `MNCI_BASE` | base branch for `--affected` and `mnci ci verify` |
 | `MNCI_RELEASE_ANY_BRANCH` | allow a real release from another branch |
 | `MNCI_PYPI_SIMPLE_URL` | the simple index to check before uploading to a custom Python index |

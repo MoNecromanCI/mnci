@@ -95,7 +95,7 @@ func TestGoldenPath(t *testing.T) {
 	for _, add := range [][]string{
 		{"app", "web", "--lang", "node"}, {"lib", "ui", "--lang", "node"}, {"package", "sdk", "--stack", "node-vitest"}, {"app", "hello", "--lang", "node", "--stack", "none"},
 		{"app", "api", "--lang", "go"}, {"lib", "core", "--lang", "go"}, {"package", "gokit", "--stack", "go-sliced"},
-		{"app", "worker", "--lang", "python"}, {"lib", "pyutil", "--lang", "python"}, {"package", "pykit", "--lang", "python"},
+		{"app", "worker", "--lang", "python"}, {"python-lib", "pyutil"}, {"package", "pykit", "--lang", "python"},
 	} {
 		w.mnci(true, append([]string{"add"}, add...)...)
 	}
@@ -115,7 +115,18 @@ func TestGoldenPath(t *testing.T) {
 	if stacks := w.mnci(true, "stacks"); !strings.Contains(stacks, "node-vitest  (plugin vitest)") || !strings.Contains(stacks, "projects   sdk") || !strings.Contains(stacks, "go-sliced  (mnci.toml)") {
 		t.Fatalf("stacks:\n%s", stacks)
 	}
+	// What an editor builds its menus from (the VS Code extension's contract).
+	if kinds := w.mnci(true, "kinds", "--json"); !strings.Contains(kinds, `"kind": "node-app"`) {
+		t.Fatalf("kinds:\n%s", kinds)
+	}
+	var commands []struct{ Name, Group string }
+	if err := json.Unmarshal([]byte(w.mnci(true, "commands", "--json")), &commands); err != nil || len(commands) < 10 {
+		t.Fatalf("commands --json: %v %v", err, commands)
+	}
 	projects := w.mnci(true, "projects", "--json")
+	if !strings.Contains(projects, `"ecosystem": "pip"`) || !strings.Contains(projects, `"targets": [`) {
+		t.Fatalf("projects --json lacks the extension's fields:\n%s", projects)
+	}
 	var list []struct{ Name, Kind, Language string }
 	if err := json.Unmarshal([]byte(projects[strings.Index(projects, "["):]), &list); err != nil || len(list) != 10 {
 		t.Fatalf("projects: %v\n%s", err, projects)

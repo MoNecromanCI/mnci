@@ -43,6 +43,7 @@ Core slices in `apps/mnci`:
 | `githubrelease` | GitHub Releases and their assets |
 | `slicecheck` | `mnci slices check`, the vertical-slices convention's check |
 | `doctor`, `explain`, `whymiss`, `stackview`, `graphview` | inspection commands |
+| `clicontract` | `mnci commands`, `mnci kinds`, `mnci info`: the --json contracts editors read |
 | `session` | open a workspace for a command |
 | `gitclient` | every git call |
 | `commandline` | assemble the command tree |

@@ -63,3 +63,16 @@ func TestValidateName(t *testing.T) {
 		}
 	}
 }
+
+func TestSplitKind(t *testing.T) {
+	for in, want := range map[string][2]string{"node-app": {"app", "node"}, "python-package": {"package", "python"}, "my-lang-lib": {"lib", "my-lang"}} {
+		if k, l, ok := SplitKind(in); !ok || k != want[0] || l != want[1] {
+			t.Errorf("SplitKind(%q) = %s %s %v", in, k, l, ok)
+		}
+	}
+	for _, in := range []string{"app", "node-web", "-app"} {
+		if _, _, ok := SplitKind(in); ok {
+			t.Errorf("SplitKind(%q) must not split", in)
+		}
+	}
+}

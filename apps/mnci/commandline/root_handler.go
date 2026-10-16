@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
+	"github.com/MoNecromanCI/mnci/apps/mnci/clicontract"
 	"github.com/MoNecromanCI/mnci/apps/mnci/convert"
 	"github.com/MoNecromanCI/mnci/apps/mnci/doctor"
 	"github.com/MoNecromanCI/mnci/apps/mnci/explain"
@@ -48,6 +49,7 @@ generates CI pipelines, and releases packages from conventional commits.`,
 	add("work", taskrun.Commands(version)...)
 	add("ship", release.Command(version), cipipeline.Command(version))
 	add("inspect", graphview.Commands(version)...)
+	add("inspect", clicontract.Commands(version)...)
 	add("inspect", doctor.Command(version), explain.Command(version), whymiss.Command(version), pluginhost.Command(version), stackview.Command(version), slicecheck.Command())
 	return root
 }

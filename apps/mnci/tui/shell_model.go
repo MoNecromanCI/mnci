@@ -14,22 +14,24 @@ const (
 	tabCommands
 	tabDoctor
 	tabRelease
+	tabSettings
 )
 
-var tabNames = map[tab]string{tabMenu: "Menu", tabCommands: "Commands", tabDoctor: "Doctor", tabRelease: "Release"}
+var tabNames = map[tab]string{tabMenu: "Menu", tabCommands: "Commands", tabDoctor: "Doctor", tabRelease: "Release", tabSettings: "Settings"}
 
 // Shell is the TUI: the guided menu, a palette of every command, and, inside
-// a workspace, the doctor and release views. Nothing happens only here:
+// a workspace, the doctor, release and settings views. Nothing happens only here:
 // every action ends as an mnci command line, printed before it runs.
 type Shell struct {
-	header  string
-	tabs    []tab
-	active  int
-	menu    Model
-	palette palette
-	doctor  doctorView
-	release releaseView
-	sources Sources
+	header   string
+	tabs     []tab
+	active   int
+	menu     Model
+	palette  palette
+	doctor   doctorView
+	release  releaseView
+	settings settingsView
+	sources  Sources
 	// Argv is the chosen command, empty when the user quit.
 	Argv []string
 }
@@ -40,7 +42,7 @@ func NewShell(menu Model, commands []clicontract.CommandDescription, sources *So
 	sh := Shell{header: menu.header, menu: menu, palette: newPalette(commands), tabs: []tab{tabMenu, tabCommands}}
 	if sources != nil {
 		sh.sources = *sources
-		sh.tabs = append(sh.tabs, tabDoctor, tabRelease)
+		sh.tabs = append(sh.tabs, tabDoctor, tabRelease, tabSettings)
 	}
 	return sh
 }
@@ -63,6 +65,9 @@ func (sh Shell) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return sh, nil
 	case doctorFailed:
 		sh.doctor = doctorView{err: msg.err}
+		return sh, nil
+	case settingsLoaded:
+		sh.settings = settingsView{loaded: true, settings: msg.settings, err: msg.err}
 		return sh, nil
 	case releaseLoaded:
 		sh.release = releaseView{loaded: true, plan: msg.plan, blockers: msg.blockers, warnings: msg.warnings, err: msg.err}
@@ -112,6 +117,15 @@ func (sh Shell) key(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return sh, sh.enter()
 		}
 		sh.doctor = sh.doctor.update(msg)
+	case tabSettings:
+		if !sh.settings.editing && (msg.String() == "q" || msg.String() == "esc") {
+			return sh, tea.Quit
+		}
+		next, argv := sh.settings.update(msg)
+		sh.settings = next
+		if argv != nil {
+			return sh.run(argv...)
+		}
 	case tabRelease:
 		switch msg.String() {
 		case "q", "esc":
@@ -148,6 +162,11 @@ func (sh Shell) enter() tea.Cmd {
 			load := sh.sources.Release
 			return func() tea.Msg { return load() }
 		}
+	case tabSettings:
+		if !sh.settings.loaded {
+			load := sh.sources.Settings
+			return func() tea.Msg { return load() }
+		}
 	}
 	return nil
 }
@@ -173,6 +192,8 @@ func (sh Shell) View() string {
 		b.WriteString(sh.doctor.view())
 	case tabRelease:
 		b.WriteString(sh.release.view())
+	case tabSettings:
+		b.WriteString(sh.settings.view())
 	}
 	return b.String()
 }

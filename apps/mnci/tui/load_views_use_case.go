@@ -3,15 +3,18 @@ package tui
 import (
 	"io"
 
+	"github.com/MoNecromanCI/mnci/apps/mnci/configedit"
 	"github.com/MoNecromanCI/mnci/apps/mnci/doctor"
 	"github.com/MoNecromanCI/mnci/apps/mnci/release"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
 )
 
 // Sources load what the shell's views show; tests replace them.
 type Sources struct {
-	Doctor  func() (doctor.Report, error)
-	Release func() releaseLoaded
+	Doctor   func() (doctor.Report, error)
+	Release  func() releaseLoaded
+	Settings func() settingsLoaded
 }
 
 // WorkspaceSources open the workspace in dir for each view, as the CLI
@@ -28,6 +31,25 @@ func WorkspaceSources(dir, version string) Sources {
 			}
 			defer s.Close()
 			return doctor.Run(s), nil
+		},
+		Settings: func() settingsLoaded {
+			root, err := workspace.FindRoot(dir)
+			if err != nil {
+				return settingsLoaded{err: err}
+			}
+			fields, err := configedit.Fields()
+			if err != nil {
+				return settingsLoaded{err: err}
+			}
+			var out settingsLoaded
+			for _, f := range fields {
+				value, set, err := configedit.Get(root, f.Path)
+				if err != nil {
+					return settingsLoaded{err: err}
+				}
+				out.settings = append(out.settings, setting{field: f, value: value, set: set})
+			}
+			return out
 		},
 		Release: func() releaseLoaded {
 			s, err := open()

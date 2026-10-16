@@ -18,7 +18,7 @@ import (
 // Command is `mnci release`.
 func Command(version string) *cobra.Command {
 	var (
-		dryRun, yes, noPush, asJSON, comment bool
+		dryRun, yes, noPush, asJSON, comment, notes bool
 	)
 	cmd := &cobra.Command{
 		Use:   "release",
@@ -61,6 +61,11 @@ after a failure resumes where it stopped.`,
 			}
 			if !asJSON {
 				printPlan(cmd, plan)
+				if notes {
+					for _, item := range plan.Items {
+						fmt.Fprintf(out, "\n# %s %s\n\n%s", item.Project, item.Next, RenderNotes(item))
+					}
+				}
 			}
 			if len(plan.Items) == 0 {
 				if dryRun {
@@ -101,6 +106,7 @@ after a failure resumes where it stopped.`,
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "show what would be released; change nothing")
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "do not ask for confirmation")
 	cmd.Flags().BoolVar(&noPush, "no-push", false, "create tags locally only")
+	cmd.Flags().BoolVar(&notes, "notes", false, "also print each release's notes (what its GitHub Release says)")
 	cmd.Flags().BoolVar(&asJSON, "json", false, "print the release report as JSON")
 	cmd.Flags().BoolVar(&comment, "comment", false, "with --dry-run in a pull request build, post the preview on the pull request (GitHub, Azure Repos), updating mnci's earlier comment")
 	return cmd

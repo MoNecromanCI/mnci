@@ -13,12 +13,14 @@ var (
 
 // Commit is a parsed conventional commit.
 type Commit struct {
-	Hash        string
-	Type        string
-	Scopes      []string
-	Breaking    bool
-	Description string
-	Subject     string
+	Hash     string
+	Type     string
+	Scopes   []string
+	Breaking bool
+	// BreakingNote is the BREAKING CHANGE footer's text, up to a blank line.
+	BreakingNote string
+	Description  string
+	Subject      string
 	// Valid is false for a subject that is not a conventional commit.
 	Valid bool
 }
@@ -38,6 +40,10 @@ func ParseCommit(hash, subject, body string) Commit {
 		}
 	}
 	c.Breaking = m[3] == "!" || breakingFooter.MatchString(body)
+	if loc := breakingFooter.FindStringIndex(body); loc != nil {
+		note, _, _ := strings.Cut(strings.ReplaceAll(body[loc[1]:], "\r\n", "\n"), "\n\n")
+		c.BreakingNote = strings.TrimSpace(note)
+	}
 	c.Description = m[4]
 	return c
 }

@@ -21,6 +21,8 @@ type Item struct {
 	Reason  string   `json:"reason"`
 	Commits []string `json:"commits,omitempty"`
 	Forced  bool     `json:"forced,omitempty"`
+	// Changes are the releasing commits, for the release notes.
+	Changes []Change `json:"changes,omitempty"`
 }
 
 // Plan is every package that will release, in dependency order.
@@ -86,11 +88,13 @@ func MakePlan(git *gitclient.Git, graph *projectgraph.Graph) (Plan, error) {
 		}
 		var commits []Commit
 		var subjects []string
+		var changes []Change
 		for _, c := range raw {
 			pc := ParseCommit(c.Hash, c.Subject, c.Body)
 			commits = append(commits, pc)
 			if LevelOf(pc) != None {
 				subjects = append(subjects, c.Subject)
+				changes = append(changes, Change{Type: pc.Type, Scopes: pc.Scopes, Description: pc.Description, Breaking: pc.Breaking, BreakingNote: pc.BreakingNote, Hash: pc.Hash, Author: c.Author})
 			}
 		}
 		level := LevelOfAll(commits)
@@ -103,7 +107,7 @@ func MakePlan(git *gitclient.Git, graph *projectgraph.Graph) (Plan, error) {
 				}
 			}
 		}
-		item := Item{Project: name, Plugin: p.Plugin, Commits: subjects, Reason: reason, Level: level.String()}
+		item := Item{Project: name, Plugin: p.Plugin, Commits: subjects, Changes: changes, Reason: reason, Level: level.String()}
 		if released {
 			item.Current = latest.String()
 		}

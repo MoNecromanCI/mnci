@@ -244,7 +244,7 @@ func publishGitHubRelease(s *session.Session, p *projectgraph.Project, item Item
 	for i, a := range assets {
 		files[i] = filepath.Join(s.Root, filepath.FromSlash(a))
 	}
-	out, err := githubrelease.Ensure(client, repo, githubrelease.Request{Tag: item.Tag, Title: item.Project + " " + item.Next, Notes: githubrelease.Notes(item.Reason, item.Commits), Assets: files})
+	out, err := githubrelease.Ensure(client, repo, githubrelease.Request{Tag: item.Tag, Title: item.Project + " " + item.Next, Notes: RenderNotes(item), Assets: files})
 	if err != nil {
 		return fmt.Errorf("GitHub Release %s: %w (re-run the release to finish it)", item.Tag, err)
 	}

@@ -1,6 +1,10 @@
 package typescript
 
-import "github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding"
+import (
+	"maps"
+
+	"github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding"
+)
 
 // templates is the TypeScript starter the plugin scaffolds from.
 var templates = scaffolding.TemplateSet{
@@ -16,10 +20,10 @@ var devDependencies = map[string]string{
 	"typescript":  "~6.0.3",
 }
 
-// The greeting slice every project starts with: a contract, a use case and
-// the slice's index (its only public door). A test-runner plugin (jest,
-// vitest) adds the use case's spec.
-var sliceTemplates = map[string]string{
+// GreetingSlice is the greeting slice every TypeScript project starts with:
+// a contract, a use case and the slice's index (its only public door). A
+// test-runner plugin (jest, vitest) adds the use case's spec.
+var GreetingSlice = map[string]string{
 	"[[.Dir]]/src/greeting/greeting.contract.ts": `/** A greeting addressed to someone. */
 export interface Greeting {
   message: string
@@ -39,6 +43,10 @@ export function greet (name: string): Greeting {
 	"[[.Dir]]/src/greeting/index.ts": `export { greet } from './greet.use-case.ts'
 export type { Greeting } from './greeting.contract.ts'
 `,
+}
+
+// sliceTemplates are the greeting slice and the project's tsconfigs.
+var sliceTemplates = withGreetingSlice(map[string]string{
 	"[[.Dir]]/tsconfig.json": `{
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
@@ -53,6 +61,12 @@ export type { Greeting } from './greeting.contract.ts'
   "exclude": ["src/**/*.spec.ts"]
 }
 `,
+})
+
+// withGreetingSlice adds the greeting slice to a project's templates.
+func withGreetingSlice(templates map[string]string) map[string]string {
+	maps.Copy(templates, GreetingSlice)
+	return templates
 }
 
 var appTemplates = map[string]string{

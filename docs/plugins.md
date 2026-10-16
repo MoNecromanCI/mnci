@@ -21,6 +21,7 @@ with through its [stack](stacks.md).
 | `ruby` | language (+ default toolchain, scaffold) | gems (`*.gemspec`) the root `Gemfile` lists with `gemspec path:`, one Bundler resolution; RuboCop (lint), RSpec (test), `exe/` (start) | `gem build` into `dist/<gem dir>`, then `gem push` (`GEM_HOST_API_KEY`) |
 | `rust` | language (+ default toolchain, scaffold) | `Cargo.toml` crates in a root Cargo workspace; `cargo build`, `test`, `clippy` (lint), `check` (typecheck), `fmt --check` (format), `package`; every build under `dist/cargo` | `cargo publish` of package crates (`CARGO_REGISTRY_TOKEN`) |
 | `typescript` | scaffold and toolchain, provides `build`, `typecheck`; publishes `node-ts` | scaffolds TypeScript projects that build and type-check with `tsc` | — |
+| `vite` | scaffold and toolchain, provides `build`, `typecheck`; publishes `react`, `react-p5`, `vue`, `svelte`, `html` | scaffolds browser apps in TypeScript (React, React with p5, Vue, Svelte, or a page with no framework) that Vite serves (`start`) and builds into `dist/<app dir>`; type-checked by `tsc`, `vue-tsc` or `svelte-check`; each stack lints with eslint and tests with Vitest | released by its tag |
 | `eslint` | toolchain, provides `lint` | Node projects lint with ESLint and `@mnci/eslint-config` (TypeScript rules, Standard style, vertical slices) | — |
 | `jest` | toolchain, provides `test`; publishes `node-jest` | Node projects test with Jest (`ts-jest`) | — |
 | `vitest` | toolchain, provides `test`; publishes `node-vitest` | Node projects test with Vitest | — |

@@ -12,6 +12,7 @@ import (
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/eslint"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/jest"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/typescript"
+	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/vite"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/vitest"
 	nodep "github.com/MoNecromanCI/mnci/libs/plugin-node/plugin"
 	phpp "github.com/MoNecromanCI/mnci/libs/plugin-php/plugin"
@@ -46,6 +47,7 @@ var BuiltinAddons = map[string]func(version string) serve.Plugin{
 	jest.Name:       func(v string) serve.Plugin { return jest.New(v) },
 	vitest.Name:     func(v string) serve.Plugin { return vitest.New(v) },
 	typescript.Name: func(v string) serve.Plugin { return typescript.New(v) },
+	vite.Name:       func(v string) serve.Plugin { return vite.New(v) },
 	pluginkit.Name:  func(v string) serve.Plugin { return pluginkit.New(v) },
 }
 

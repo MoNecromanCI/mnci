@@ -262,6 +262,13 @@ func TestGoldenPath(t *testing.T) {
 			t.Fatalf("apps must run with their internal deps (%s):\n%s", want, out)
 		}
 	}
+	// dev starts several apps at once, after building what they use.
+	if out := w.mnci(true, "dev", "web", "hello"); !strings.Contains(out, "→ mnci run start -p web,hello --parallel 6") || !strings.Contains(out, "hello:start │ Hello, world!") || !strings.Contains(out, "Hello, ui!") {
+		t.Fatalf("dev:\n%s", out)
+	}
+	if out := w.mnci(false, "dev", "ui"); !strings.Contains(out, "ui has no start task") {
+		t.Fatalf("dev on a library:\n%s", out)
+	}
 	w.mnci(true, "doctor")
 	// Ready-made pipelines: written once, beside the generated CI.
 	if out := w.mnci(true, "pipeline"); !strings.Contains(out, "deploy-pages (--project <app>)") {

@@ -174,8 +174,13 @@ mnci build                     # every project
 mnci test -p web               # web and what it depends on
 mnci run lint typecheck test   # several tasks
 mnci run start -p web          # run an app
+mnci dev web api               # start several apps together; Ctrl+C stops them all
 mnci test --affected           # only what changed since main
 ```
+
+`mnci dev` builds what the apps use, then runs every `start` task at once,
+each line prefixed with its project. With no names it lets you pick from the
+apps that have a `start` task; `--all` starts every one of them.
 
 A task whose inputs did not change replays from the cache. See
 [tasks and cache](tasks-and-cache.md).

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/MoNecromanCI/mnci/apps/mnci/adoption"
+	"github.com/MoNecromanCI/mnci/apps/mnci/devservers"
 	"github.com/MoNecromanCI/mnci/apps/mnci/pipelinetemplate"
 	"os"
 
@@ -52,6 +53,7 @@ generates CI pipelines, and releases packages from conventional commits.`,
 	}
 	add("start", scaffold.NewCommand(version), scaffold.AddCommand(version), scaffold.RemoveCommand(version), convert.Command(version), configedit.Command(), upgrade.Command(version), adoption.Command(version))
 	add("work", taskrun.Commands(version)...)
+	add("work", devservers.Command(version))
 	add("work", dependencies.Commands(version)...)
 	add("ship", release.Command(version), cipipeline.Command(version), pipelinetemplate.Command(version))
 	add("inspect", graphview.Commands(version)...)

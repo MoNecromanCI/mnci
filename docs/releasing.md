@@ -2,6 +2,7 @@
 
 ```sh
 mnci release --dry-run    # the plan; changes nothing
+mnci release --dry-run --comment   # in a pull request build: also post the plan on it (docs/ci.md)
 mnci release              # asks before releasing (CI: mnci ci release)
 ```
 

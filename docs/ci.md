@@ -33,11 +33,22 @@ can run locally.
 | `mnci ci setup` | every setup step the plugins contributed |
 | `mnci ci audit` | dependency vulnerability checks; non-blocking ones warn |
 | `mnci ci verify` | `lint`, `typecheck`, `test`, `build` — affected projects only on a pull request, everything otherwise |
-| `mnci release --dry-run` | on a pull request: the release preview, in the job summary |
+| `mnci release --dry-run --comment` | on a pull request: the release preview, in the job summary and as a comment on the pull request |
 | `mnci ci release` | on a push to the release branch: version, publish and tag |
 
 On GitHub Actions and Azure Pipelines output is grouped, failures are annotated,
 and the release report is appended to the job summary.
+
+## The release preview comment
+
+On a pull request the preview is posted as one comment, which later runs of
+the same pull request update instead of adding more: an issue comment on
+GitHub (the workflow grants `pull-requests: write` and passes
+`GITHUB_TOKEN`), a closed thread on Azure Repos (the step passes
+`SYSTEM_ACCESSTOKEN: $(System.AccessToken)`; the build service needs
+"Contribute to pull requests"). A pull request from a fork gets a read-only
+token, so its preview stays in the log and the job summary; failing to post
+is a warning, never a failure.
 
 ## Installing mnci in CI
 

@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
+	"github.com/MoNecromanCI/mnci/apps/mnci/release"
+	"github.com/MoNecromanCI/mnci/apps/mnci/releaselineage"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
@@ -32,6 +34,7 @@ func Run(s *session.Session) Report {
 		}
 	}
 	add("mnci", CoreChecks(s)...)
+	add("mnci", lineageChecks(s)...)
 	for _, c := range s.Plugins.Clients {
 		if !c.Info.Capabilities.Doctor {
 			continue
@@ -62,6 +65,23 @@ func Run(s *session.Session) Report {
 	}
 	sort.SliceStable(report.Findings, func(i, j int) bool { return !report.Findings[i].OK && report.Findings[j].OK })
 	return report
+}
+
+// lineageChecks report release tags a release would refuse to start from:
+// under an old name, or behind the registry (this asks each registry).
+func lineageChecks(s *session.Session) []protocol.Finding {
+	failed := map[string]bool{}
+	var out []protocol.Finding
+	for _, f := range release.CheckLineage(s, false) {
+		failed[f.Check] = true
+		out = append(out, protocol.Finding{Check: f.Check, Detail: f.Message, Warning: !f.Blocking, Remedy: "see the detail; mnci release refuses to run until it is fixed"})
+	}
+	for _, check := range []string{releaselineage.CheckResolve, releaselineage.CheckRegistry} {
+		if !failed[check] {
+			out = append(out, protocol.Finding{Check: check, OK: true})
+		}
+	}
+	return out
 }
 
 // CoreChecks are mnci's own invariants.

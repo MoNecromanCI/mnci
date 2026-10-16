@@ -35,6 +35,7 @@ Core slices in `apps/mnci`:
 | `taskrun` | the scheduler, process trees, `mnci run/build/test/lint/typecheck` |
 | `affected` | changed projects and their dependents |
 | `release` | plan and execute releases, `mnci release` |
+| `releaselineage` | decide whether release tags can be trusted: old names, published but untagged, behind the registry |
 | `cipipeline` | pipeline model, renderers, `mnci ci` |
 | `scaffold` | `mnci new`, `mnci add` |
 | `nxworkspace`, `convertplan`, `convert` | read an Nx workspace, plan its conversion, apply it (`mnci convert`) |

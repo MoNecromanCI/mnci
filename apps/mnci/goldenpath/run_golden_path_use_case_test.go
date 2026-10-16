@@ -239,6 +239,24 @@ func TestGoldenPath(t *testing.T) {
 		t.Fatalf("a third run releases nothing:\n%s", again)
 	}
 
+	// A published version whose tag is gone (here and on the remote) would
+	// restart the package from its manifest: release refuses, even a dry run,
+	// and doctor reports it, until the tag is back.
+	commit := strings.TrimSpace(w.git("rev-parse", "sdk@0.1.0^{commit}"))
+	w.git("tag", "-d", "sdk@0.1.0")
+	w.git("push", "-q", "origin", ":refs/tags/sdk@0.1.0")
+	if out := w.mnci(false, "release", "--dry-run"); !strings.Contains(out, "sdk is published at 0.1.0 but has no release tag") {
+		t.Fatalf("a published, untagged package must block the release:\n%s", out)
+	}
+	if out := w.mnci(false, "doctor"); !strings.Contains(out, "release tags are not behind the registry") {
+		t.Fatalf("doctor must report it:\n%s", out)
+	}
+	w.git("tag", "sdk@0.1.0", commit)
+	w.git("push", "-q", "origin", "sdk@0.1.0")
+	if out := w.mnci(true, "doctor"); strings.Contains(out, "published at") {
+		t.Fatalf("doctor still reports the restored tag:\n%s", out)
+	}
+
 	// 7. A fix releases a patch.
 	w.write("packages/sdk/src/fix.ts", "export const fixed = true\n")
 	w.git("add", "-A")

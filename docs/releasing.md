@@ -69,6 +69,24 @@ package, in dependency order, mnci:
 4. restores the manifest
 5. tags the commit and pushes the tag
 
+## Tag checks
+
+Versions come from tags, so before showing a plan, even for `--dry-run`,
+`mnci release` fetches the tags from the release remote and checks them for
+every releasable project. A failed fetch is a warning. Each of these stops the
+release, because the plan's versions would be wrong:
+
+| Problem | Why it matters | Fix |
+|---|---|---|
+| The project's newest tag is under another name (its package name, scoped or not), not its tag prefix | the release would start from scratch, or from an older version | set `[projects.<name>] tag_prefix`, or tag the same commit under the current prefix |
+| The registry has a version, but the project has no tag | the release would start from the manifest | `git fetch --tags`; if the tag really does not exist, tag the commit that published it |
+| The newest tag is lower than the registry's version | the release would propose a version the registry refuses | tag the commit that published the registry's version |
+
+The registry is asked through the project's plugin (`npm view` for Node, the
+PEP 503 index for Python; a Go module's tags are its registry). An unreachable
+registry is a warning, not a stop. `mnci doctor` runs the same checks without
+fetching.
+
 ## When something fails
 
 The release stops at the failing package; everything before it is tagged and

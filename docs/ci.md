@@ -53,7 +53,7 @@ plugins give every app one:
 | App | `package` makes |
 |---|---|
 | Node | `npm pack` of the app, after its build: `dist/drop/<scope>-<name>-<version>.tgz` |
-| Go | the binary: `dist/drop/<name>/<name>` |
+| Go | the binary: `dist/drop/<name>/<name>` (a plain `mnci build` writes it to `dist/<project dir>/`) |
 | Python | the app's wheel: `dist/drop/<name>-<version>-py3-none-any.whl` |
 
 A stack's plugin, or `[projects.<name>.tasks.package]` in `mnci.toml`, can

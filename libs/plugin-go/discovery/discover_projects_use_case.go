@@ -42,7 +42,7 @@ func Discover(workspaceRoot string, manifests []string) (protocol.DiscoverResult
 			Kind:     kind,
 			Exports:  []string{mod.Path},
 			Imports:  imports,
-			Tasks:    Tasks(name, kind, mod.Native),
+			Tasks:    Tasks(name, root, kind, mod.Native),
 			Stack:    mod.Stack,
 		}
 		if mod.Native {

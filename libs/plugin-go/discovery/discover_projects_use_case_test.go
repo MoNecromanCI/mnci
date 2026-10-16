@@ -44,7 +44,7 @@ func TestDiscover(t *testing.T) {
 	if !reflect.DeepEqual(api.Imports, []string{"example.com/acme/libs/core/greeting", "fmt"}) {
 		t.Fatalf("api imports %v", api.Imports)
 	}
-	if api.Tasks["build"].Outputs[0] != "dist" || api.Tasks["start"].Command[1] != "run" {
+	if api.Tasks["build"].Outputs[0] != "../../dist/apps/api" || api.Tasks["start"].Command[1] != "run" {
 		t.Fatalf("api tasks %+v", api.Tasks)
 	}
 	if sdk.Kind != protocol.ProjectPackage || sdk.TagPrefix != "packages/sdk/v" {
@@ -73,7 +73,7 @@ func TestANativeModuleIsTaggedAndBuildsWithCgo(t *testing.T) {
 	if plain, _ := ParseModule("module example.com/x\n"); plain.Native {
 		t.Fatal("a module without the comment is not native")
 	}
-	for name, task := range Tasks("probe", protocol.ProjectApp, true) {
+	for name, task := range Tasks("probe", "apps/probe", protocol.ProjectApp, true) {
 		if task.Env["CGO_ENABLED"] != "1" {
 			t.Errorf("%s does not build with cgo", name)
 		}

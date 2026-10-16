@@ -20,7 +20,7 @@ structure plugin such as `vertical-slices` can be either.
 
 | Convention | Languages | What it does |
 |---|---|---|
-| `vertical-slices` | Go, Python, Dart, Rust, Ruby, C++, .NET, JVM | a `slice-check` task, run before `lint` |
+| `vertical-slices` | Go, Python, Dart, Rust, Ruby, C++, .NET, JVM, PHP | a `slice-check` task, run before `lint` |
 
 ## How a convention combines with a project
 
@@ -52,6 +52,7 @@ files named for the role they play.
 | C, C++ | `slice-check` task (`smith slices check --lang cpp`) | both common spellings, snake_case (Google style) or PascalCase (LLVM, Qt), but not mixed in one folder; `src/` holds `main.cpp` and the slices, each a folder of `<name>_<role>` or `<Name><Role>` files; `include/<target>/` holds the public headers, a slice's API being the header named after it; tests in `tests/` are `<name>_test.cpp` or `<Name>Test.cpp`, test doubles in a `testing/` folder |
 | .NET (C#, F#) | `slice-check` task (`smith slices check --lang dotnet`) | a file is named after its type in PascalCase and folders are PascalCase namespaces: the root holds `Program.cs`, a slice is a folder of `<Name><Role>.cs` files (`PlaceOrderUseCase.cs`) whose API is the file named after it (`Orders/Orders.cs`); tests, in `tests/` or a `*.Tests` project, are `<Name>Tests.cs`, test doubles in a `Testing/` folder; `bin/`, `obj/`, `Properties/` and generated `*.Designer.cs`-style files are not checked |
 | JVM (Kotlin, Java, Android) | `slice-check` task (`smith slices check --lang jvm`) | a file is named after its class in PascalCase, with the role as a suffix (`PlaceOrderUseCase.kt`), and packages are lowercase; sources live in `src/<set>/<java or kotlin>/`, a slice being a package of `<Name><Role>` files, with entry points (`Main`, `<Name>Application`, an Android `<Name>Activity`) beside them; tests in `src/test/` are `<Name>Test`, test doubles in a `testing` package; `res/` and `resources/` are not checked |
+| PHP | `slice-check` task (`smith slices check --lang php`) | PSR-1 and PSR-4: a file holds one class named like it, in PascalCase with the role as a suffix (`PlaceOrderUseCase.php`), and folders below `src/` and `tests/` are PascalCase namespaces; `src/` holds the slices (and a framework `Kernel.php`); tests mirror `src/` under `tests/` as `<Name>Test.php`, test doubles in a `Testing/` folder |
 | Node | `@mnci/eslint-config`'s vertical-slice rules, in `lint` (the `eslint` toolchain plugin of the `node-jest` and `node-vitest` stacks) | the same rules, plus slice boundaries and cycles |
 
 The roles are `handler`, `use_case`, `algorithm`, `policy`, `model`,

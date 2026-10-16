@@ -258,6 +258,34 @@ func TestCheckJvm(t *testing.T) {
 	}
 }
 
+func TestCheckPhp(t *testing.T) {
+	root := tree(t,
+		"composer.json", "index.php", "config/app.php", "public/index.php",
+		"src/Kernel.php", "src/Loose.php",
+		"src/Greeting/GreetUseCase.php", "src/Greeting/Stuff.php", "src/orders/PlaceOrderUseCase.php", "src/Helpers/FormatMapper.php",
+		"tests/bootstrap.php", "tests/Greeting/GreetUseCaseTest.php", "tests/Testing/FakeClock.php", "tests/Sample.php",
+	)
+	r, err := Check(root, "php")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := strings.Join(r.Problems, "\n")
+	for _, want := range []string{
+		"src/Loose.php - src/ holds the slice folders",
+		"src/Greeting/Stuff.php - a class in a slice is <Name><Role>.php",
+		"src/orders/ - a PHP folder is a PascalCase namespace",
+		`src/Helpers/ - "Helpers" is a junk drawer`,
+		"tests/Sample.php - a test is <Name>Test.php",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q in:\n%s", want, got)
+		}
+	}
+	if len(r.Problems) != 5 {
+		t.Errorf("want 5 problems, got:\n%s", got)
+	}
+}
+
 func TestCheckWarnsAboutLargeSlices(t *testing.T) {
 	var files []string
 	for i := range SliceSize + 1 {

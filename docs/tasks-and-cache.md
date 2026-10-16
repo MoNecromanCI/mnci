@@ -37,7 +37,9 @@ Every build writes to one directory at the workspace root, `dist/`, in a path
 that mirrors the project's: `apps/web` builds into `dist/apps/web/`. Nothing is
 written into a source tree, and deleting `dist/` cleans everything.
 `dist/drop/` holds what `mnci ci pack` keeps, and `dist/release/` holds release
-assets.
+assets. A tool that builds the whole workspace into one directory gets its own
+folder there: Cargo builds into `dist/cargo` (`target-dir` in
+`.cargo/config.toml`, written with the first crate).
 
 | Language | Builds to `dist/<project dir>/` |
 |---|---|

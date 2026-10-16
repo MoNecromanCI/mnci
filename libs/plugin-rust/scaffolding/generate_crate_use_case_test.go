@@ -37,8 +37,8 @@ func TestGenerateMakesAWorkspaceThenAddsToIt(t *testing.T) {
 			t.Errorf("missing %s", f)
 		}
 	}
-	if ignore, _ := os.ReadFile(filepath.Join(ws, ".gitignore")); !strings.Contains(string(ignore), "target/") {
-		t.Fatal("target/ must be ignored")
+	if config, _ := os.ReadFile(filepath.Join(ws, ".cargo", "config.toml")); !strings.Contains(string(config), `target-dir = "dist/cargo"`) {
+		t.Fatalf("Cargo builds into dist/:\n%s", config)
 	}
 	if !strings.Contains(strings.Join(res.Files, ","), "Cargo.toml") {
 		t.Fatalf("files %v", res.Files)

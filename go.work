@@ -2,9 +2,10 @@ go 1.26.0
 
 use (
 	./apps/mnci
-	./libs/plugin-dotnet
+	./libs/plugin-bicep
 	./libs/plugin-cpp
 	./libs/plugin-dart
+	./libs/plugin-dotnet
 	./libs/plugin-go
 	./libs/plugin-jvm
 	./libs/plugin-node

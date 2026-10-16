@@ -11,6 +11,7 @@ import (
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/vitest"
 	nodep "github.com/MoNecromanCI/mnci/libs/plugin-node/plugin"
 	pythonp "github.com/MoNecromanCI/mnci/libs/plugin-python/plugin"
+	rustp "github.com/MoNecromanCI/mnci/libs/plugin-rust/plugin"
 	slicesp "github.com/MoNecromanCI/mnci/libs/plugin-vertical-slices/plugin"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/serve"
 )
@@ -20,6 +21,7 @@ var Builtins = map[string]func(version string) serve.Plugin{
 	"node":   func(v string) serve.Plugin { return nodep.New(v) },
 	"go":     func(v string) serve.Plugin { return gop.New(v) },
 	"python": func(v string) serve.Plugin { return pythonp.New(v) },
+	"rust":   func(v string) serve.Plugin { return rustp.New(v) },
 }
 
 // BuiltinAddons constructs each built-in plugin that is not a language:

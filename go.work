@@ -6,6 +6,7 @@ use (
 	./libs/plugin-node
 	./libs/plugin-node-toolchains
 	./libs/plugin-python
+	./libs/plugin-rust
 	./libs/plugin-vertical-slices
 	./packages/plugin-sdk
 )

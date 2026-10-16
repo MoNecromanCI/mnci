@@ -31,7 +31,7 @@ func Root(version string) *cobra.Command {
 	root := &cobra.Command{
 		Use:   "mnci",
 		Short: "A simple monorepo tool: add apps, libs and packages; build, test, release",
-		Long: `mnci runs a monorepo in Node, Go and Python (and anything a plugin adds):
+		Long: `mnci runs a monorepo in Node, Go, Python and Rust (and anything a plugin adds):
 it scaffolds projects, runs their tasks in dependency order from a cache,
 generates CI pipelines, and releases packages from conventional commits.`,
 		Example: `  mnci                      open the interactive menu (in a terminal)

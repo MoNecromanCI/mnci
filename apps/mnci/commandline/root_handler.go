@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/MoNecromanCI/mnci/apps/mnci/adoption"
 	"github.com/MoNecromanCI/mnci/apps/mnci/devservers"
+	"github.com/MoNecromanCI/mnci/apps/mnci/mcpserver"
 	"github.com/MoNecromanCI/mnci/apps/mnci/npmpack"
 	"github.com/MoNecromanCI/mnci/apps/mnci/pipelinetemplate"
 	"os"
@@ -60,6 +61,7 @@ generates CI pipelines, and releases packages from conventional commits.`,
 	add("ship", release.Command(version), cipipeline.Command(version), pipelinetemplate.Command(version))
 	add("inspect", graphview.Commands(version)...)
 	add("inspect", clicontract.Commands(version)...)
+	add("inspect", mcpserver.Command(version))
 	add("inspect", doctor.Command(version), explain.Command(version), whymiss.Command(version), pluginhost.Command(version), stackview.Command(version), slicecheck.Command())
 	return root
 }

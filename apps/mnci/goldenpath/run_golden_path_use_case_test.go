@@ -319,6 +319,14 @@ func TestGoldenPath(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(w.dir, ".gitlab-ci.yml")); err == nil {
 		t.Fatal("dropping gitlab deletes the pipeline mnci wrote")
 	}
+	// An AI assistant sees the same workspace over MCP.
+	mcp := exec.Command(w.bin, "mcp")
+	mcp.Dir, mcp.Env = w.dir, append(os.Environ(), w.env...)
+	mcp.Stdin = strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}` + "\n" +
+		`{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"mnci_projects"}}` + "\n")
+	if out, err := mcp.Output(); err != nil || !strings.Contains(string(out), `"serverInfo"`) || !strings.Contains(string(out), `$ mnci projects --json`) || !strings.Contains(string(out), `\"name\": \"worker\"`) {
+		t.Fatalf("mnci mcp: %v\n%s", err, out)
+	}
 	// The dev container installs what CI installs, at the same versions.
 	devcontainer, _ := os.ReadFile(filepath.Join(w.dir, ".devcontainer", "devcontainer.json"))
 	for _, want := range []string{"features/node:1", "features/go:1", "features/python:1", `"golangciLintVersion": "2.14.0"`, "&& ", "/.local/bin/mnci", ` ci setup"`} {

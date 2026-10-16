@@ -21,3 +21,23 @@ written against the TypeScript mnci.
 
 Set `MNCI_NO_UPDATE_CHECK=1` to stop `mnci info` asking GitHub for the newest
 release.
+
+## AI assistants (MCP)
+
+`mnci mcp` serves the workspace over the Model Context Protocol on stdin and
+stdout. Register it as an MCP server whose command is `mnci mcp`, started in
+the workspace. For example, in a client's JSON configuration:
+
+```json
+{ "mcpServers": { "mnci": { "command": "mnci", "args": ["mcp"] } } }
+```
+
+The read-only tools (`mnci_projects`, `mnci_graph`, `mnci_affected`,
+`mnci_kinds`, `mnci_stacks`, `mnci_commands`, `mnci_info`, `mnci_doctor`,
+`mnci_release_preview`, `mnci_updates`) are marked so a client may run them
+without asking. The others change the workspace: `mnci_run`,
+`mnci_add_project`, `mnci_remove_project`, `mnci_install`, `mnci_uninstall`,
+`mnci_sync` and `mnci_pipeline`. Each tool runs the mnci command it stands for
+and returns its output headed by that command line (`$ mnci install -w web
+zod`), so you can see and repeat exactly what was done. Values become single
+arguments, and one that looks like an option is refused.

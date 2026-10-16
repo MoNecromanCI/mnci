@@ -11,6 +11,7 @@ type PackageManifest struct {
 	PeerDependencies     map[string]string `json:"peerDependencies"`
 	OptionalDependencies map[string]string `json:"optionalDependencies"`
 	Mnci                 struct {
-		Kind string `json:"kind"`
+		Kind  string `json:"kind"`
+		Stack string `json:"stack"`
 	} `json:"mnci"`
 }

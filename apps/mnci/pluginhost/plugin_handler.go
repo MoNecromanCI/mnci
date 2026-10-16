@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/serve"
 	"github.com/spf13/cobra"
 )
@@ -33,15 +34,20 @@ func Command(version string) *cobra.Command {
 		Short: "List the built-in plugins and what each can do",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			type row struct {
-				Name         string `json:"name"`
-				Capabilities any    `json:"capabilities"`
+				Name         string          `json:"name"`
+				Roles        []protocol.Role `json:"roles"`
+				Provides     []string        `json:"provides,omitempty"`
+				Capabilities any             `json:"capabilities"`
 			}
 			var rows []row
-			for _, name := range BuiltinNames() {
-				rows = append(rows, row{name, serve.CapabilitiesOf(Builtins[name](version))})
-			}
-			for _, name := range sortedNames(BuiltinConventions) {
-				rows = append(rows, row{name, serve.CapabilitiesOf(BuiltinConventions[name](version))})
+			for _, name := range append(BuiltinNames(), sortedNames(BuiltinAddons)...) {
+				ctor, _ := Builtin(name)
+				p := ctor(version)
+				info, err := p.Describe(protocol.InitializeParams{})
+				if err != nil {
+					return err
+				}
+				rows = append(rows, row{name, info.EffectiveRoles(), info.Provides, serve.CapabilitiesOf(p)})
 			}
 			if asJSON {
 				enc := json.NewEncoder(cmd.OutOrStdout())
@@ -49,7 +55,11 @@ func Command(version string) *cobra.Command {
 				return enc.Encode(rows)
 			}
 			for _, r := range rows {
-				fmt.Fprintf(cmd.OutOrStdout(), "%-8s %+v\n", r.Name, r.Capabilities)
+				roles := make([]string, len(r.Roles))
+				for i, role := range r.Roles {
+					roles[i] = string(role)
+				}
+				fmt.Fprintf(cmd.OutOrStdout(), "%-16s %-28s %+v\n", r.Name, strings.Join(roles, ","), r.Capabilities)
 			}
 			return nil
 		},

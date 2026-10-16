@@ -1,4 +1,4 @@
-package convert
+package jsondoc
 
 import (
 	"bytes"
@@ -93,6 +93,28 @@ func (d *Document) Object(key string, create bool) *Document {
 // SetString sets a string value, keeping the key's position.
 func (d *Document) SetString(key, value string) {
 	d.set(key, json.RawMessage(quote(value)))
+}
+
+// SetJSON sets any JSON-encodable value, keeping the key's position. An
+// object becomes an editable Document.
+func (d *Document) SetJSON(key string, value any) error {
+	var b bytes.Buffer
+	enc := json.NewEncoder(&b)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(value); err != nil {
+		return err
+	}
+	raw := bytes.TrimSpace(b.Bytes())
+	if len(raw) > 0 && raw[0] == '{' {
+		child, err := ParseDocument(raw)
+		if err != nil {
+			return err
+		}
+		d.set(key, child)
+		return nil
+	}
+	d.set(key, json.RawMessage(raw))
+	return nil
 }
 
 // Delete removes a key.

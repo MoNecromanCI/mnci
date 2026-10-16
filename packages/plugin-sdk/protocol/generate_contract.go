@@ -9,6 +9,9 @@ type GenerateParams struct {
 	Directory string `json:"directory"`
 	// Workspace carries what a template needs to know about the monorepo.
 	Workspace WorkspaceInfo `json:"workspace"`
+	// Stack is the stack the project is created with. The plugin that writes
+	// the manifest records it there, so discovery reports it back.
+	Stack string `json:"stack,omitempty"`
 }
 
 // WorkspaceInfo is the subset of workspace settings plugins may use.

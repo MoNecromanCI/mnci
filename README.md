@@ -55,6 +55,7 @@ npm, PyPI, Homebrew and Scoop packages are planned (epic #18).
 - [Tasks, cache and affected](docs/tasks-and-cache.md)
 - [CI pipelines](docs/ci.md)
 - [Releasing](docs/releasing.md)
+- [Stacks: the plugins each project is built with](docs/stacks.md)
 - [Conventions (vertical slices)](docs/conventions.md)
 - [Plugins and the plugin protocol](docs/plugins.md)
 - [Working on mnci](docs/development.md)

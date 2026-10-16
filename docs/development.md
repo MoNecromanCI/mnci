@@ -12,6 +12,8 @@ packages/plugin-sdk/    the plugin protocol, framing, runtime, host client and h
 libs/plugin-node/       the Node language plugin
 libs/plugin-go/         the Go language plugin
 libs/plugin-python/     the Python language plugin
+libs/plugin-vertical-slices/    the vertical-slices structure plugin
+libs/plugin-node-toolchains/   the eslint, jest and vitest toolchain plugins and the node-jest, node-vitest stacks
 install.sh, install.ps1 installers used by people and by generated pipelines
 docs/                   documentation, decisions and research
 ```
@@ -26,7 +28,7 @@ Core slices in `apps/mnci`:
 | Slice | Outcome |
 |---|---|
 | `workspace` | find the root, load `mnci.toml` |
-| `pluginhost` | start plugins, route calls, `mnci plugin` |
+| `pluginhost` | start plugins, route calls, the stack catalog, `mnci plugin` |
 | `projectgraph` | projects, edges from imports, overrides with provenance, selection |
 | `taskgraph` | expand requested tasks with their dependencies |
 | `taskcache` | cache keys, the `Storage` interface and local backend, save/restore/prune |
@@ -38,7 +40,7 @@ Core slices in `apps/mnci`:
 | `nxworkspace`, `convertplan`, `convert` | read an Nx workspace, plan its conversion, apply it (`mnci convert`) |
 | `githubrelease` | GitHub Releases and their assets |
 | `slicecheck` | `mnci slices check`, the vertical-slices convention's check |
-| `doctor`, `explain`, `whymiss`, `graphview` | inspection commands |
+| `doctor`, `explain`, `whymiss`, `stackview`, `graphview` | inspection commands |
 | `session` | open a workspace for a command |
 | `gitclient` | every git call |
 | `commandline` | assemble the command tree |
@@ -47,7 +49,7 @@ Core slices in `apps/mnci`:
 ## Checks
 
 ```sh
-for m in apps/mnci libs/plugin-node libs/plugin-go libs/plugin-python libs/plugin-vertical-slices packages/plugin-sdk; do
+for m in apps/mnci libs/plugin-node libs/plugin-node-toolchains libs/plugin-go libs/plugin-python libs/plugin-vertical-slices packages/plugin-sdk; do
   (cd $m && go vet ./... && go test ./... && golangci-lint run ./... && go run github.com/MoNecromanCI/mnci/apps/mnci slices check .)
 done
 

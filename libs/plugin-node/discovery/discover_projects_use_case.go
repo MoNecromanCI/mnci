@@ -49,6 +49,7 @@ func describe(workspaceRoot, root, manifest string) (protocol.Project, error) {
 		Language: "node",
 		Kind:     projectkind.Resolve(pkg.Mnci.Kind, root, fallback),
 		Version:  pkg.Version,
+		Stack:    pkg.Mnci.Stack,
 		Tasks:    map[string]protocol.Task{},
 	}
 	if pkg.Name != "" {

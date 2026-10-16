@@ -79,6 +79,11 @@ func Validate(cfg *Config) error {
 	if strings.TrimSpace(cfg.Workspace.Name) == "" {
 		return fmt.Errorf("%s: [workspace] name is required", FileName)
 	}
+	for name, st := range cfg.Stacks {
+		if strings.TrimSpace(st.Language) == "" {
+			return fmt.Errorf("%s: [stacks.%s] needs a language plugin (language = \"node\")", FileName, name)
+		}
+	}
 	if len(cfg.CI.Providers) == 0 {
 		cfg.CI.Providers = []string{"github"}
 	}

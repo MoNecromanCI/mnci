@@ -15,7 +15,8 @@ import (
 // additions to the projects it applies to, and merges them: a new task is
 // added unless the project already has one by that name, and extra
 // dependencies are added to existing tasks. It returns the projects each
-// convention applied to, by convention name.
+// convention applies to, by convention name, including conventions that add
+// no tasks.
 func ApplyConventions(projects []*Project, plugins *pluginhost.PluginSet, cfg workspace.Config) (map[string][]string, error) {
 	applied := map[string][]string{}
 	for _, c := range plugins.Clients {
@@ -24,14 +25,19 @@ func ApplyConventions(projects []*Project, plugins *pluginhost.PluginSet, cfg wo
 		if !configured {
 			continue
 		}
-		if !c.Supports(protocol.MethodContribute) {
+		if c.Info.Kind != protocol.KindConvention {
 			return nil, fmt.Errorf("mnci.toml [conventions.%s]: %s is not a convention plugin", name, name)
 		}
 		targets, err := ConventionTargets(name, projects, c.Info.Languages, conv)
 		if err != nil {
 			return nil, err
 		}
-		if len(targets) == 0 {
+		for _, p := range targets {
+			applied[name] = append(applied[name], p.Name)
+		}
+		// A convention that only sets projects up when they are generated
+		// (eslint, jest) adds no tasks.
+		if len(targets) == 0 || !c.Supports(protocol.MethodContribute) {
 			continue
 		}
 		params := protocol.ContributeParams{Projects: make([]protocol.Project, len(targets))}
@@ -43,7 +49,6 @@ func ApplyConventions(projects []*Project, plugins *pluginhost.PluginSet, cfg wo
 			return nil, fmt.Errorf("convention %s: %w", name, err)
 		}
 		for _, p := range targets {
-			applied[name] = append(applied[name], p.Name)
 			merge(p, res.Projects[p.Name], "convention "+name)
 		}
 	}
@@ -62,6 +67,12 @@ func merge(p *Project, c protocol.Contribution, source string) {
 			continue
 		}
 		p.Tasks[name] = c.Tasks[name]
+		for _, f := range TaskFields {
+			p.contributed[name+"."+f] = source
+		}
+	}
+	for _, name := range sortedTaskNames(c.Replace) {
+		p.Tasks[name] = c.Replace[name]
 		for _, f := range TaskFields {
 			p.contributed[name+"."+f] = source
 		}

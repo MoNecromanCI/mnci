@@ -14,6 +14,7 @@ import (
 	"github.com/MoNecromanCI/mnci/apps/mnci/release"
 	"github.com/MoNecromanCI/mnci/apps/mnci/scaffold"
 	"github.com/MoNecromanCI/mnci/apps/mnci/slicecheck"
+	"github.com/MoNecromanCI/mnci/apps/mnci/stackview"
 	"github.com/MoNecromanCI/mnci/apps/mnci/taskrun"
 	"github.com/MoNecromanCI/mnci/apps/mnci/tui"
 	"github.com/MoNecromanCI/mnci/apps/mnci/whymiss"
@@ -47,7 +48,7 @@ generates CI pipelines, and releases packages from conventional commits.`,
 	add("work", taskrun.Commands(version)...)
 	add("ship", release.Command(version), cipipeline.Command(version))
 	add("inspect", graphview.Commands(version)...)
-	add("inspect", doctor.Command(version), explain.Command(version), whymiss.Command(version), pluginhost.Command(version), slicecheck.Command())
+	add("inspect", doctor.Command(version), explain.Command(version), whymiss.Command(version), pluginhost.Command(version), stackview.Command(version), slicecheck.Command())
 	return root
 }
 

@@ -6,12 +6,15 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
+	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/projectkind"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
@@ -20,13 +23,20 @@ import (
 type AddOptions struct {
 	Kind string
 	Name string
-	// Lang selects the plugin; empty picks the workspace's only language.
+	// Lang selects the language plugin; empty picks the stack's, or the
+	// workspace's only language.
 	Lang string
-	Out  io.Writer
+	// Stack is the stack the project is built with; empty means the
+	// workspace default for its language, if any.
+	Stack string
+	Out   io.Writer
 }
 
-// AddProject generates a project through its language plugin and regenerates
-// the pipelines so CI knows about the new toolchain at once.
+// AddProject generates a project: its stack's scaffold (or the language
+// plugin) writes it and records the stack, then each other plugin of the
+// stack and each configured convention that applies adds its part (lint,
+// tests), and the pipelines are regenerated so CI knows about the new
+// toolchain at once.
 func AddProject(s *session.Session, opts AddOptions) (*protocol.GenerateResult, error) {
 	kind := protocol.ProjectKind(opts.Kind)
 	switch kind {
@@ -40,34 +50,45 @@ func AddProject(s *session.Session, opts AddOptions) (*protocol.GenerateResult, 
 	if s.Graph.Get(opts.Name) != nil {
 		return nil, fmt.Errorf("a project named %q already exists (%s)", opts.Name, s.Graph.Get(opts.Name).Root)
 	}
-	lang, err := chooseLanguage(s, opts.Lang)
+	language, st, err := chooseStack(s, opts)
 	if err != nil {
 		return nil, err
 	}
-	plugin, err := s.Plugins.ForLanguage(lang)
-	if err != nil {
-		return nil, err
+	generator := language
+	if st.Scaffold != "" {
+		generator = s.Plugins.Get(st.Scaffold)
 	}
-	if !plugin.Info.Capabilities.Generate {
-		return nil, fmt.Errorf("plugin %s cannot generate projects", plugin.Info.Plugin.Name)
+	if !generator.Supports(protocol.MethodGenerate) {
+		return nil, fmt.Errorf("plugin %s cannot generate projects", generator.Info.Plugin.Name)
 	}
 	dir := projectkind.Directory(kind) + "/" + opts.Name
 	if _, err := os.Stat(filepath.Join(s.Root, filepath.FromSlash(dir))); err == nil {
 		return nil, fmt.Errorf("%s already exists", dir)
 	}
-	fmt.Fprintf(opts.Out, "Adding %s %s (%s) in %s\n", opts.Kind, opts.Name, plugin.Info.Plugin.Name, dir)
+	how := language.Info.Plugin.Name
+	if st.Name != "" {
+		how = "stack " + st.Name
+	}
+	fmt.Fprintf(opts.Out, "Adding %s %s (%s) in %s\n", opts.Kind, opts.Name, how, dir)
 	var res protocol.GenerateResult
-	params := protocol.GenerateParams{Kind: kind, Name: opts.Name, Directory: dir, Workspace: protocol.WorkspaceInfo{
+	params := protocol.GenerateParams{Kind: kind, Name: opts.Name, Directory: dir, Stack: st.Name, Workspace: protocol.WorkspaceInfo{
 		Name: s.Config.Workspace.Name, Scope: s.Config.Workspace.Scope, ModulePrefix: s.Config.Workspace.ModulePrefix,
 	}}
-	if err := plugin.Call(protocol.MethodGenerate, params, &res, 20*time.Minute); err != nil {
+	if err := generator.Call(protocol.MethodGenerate, params, &res, 20*time.Minute); err != nil {
 		return nil, err
 	}
 	if err := s.Refresh(); err != nil {
 		return &res, err
 	}
-	if s.Graph.Get(opts.Name) == nil {
+	project := s.Graph.Get(opts.Name)
+	if project == nil {
 		return &res, errors.New("the plugin generated files, but no project named " + opts.Name + " was discovered")
+	}
+	if project.Stack != st.Name {
+		return &res, fmt.Errorf("%s generated %s, but its manifest does not record stack %s", generator.Info.Plugin.Name, opts.Name, st.Name)
+	}
+	if err := addParts(s, project, st, params, &res, opts.Out); err != nil {
+		return &res, err
 	}
 	changed, _, err := cipipeline.Regenerate(s)
 	if err != nil {
@@ -76,6 +97,41 @@ func AddProject(s *session.Session, opts AddOptions) (*protocol.GenerateResult, 
 	res.Files = append(res.Files, changed...)
 	sort.Strings(res.Files)
 	return &res, nil
+}
+
+// chooseStack resolves the language plugin and the stack of a new project.
+func chooseStack(s *session.Session, opts AddOptions) (*host.Client, protocol.Stack, error) {
+	if opts.Stack != "" {
+		st, err := s.Stacks.Get(opts.Stack)
+		if err != nil {
+			return nil, st, err
+		}
+		language := s.Plugins.Get(st.Language)
+		if opts.Lang != "" {
+			asked, err := s.Plugins.ForLanguage(opts.Lang)
+			if err != nil {
+				return nil, st, err
+			}
+			if asked != language {
+				return nil, st, fmt.Errorf("stack %s is for %s projects, not %s", st.Name, st.Language, opts.Lang)
+			}
+		}
+		return language, st, nil
+	}
+	lang, err := chooseLanguage(s, opts.Lang)
+	if err != nil {
+		return nil, protocol.Stack{}, err
+	}
+	language, err := s.Plugins.ForLanguage(lang)
+	if err != nil {
+		return nil, protocol.Stack{}, err
+	}
+	name := s.Config.DefaultStacks[language.Info.Plugin.Name]
+	if name == "" {
+		return language, protocol.Stack{}, nil
+	}
+	st, err := s.Stacks.Get(name)
+	return language, st, err
 }
 
 func chooseLanguage(s *session.Session, lang string) (string, error) {
@@ -91,5 +147,46 @@ func chooseLanguage(s *session.Session, lang string) (string, error) {
 			return l, nil
 		}
 	}
-	return "", fmt.Errorf("choose a language with --lang (%s)", strings.Join(s.Plugins.Languages(), ", "))
+	return "", fmt.Errorf("choose a language with --lang (%s) or a stack with --stack", strings.Join(s.Plugins.Languages(), ", "))
+}
+
+// addParts asks the stack's other plugins, then each configured convention
+// that applies to the new project, to add their files, then rediscovers.
+func addParts(s *session.Session, project *projectgraph.Project, st protocol.Stack, params protocol.GenerateParams, res *protocol.GenerateResult, out io.Writer) error {
+	var parts []*host.Client
+	for _, n := range st.Plugins() {
+		parts = append(parts, s.Plugins.Get(n))
+	}
+	for _, c := range s.Plugins.Clients {
+		name := c.Info.Plugin.Name
+		conv, configured := s.Config.Conventions[name]
+		if !configured || slices.Contains(st.Plugins(), name) {
+			continue
+		}
+		targets, err := projectgraph.ConventionTargets(name, []*projectgraph.Project{project}, c.Info.Languages, conv)
+		if err != nil {
+			return err
+		}
+		if len(targets) > 0 {
+			parts = append(parts, c)
+		}
+	}
+	ran := false
+	for _, c := range parts {
+		if !c.Supports(protocol.MethodGenerate) {
+			continue
+		}
+		fmt.Fprintf(out, "Adding %s\n", c.Info.Plugin.Name)
+		var added protocol.GenerateResult
+		if err := c.Call(protocol.MethodGenerate, params, &added, 20*time.Minute); err != nil {
+			return fmt.Errorf("plugin %s: %w", c.Info.Plugin.Name, err)
+		}
+		res.Files = append(res.Files, added.Files...)
+		res.Notes = append(res.Notes, added.Notes...)
+		ran = true
+	}
+	if !ran {
+		return nil
+	}
+	return s.Refresh()
 }

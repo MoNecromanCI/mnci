@@ -50,6 +50,7 @@ func Discover(workspaceRoot string, manifests []string) (protocol.DiscoverResult
 			Root:     root,
 			Language: "python",
 			Kind:     kind,
+			Stack:    py.Tool.Mnci.Stack,
 			Exports:  []string{importName},
 			Imports:  dedupe(imports),
 			Version:  py.Project.Version,

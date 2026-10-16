@@ -25,8 +25,11 @@ type Project struct {
 	Release *workspace.ProjectRelease `json:"release,omitempty"`
 	// Conventions are the conventions that apply to the project, sorted.
 	Conventions []string `json:"conventions,omitempty"`
-	// contributed maps "task.field" to the convention that set it.
+	// contributed maps "task.field" to the plugin or convention that set it.
 	contributed map[string]string
+	// stackPlugins are the plugins of the project's stack, other than its
+	// language plugin.
+	stackPlugins []string
 }
 
 // Releases reports whether the project takes part in releases: every
@@ -35,10 +38,11 @@ func (p *Project) Releases() bool {
 	return p.Kind == protocol.ProjectPackage || (p.Kind == protocol.ProjectApp && p.Release != nil)
 }
 
-// ServedBy reports whether a plugin owns the project or, as a convention,
-// applies to it: the projects a plugin's ci and doctor answers cover.
+// ServedBy reports whether a plugin owns the project, is part of its stack,
+// or applies to it as a convention: the projects a plugin's ci and doctor
+// answers cover.
 func (p *Project) ServedBy(plugin string) bool {
-	return p.Plugin == plugin || slices.Contains(p.Conventions, plugin)
+	return p.Plugin == plugin || slices.Contains(p.stackPlugins, plugin) || slices.Contains(p.Conventions, plugin)
 }
 
 // Graph is every project and the edges between them.

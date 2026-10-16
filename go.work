@@ -4,6 +4,7 @@ use (
 	./apps/mnci
 	./libs/plugin-go
 	./libs/plugin-node
+	./libs/plugin-node-toolchains
 	./libs/plugin-python
 	./libs/plugin-vertical-slices
 	./packages/plugin-sdk

@@ -42,7 +42,7 @@ func NewCommand(version string) *cobra.Command {
 
 // AddCommand is `mnci add`.
 func AddCommand(version string) *cobra.Command {
-	var lang string
+	var lang, stack string
 	cmd := &cobra.Command{
 		Use:   "add <app|lib|package> <name>",
 		Short: "Add an app, an internal lib or a publishable package",
@@ -55,6 +55,7 @@ func AddCommand(version string) *cobra.Command {
 The project lints, type-checks, tests and builds immediately, and the CI
 pipelines are regenerated to install its toolchain.`,
 		Example: `  mnci add app web --lang node
+  mnci add app api --stack node-vitest
   mnci add lib core --lang go
   mnci add package sdk --lang python`,
 		Args: cobra.ExactArgs(2),
@@ -64,7 +65,7 @@ pipelines are regenerated to install its toolchain.`,
 				return err
 			}
 			defer s.Close()
-			res, err := AddProject(s, AddOptions{Kind: args[0], Name: args[1], Lang: lang, Out: cmd.OutOrStdout()})
+			res, err := AddProject(s, AddOptions{Kind: args[0], Name: args[1], Lang: lang, Stack: stack, Out: cmd.OutOrStdout()})
 			if err != nil {
 				return err
 			}
@@ -77,6 +78,7 @@ pipelines are regenerated to install its toolchain.`,
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&lang, "lang", "l", "", "language: node, go, python (default: the workspace's only language)")
+	cmd.Flags().StringVarP(&lang, "lang", "l", "", "language: node, go, python (default: the stack's, or the workspace's only language)")
+	cmd.Flags().StringVarP(&stack, "stack", "s", "", "stack the project is built with (default: [default_stacks] in mnci.toml; mnci stacks lists them)")
 	return cmd
 }

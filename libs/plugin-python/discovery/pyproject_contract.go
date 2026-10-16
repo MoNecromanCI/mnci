@@ -15,7 +15,8 @@ type PyProject struct {
 	} `toml:"project"`
 	Tool struct {
 		Mnci struct {
-			Kind string `toml:"kind"`
+			Kind  string `toml:"kind"`
+			Stack string `toml:"stack"`
 		} `toml:"mnci"`
 		// Mypy is present when the project configures mypy, which gives it
 		// a typecheck task.

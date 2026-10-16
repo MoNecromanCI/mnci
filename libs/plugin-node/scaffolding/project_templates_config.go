@@ -1,7 +1,8 @@
 package scaffolding
 
-// The greeting slice every project starts with: a contract, a use case, its
-// spec and the slice's index (its only public door).
+// The greeting slice every project starts with: a contract, a use case and
+// the slice's index (its only public door). A test-runner convention (jest,
+// vitest) adds the use case's spec.
 var sliceTemplates = map[string]string{
 	"[[.Dir]]/src/greeting/greeting.contract.ts": `/** A greeting addressed to someone. */
 export interface Greeting {
@@ -18,14 +19,6 @@ export interface Greeting {
 export function greet (name: string): Greeting {
   return { message: ` + "`Hello, ${name}!`" + ` }
 }
-`,
-	"[[.Dir]]/src/greeting/greet.use-case.spec.ts": `import { greet } from './greet.use-case'
-
-describe('greet', () => {
-  it('greets by name', () => {
-    expect(greet('world').message).toBe('Hello, world!')
-  })
-})
 `,
 	"[[.Dir]]/src/greeting/index.ts": `export { greet } from './greet.use-case'
 export type { Greeting } from './greeting.contract'
@@ -51,16 +44,13 @@ var appTemplates = map[string]string{
   "name": "[[.Package]]",
   "version": "0.0.0",
   "private": true,
-  "mnci": { "kind": "app" },
+  "mnci": { "kind": "app"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "jest",
-    "lint": "eslint .",
     "start": "node dist/main.js"
-  },
-  "jest": { "preset": "ts-jest", "testEnvironment": "node", "roots": ["<rootDir>/src"] }
+  }
 }
 `,
 	"[[.Dir]]/src/main.ts": `import { greet } from './greeting'
@@ -74,16 +64,13 @@ var libTemplates = map[string]string{
   "name": "[[.Package]]",
   "version": "0.0.0",
   "private": true,
-  "mnci": { "kind": "lib" },
+  "mnci": { "kind": "lib"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "jest",
-    "lint": "eslint ."
-  },
-  "jest": { "preset": "ts-jest", "testEnvironment": "node", "roots": ["<rootDir>/src"] }
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
 }
 `,
 	"[[.Dir]]/src/index.ts": `export { greet } from './greeting'
@@ -97,18 +84,15 @@ var packageTemplates = map[string]string{
   "version": "0.0.0",
   "description": "[[.Name]]",
   "license": "MIT",
-  "mnci": { "kind": "package" },
+  "mnci": { "kind": "package"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": ["dist"],
   "publishConfig": { "access": "public" },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "jest",
-    "lint": "eslint ."
-  },
-  "jest": { "preset": "ts-jest", "testEnvironment": "node", "roots": ["<rootDir>/src"] }
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
 }
 `,
 	"[[.Dir]]/src/index.ts": `export { greet } from './greeting'
@@ -135,18 +119,9 @@ var workspaceTemplates = map[string]string{
     "declaration": true,
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node", "jest"]
+    "types": ["node"]
   }
 }
-`,
-	"eslint.config.mjs": `// Lint AND formatting for every Node project: @mnci/eslint-config carries the
-// TypeScript rules, JavaScript Standard Style and the vertical-slice rules.
-// Add your own blocks after the spread; later blocks win.
-import mnci from '@mnci/eslint-config'
-
-export default [
-  ...mnci(),
-]
 `,
 	".npmrc": `# Publishing authenticates with NODE_AUTH_TOKEN; installing public packages
 # needs no token, so an unset variable breaks nothing locally.

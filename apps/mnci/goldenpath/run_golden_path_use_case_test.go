@@ -87,13 +87,32 @@ func TestGoldenPath(t *testing.T) {
 		}
 	}
 
-	// 2. An app, a lib and a package in each language, with no config edits.
+	// 2. An app, a lib and a package in each language. Each project picks its
+	// stack: the language default (node-jest), a published one (node-vitest),
+	// or one mnci.toml declares (go-sliced).
+	toml, _ := os.ReadFile(filepath.Join(w.dir, "mnci.toml"))
+	w.write("mnci.toml", string(toml)+"\n[stacks.go-sliced]\nlanguage = \"go\"\nstructure = [\"vertical-slices\"]\n")
 	for _, add := range [][]string{
-		{"app", "web", "node"}, {"lib", "ui", "node"}, {"package", "sdk", "node"},
-		{"app", "api", "go"}, {"lib", "core", "go"}, {"package", "gokit", "go"},
-		{"app", "worker", "python"}, {"lib", "pyutil", "python"}, {"package", "pykit", "python"},
+		{"app", "web", "--lang", "node"}, {"lib", "ui", "--lang", "node"}, {"package", "sdk", "--stack", "node-vitest"},
+		{"app", "api", "--lang", "go"}, {"lib", "core", "--lang", "go"}, {"package", "gokit", "--stack", "go-sliced"},
+		{"app", "worker", "--lang", "python"}, {"lib", "pyutil", "--lang", "python"}, {"package", "pykit", "--lang", "python"},
 	} {
-		w.mnci(true, "add", add[0], add[1], "--lang", add[2])
+		w.mnci(true, append([]string{"add"}, add...)...)
+	}
+	for dir, want := range map[string][]string{
+		"apps/web/package.json":     {`"stack": "node-jest"`, `"test": "jest"`, `"lint": "eslint ."`},
+		"packages/sdk/package.json": {`"stack": "node-vitest"`, `"test": "vitest run"`, `"lint": "eslint ."`},
+		"packages/gokit/go.mod":     {"// mnci:stack go-sliced"},
+	} {
+		manifest, _ := os.ReadFile(filepath.Join(w.dir, filepath.FromSlash(dir)))
+		for _, s := range want {
+			if !strings.Contains(string(manifest), s) {
+				t.Fatalf("%s lacks %s:\n%s", dir, s, manifest)
+			}
+		}
+	}
+	if stacks := w.mnci(true, "stacks"); !strings.Contains(stacks, "node-vitest  (plugin vitest)") || !strings.Contains(stacks, "projects   sdk") || !strings.Contains(stacks, "go-sliced  (mnci.toml)") {
+		t.Fatalf("stacks:\n%s", stacks)
 	}
 	projects := w.mnci(true, "projects", "--json")
 	var list []struct{ Name, Kind, Language string }

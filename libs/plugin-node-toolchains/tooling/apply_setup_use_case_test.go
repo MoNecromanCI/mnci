@@ -1,0 +1,82 @@
+package tooling
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+)
+
+func TestApplyAddsOnlyWhatIsMissing(t *testing.T) {
+	installs := 0
+	Installer = func(string) error { installs++; return nil }
+	ws := t.TempDir()
+	write(t, ws, "package.json", `{"name": "acme", "devDependencies": {"jest": "1.0.0"}}`)
+	write(t, ws, "apps/web/package.json", `{"name": "@acme/web", "scripts": {"build": "tsc", "test": "mine"}}`)
+	write(t, ws, "tool.config.mjs", "// mine\n")
+	params := protocol.GenerateParams{Name: "web", Directory: "apps/web"}
+	setup := Setup{
+		RootFiles:       map[string]string{"tool.config.mjs": "// theirs\n", "other.json": "{}\n"},
+		DevDependencies: map[string]string{"jest": "^30.0.0", "ts-jest": "^29.0.0"},
+		Files:           map[string]string{"src/a.spec.ts": "test\n"},
+		Scripts:         map[string]string{"test": "jest", "lint": "eslint ."},
+		Fields:          map[string]any{"jest": map[string]any{"preset": "ts-jest"}},
+	}
+	res, err := Apply(ws, params, setup)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(res.Files, ","); got != "apps/web/package.json,apps/web/src/a.spec.ts,other.json,package.json" {
+		t.Fatalf("files %s", got)
+	}
+	if installs != 1 {
+		t.Fatalf("installs=%d", installs)
+	}
+	root := read(t, ws, "package.json")
+	if !strings.Contains(root, `"jest": "1.0.0"`) || !strings.Contains(root, `"ts-jest": "^29.0.0"`) {
+		t.Fatalf("root:\n%s", root)
+	}
+	project := read(t, ws, "apps/web/package.json")
+	for _, want := range []string{`"test": "mine"`, `"lint": "eslint ."`, `"preset": "ts-jest"`} {
+		if !strings.Contains(project, want) {
+			t.Fatalf("project lacks %s:\n%s", want, project)
+		}
+	}
+	if read(t, ws, "tool.config.mjs") != "// mine\n" {
+		t.Fatal("an existing root file was overwritten")
+	}
+
+	res, err = Apply(ws, params, setup)
+	if err != nil || len(res.Files) != 0 || installs != 1 {
+		t.Fatalf("a second apply changes nothing: %v %v installs=%d", res.Files, err, installs)
+	}
+}
+
+func TestApplyNeedsTheRootManifest(t *testing.T) {
+	Installer = func(string) error { return nil }
+	if _, err := Apply(t.TempDir(), protocol.GenerateParams{Directory: "apps/web"}, Setup{}); err == nil {
+		t.Fatal("a workspace without package.json must fail")
+	}
+}
+
+func write(t *testing.T, root, rel, body string) {
+	t.Helper()
+	p := filepath.Join(root, filepath.FromSlash(rel))
+	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func read(t *testing.T, root, rel string) string {
+	t.Helper()
+	b, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(rel)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
+}

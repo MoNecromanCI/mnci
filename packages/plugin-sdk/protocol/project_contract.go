@@ -33,6 +33,8 @@ type Project struct {
 	TagPrefix string          `json:"tagPrefix,omitempty"`
 	Tasks     map[string]Task `json:"tasks,omitempty"`
 	Tags      []string        `json:"tags,omitempty"`
+	// Stack is the stack recorded in the project's manifest, if any.
+	Stack string `json:"stack,omitempty"`
 }
 
 // ProjectKind is the universal kind vocabulary.

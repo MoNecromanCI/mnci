@@ -11,12 +11,21 @@ languages it supports, in a workspace that turns it on in `mnci.toml`:
 # exclude = ["legacy"]   # projects it leaves alone
 ```
 
-`mnci new` turns `vertical-slices` on. A converted workspace does not get it
+`mnci new` turns on `vertical-slices`. A converted workspace does not get it
 until you add the line, because an existing codebase rarely follows it yet.
 
-## How a convention's tasks combine with a project's
+A convention is any plugin applied workspace-wide. To give some projects a
+plugin and not others, put it in their [stack](stacks.md) instead: a
+structure plugin such as `vertical-slices` can be either.
 
-1. The language plugin discovers each project and its tasks.
+| Convention | Languages | What it does |
+|---|---|---|
+| `vertical-slices` | Go, Python | a `slice-check` task, run before `lint` |
+
+## How a convention combines with a project
+
+1. The language plugin discovers each project and its tasks, and the
+   project's [stack](stacks.md) adds its plugins' tasks.
 2. Each configured convention adds its tasks to the projects it applies to. A
    task the project already has is kept as it is; a convention can also add a
    dependency to an existing task (`lint` depends on `slice-check`).
@@ -25,7 +34,8 @@ until you add the line, because an existing codebase rarely follows it yet.
 `mnci explain <project>:<task>` shows where each field came from
 (`from convention vertical-slices`). A convention that answers `ci` or
 `doctor` is asked about the projects it applies to, so its pipeline steps and
-checks join the language plugins'.
+checks join the language plugins'. A convention that can `generate` adds its
+part to every new project it applies to.
 
 ## vertical-slices
 
@@ -36,7 +46,7 @@ files named for the role they play.
 |---|---|---|
 | Go | `slice-check` task (`mnci slices check --lang go`) | a file is `<name>_<role>.go` (`_test`, and `_windows`-style platform suffixes allowed); only `doc.go` and `main.go` sit at a module's root |
 | Python | `slice-check` task (`mnci slices check --lang python`) | a module is `<name>_<role>.py`, a test `test_<name>.py`; only `__init__.py` and `__main__.py` sit at a package's top folder; packages are snake_case |
-| Node | `@mnci/eslint-config`'s vertical-slice rules, in `lint` | the same rules, plus slice boundaries and cycles |
+| Node | `@mnci/eslint-config`'s vertical-slice rules, in `lint` (the `eslint` toolchain plugin of the `node-jest` and `node-vitest` stacks) | the same rules, plus slice boundaries and cycles |
 
 The roles are `handler`, `use_case`, `algorithm`, `policy`, `model`,
 `contract`, `mapper`, `validator`, `repository`, `client`, `store`,

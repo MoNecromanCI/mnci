@@ -30,6 +30,17 @@ type Toolchain struct {
 	// Install is a shell command that installs it, run on a provider the
 	// plugin gives no native step for.
 	Install string `json:"install,omitempty"`
+	// Devcontainer is the dev container feature that installs it at the
+	// same version, so the editor's container matches CI.
+	Devcontainer *DevcontainerFeature `json:"devcontainer,omitempty"`
+}
+
+// DevcontainerFeature is a dev container feature and its options
+// (https://containers.dev/features).
+type DevcontainerFeature struct {
+	// ID is the feature reference, e.g. "ghcr.io/devcontainers/features/go:1".
+	ID      string            `json:"id"`
+	Options map[string]string `json:"options,omitempty"`
 }
 
 // ActionStep is a provider-native step: a GitHub action or an Azure task,

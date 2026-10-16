@@ -1,4 +1,4 @@
-module github.com/MoNecromanCI/mnci/libs/plugin-python
+module github.com/monosmith-app/monosmith/libs/plugin-python
 
 go 1.26.0
 

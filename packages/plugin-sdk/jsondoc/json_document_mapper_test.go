@@ -29,7 +29,7 @@ func TestDocumentKeepsOrderAndEditsInPlace(t *testing.T) {
 	doc.Delete("nx")
 	doc.Object("scripts", false).SetString("build", "tsc -p tsconfig.lib.json")
 	doc.Object("scripts", false).SetString("test", "jest --ci")
-	doc.Object("mnci", true).SetString("kind", "package")
+	doc.Object("smith", true).SetString("kind", "package")
 	want := `{
   "name": "@acme/web",
   "version": "1.0.0",
@@ -43,7 +43,7 @@ func TestDocumentKeepsOrderAndEditsInPlace(t *testing.T) {
     "build": "tsc -p tsconfig.lib.json"
   },
   "count": 1.50,
-  "mnci": {
+  "smith": {
     "kind": "package"
   }
 }

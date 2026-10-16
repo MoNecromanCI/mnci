@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // comments strips // and /* */ comments, which tsconfig allows.
@@ -16,7 +16,7 @@ var comments = regexp.MustCompile(`(?s)/\*.*?\*/|(?m)^[ \t]*//[^\n]*`)
 // CheckBuildDir checks that a project that builds compiles into the
 // workspace's dist/<project dir>: the outDir of its tsconfig.build.json (or
 // tsconfig.json) must be there, or the build writes into the source tree
-// while mnci caches an empty directory.
+// while smith caches an empty directory.
 func CheckBuildDir(workspaceRoot string, p protocol.Project) (protocol.Finding, bool) {
 	if _, builds := p.Tasks["build"]; !builds {
 		return protocol.Finding{}, false

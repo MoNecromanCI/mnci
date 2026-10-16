@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-go/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-go/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestScaffoldWritesAPlugin(t *testing.T) {
@@ -44,7 +44,7 @@ func TestScaffoldWritesAPlugin(t *testing.T) {
 	}
 	main, _ := os.ReadFile(filepath.Join(ws, "apps", "lint-rules", "main.go"))
 	gomod, _ := os.ReadFile(filepath.Join(ws, "apps", "lint-rules", "go.mod"))
-	if !strings.Contains(string(main), `"example.com/acme/apps/lint-rules/plugin"`) || !strings.Contains(string(gomod), "// mnci:stack go-mnci-plugin") {
+	if !strings.Contains(string(main), `"example.com/acme/apps/lint-rules/plugin"`) || !strings.Contains(string(gomod), "// smith:stack go-smith-plugin") {
 		t.Fatalf("main.go:\n%s\ngo.mod:\n%s", main, gomod)
 	}
 	params.Kind, params.Directory = protocol.ProjectLib, "libs/x"

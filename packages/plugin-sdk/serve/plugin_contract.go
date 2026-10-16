@@ -1,6 +1,6 @@
 package serve
 
-import "github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+import "github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 
 // Plugin is the one interface every plugin implements.
 type Plugin interface {
@@ -50,21 +50,21 @@ type Remover interface {
 }
 
 // DependencyManager adds and removes packages in its projects with the
-// ecosystem's own toolchain (mnci install / uninstall).
+// ecosystem's own toolchain (smith install / uninstall).
 type DependencyManager interface {
 	Install(params protocol.InstallParams) (protocol.DependencyResult, error)
 	Uninstall(params protocol.UninstallParams) (protocol.DependencyResult, error)
 }
 
 // DeclarationEditor lists and rewrites the dependency specs its projects'
-// manifests declare (mnci sync, mnci up).
+// manifests declare (smith sync, smith up).
 type DeclarationEditor interface {
 	Declared(params protocol.DeclaredParams) (protocol.DeclaredResult, error)
 	Rewrite(params protocol.RewriteParams) (protocol.DependencyResult, error)
 }
 
 // LatestReader asks registries and release feeds for the newest versions
-// (mnci up).
+// (smith up).
 type LatestReader interface {
 	Latest(params protocol.LatestParams) (protocol.LatestResult, error)
 }

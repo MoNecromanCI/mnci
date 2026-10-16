@@ -5,7 +5,7 @@ publishable package and it just works; CI and release are first-class and everyt
 
 | # | Decision |
 |---|---|
-| 1 | From scratch in Go; Nx and Please are idea sources, not forks. Current TypeScript mnci scaffolds and bootstraps this repo. |
+| 1 | From scratch in Go; Nx and Please are idea sources, not forks. Current TypeScript smith scaffolds and bootstraps this repo. |
 | 2 | Language-agnostic core: discovery, task graph, hashing, cache, scheduler, affected, release, TUI, doctor. |
 | 3 | Plugins are out-of-process, JSON-RPC 2.0 over stdio, versioned; kinds: language plugins and convention plugins; all live in this monorepo as separate packages. |
 | 4 | Cache is content-addressed static files behind a `Storage` interface; local directory first, remote backends later. |
@@ -16,4 +16,4 @@ publishable package and it just works; CI and release are first-class and everyt
 | 9 | Pipelines are generated from the workspace (plugins contribute setup/audit/verify/pack/release steps) through a provider-neutral model rendered to Azure Pipelines and GitHub Actions. |
 | 10 | Release is resumable, idempotent, dependency-ordered, previewable (`--dry-run` is the same code path). |
 | 11 | Distribution (npm, PyPI, Homebrew, Scoop/winget) wraps one static binary; v1 must not block it. |
-| 12 | If current mnci cannot scaffold something needed in this monorepo, create it by hand and file a `gap-in-current-mnci` issue. |
+| 12 | If current smith cannot scaffold something needed in this monorepo, create it by hand and file a `gap-in-current-smith` issue. |

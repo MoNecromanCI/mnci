@@ -6,9 +6,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-rust/discovery"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/libs/plugin-rust/discovery"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 )
 
 // probe runs a tool for its version; tests replace it.

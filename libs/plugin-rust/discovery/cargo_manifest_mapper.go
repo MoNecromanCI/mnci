@@ -6,13 +6,13 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
-// Crate is what mnci reads from a Cargo.toml.
+// Crate is what smith reads from a Cargo.toml.
 type Crate struct {
 	// Name is the package name; empty for a virtual (workspace-only)
 	// manifest.
 	Name    string
 	Version string
-	// Kind and Stack are [package.metadata.mnci] kind and stack.
+	// Kind and Stack are [package.metadata.smith] kind and stack.
 	Kind, Stack string
 	// PathDependencies are the crates it depends on by path (the workspace's
 	// own), by package name.
@@ -26,10 +26,10 @@ type manifest struct {
 		Name     string `toml:"name"`
 		Version  any    `toml:"version"`
 		Metadata struct {
-			Mnci struct {
+			Smith struct {
 				Kind  string `toml:"kind"`
 				Stack string `toml:"stack"`
-			} `toml:"mnci"`
+			} `toml:"smith"`
 		} `toml:"metadata"`
 	} `toml:"package"`
 	Workspace *struct {
@@ -52,7 +52,7 @@ func ParseCargo(src []byte) (Crate, error) {
 		if v, ok := m.Package.Version.(string); ok {
 			c.Version = v
 		}
-		c.Kind, c.Stack = m.Package.Metadata.Mnci.Kind, m.Package.Metadata.Mnci.Stack
+		c.Kind, c.Stack = m.Package.Metadata.Smith.Kind, m.Package.Metadata.Smith.Stack
 	}
 	if m.Workspace != nil {
 		c.Members = m.Workspace.Members

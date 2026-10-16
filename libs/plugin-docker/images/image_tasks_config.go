@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // TaskName is the task that builds an app's image. It is not build, so
@@ -42,7 +42,7 @@ func BuildArgs(p protocol.Project, tags ...string) []string {
 
 // Contribute gives every app that ships an image task, run from the
 // workspace root after the app's build. It is never cached: the image
-// lives in the Docker daemon, not in files mnci can restore.
+// lives in the Docker daemon, not in files smith can restore.
 func Contribute(workspaceRoot string, params protocol.ContributeParams) protocol.ContributeResult {
 	res := protocol.ContributeResult{Projects: map[string]protocol.Contribution{}}
 	for _, p := range params.Projects {

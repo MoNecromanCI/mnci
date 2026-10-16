@@ -3,7 +3,7 @@
 A language plugin knows how to build, test and release a kind of project. A
 **convention** adds the rules a team holds on top: how code is laid out, which
 checks run, what a pipeline adds. A convention applies to the projects of the
-languages it supports, in a workspace that turns it on in `mnci.toml`:
+languages it supports, in a workspace that turns it on in `smith.toml`:
 
 ```toml
 [conventions.vertical-slices]
@@ -11,7 +11,7 @@ languages it supports, in a workspace that turns it on in `mnci.toml`:
 # exclude = ["legacy"]   # projects it leaves alone
 ```
 
-`mnci new` turns on `vertical-slices`. A converted workspace does not get it
+`smith new` turns on `vertical-slices`. A converted workspace does not get it
 until you add the line, because an existing codebase rarely follows it yet.
 
 A convention is any plugin applied workspace-wide. To give some projects a
@@ -29,9 +29,9 @@ structure plugin such as `vertical-slices` can be either.
 2. Each configured convention adds its tasks to the projects it applies to. A
    task the project already has is kept as it is; a convention can also add a
    dependency to an existing task (`lint` depends on `slice-check`).
-3. `mnci.toml` overrides apply last, so they win over both.
+3. `smith.toml` overrides apply last, so they win over both.
 
-`mnci explain <project>:<task>` shows where each field came from
+`smith explain <project>:<task>` shows where each field came from
 (`from convention vertical-slices`). A convention that answers `ci` or
 `doctor` is asked about the projects it applies to, so its pipeline steps and
 checks join the language plugins'. A convention that can `generate` adds its
@@ -44,8 +44,8 @@ files named for the role they play.
 
 | Language | Checked by | Rules |
 |---|---|---|
-| Go | `slice-check` task (`mnci slices check --lang go`) | a file is `<name>_<role>.go` (`_test`, and `_windows`-style platform suffixes allowed); only `doc.go` and `main.go` sit at a module's root |
-| Python | `slice-check` task (`mnci slices check --lang python`) | a module is `<name>_<role>.py`, a test `test_<name>.py`; only `__init__.py` and `__main__.py` sit at a package's top folder; packages are snake_case |
+| Go | `slice-check` task (`smith slices check --lang go`) | a file is `<name>_<role>.go` (`_test`, and `_windows`-style platform suffixes allowed); only `doc.go` and `main.go` sit at a module's root |
+| Python | `slice-check` task (`smith slices check --lang python`) | a module is `<name>_<role>.py`, a test `test_<name>.py`; only `__init__.py` and `__main__.py` sit at a package's top folder; packages are snake_case |
 | Node | `@mnci/eslint-config`'s vertical-slice rules, in `lint` (the `eslint` toolchain plugin of the `node-jest` and `node-vitest` stacks) | the same rules, plus slice boundaries and cycles |
 
 The roles are `handler`, `use_case`, `algorithm`, `policy`, `model`,

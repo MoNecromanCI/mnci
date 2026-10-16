@@ -65,6 +65,6 @@ type Task struct {
 	// "^build" runs the build of every project this one imports first.
 	DependsOn []string `json:"dependsOn,omitempty"`
 	Cache     bool     `json:"cache,omitempty"`
-	// Description is shown by `mnci explain` and the TUI.
+	// Description is shown by `smith explain` and the TUI.
 	Description string `json:"description,omitempty"`
 }

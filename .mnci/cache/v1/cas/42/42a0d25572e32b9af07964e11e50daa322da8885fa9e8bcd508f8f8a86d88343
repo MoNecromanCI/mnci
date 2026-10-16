@@ -1,0 +1,7 @@
+?   	github.com/MoNecromanCI/mnci/libs/plugin-python	[no test files]
+ok  	github.com/MoNecromanCI/mnci/libs/plugin-python/discovery	(cached)
+?   	github.com/MoNecromanCI/mnci/libs/plugin-python/pipeline	[no test files]
+?   	github.com/MoNecromanCI/mnci/libs/plugin-python/plugin	[no test files]
+ok  	github.com/MoNecromanCI/mnci/libs/plugin-python/releasing	(cached)
+ok  	github.com/MoNecromanCI/mnci/libs/plugin-python/scaffolding	(cached)
+?   	github.com/MoNecromanCI/mnci/libs/plugin-python/venv	[no test files]

@@ -1,6 +1,6 @@
 package pipeline
 
-import "github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+import "github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 
 // CI returns the Node contribution to every pipeline, or nothing when the
 // workspace has no Node project.

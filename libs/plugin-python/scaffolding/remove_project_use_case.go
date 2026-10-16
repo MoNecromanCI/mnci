@@ -3,8 +3,8 @@ package scaffolding
 import (
 	"os"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/venv"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/venv"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Remove uninstalls a removed project's editable install from the venv, so

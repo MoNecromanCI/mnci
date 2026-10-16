@@ -3,11 +3,11 @@ package pipeline
 import (
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // runtime installs Go in the generated pipelines. The Go module cache is not
-// cached by the action: mnci's own cache covers the tasks.
+// cached by the action: smith's own cache covers the tasks.
 func runtime(version string) protocol.Toolchain {
 	azure := version
 	if strings.Count(azure, ".") == 1 {

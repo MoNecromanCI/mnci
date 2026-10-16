@@ -1,12 +1,12 @@
 package plugin
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-dart/dependencies"
-	"github.com/MoNecromanCI/mnci/libs/plugin-dart/discovery"
-	"github.com/MoNecromanCI/mnci/libs/plugin-dart/pipeline"
-	"github.com/MoNecromanCI/mnci/libs/plugin-dart/releasing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-dart/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-dart/dependencies"
+	"github.com/monosmith-app/monosmith/libs/plugin-dart/discovery"
+	"github.com/monosmith-app/monosmith/libs/plugin-dart/pipeline"
+	"github.com/monosmith-app/monosmith/libs/plugin-dart/releasing"
+	"github.com/monosmith-app/monosmith/libs/plugin-dart/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name.

@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/venv"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/venv"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // CI returns the Python contribution. Setup steps are computed on the machine
@@ -46,8 +46,8 @@ func Doctor(workspaceRoot string, params protocol.DoctorParams) protocol.DoctorR
 	_, venvErr := os.Stat(venv.Path(workspaceRoot))
 	_, reqErr := os.Stat(filepath.Join(workspaceRoot, venv.RequirementsFile))
 	findings := []protocol.Finding{
-		{Check: "Python venv exists", OK: venvErr == nil, Detail: ".venv is missing at the workspace root", Remedy: "run `mnci ci setup` (or `python -m venv .venv` and install requirements-dev.txt)"},
-		{Check: "requirements-dev.txt exists", OK: reqErr == nil, Detail: "the Python toolchain file is missing", Remedy: "run `mnci add` for a Python project, or restore requirements-dev.txt"},
+		{Check: "Python venv exists", OK: venvErr == nil, Detail: ".venv is missing at the workspace root", Remedy: "run `smith ci setup` (or `python -m venv .venv` and install requirements-dev.txt)"},
+		{Check: "requirements-dev.txt exists", OK: reqErr == nil, Detail: "the Python toolchain file is missing", Remedy: "run `smith add` for a Python project, or restore requirements-dev.txt"},
 	}
 	if venvErr == nil {
 		findings = append(findings, CheckPythonVersion(workspaceRoot))

@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 )
 
 // probe runs a tool for its version; tests replace it.
@@ -40,7 +40,7 @@ func CheckToolVersions(workspaceRoot, required string, lints bool) []protocol.Fi
 	out = append(out, protocol.Finding{
 		Check: "golangci-lint is " + pin + ", as in CI", OK: err == nil && strings.Contains(got, " "+pin+" "), Warning: true,
 		Detail: "found: " + firstLine(got, "golangci-lint is not on PATH"),
-		Remedy: "go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@" + GolangciLintVersion + " (mnci ci setup does it)",
+		Remedy: "go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@" + GolangciLintVersion + " (smith ci setup does it)",
 	})
 	return out
 }

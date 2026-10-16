@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestDiscover(t *testing.T) {
@@ -19,7 +19,7 @@ func TestDiscover(t *testing.T) {
 	write("Cargo.toml", "[workspace]\nresolver = \"2\"\nmembers = [\"apps/cli\", \"libs/core\"]\n")
 	write("apps/cli/Cargo.toml", "[package]\nname = \"acme-cli\"\nversion = \"0.3.0\"\nedition = \"2021\"\n\n[dependencies]\ncore = { path = \"../../libs/core\", package = \"acme-core\" }\nserde = \"1\"\n\n[dev-dependencies]\nhelpers = { path = \"../../libs/helpers\" }\n")
 	write("apps/cli/src/main.rs", "fn main() {}\n")
-	write("libs/core/Cargo.toml", "[package]\nname = \"acme-core\"\nversion = { workspace = true }\n\n[package.metadata.mnci]\nkind = \"package\"\nstack = \"rust-strict\"\n")
+	write("libs/core/Cargo.toml", "[package]\nname = \"acme-core\"\nversion = { workspace = true }\n\n[package.metadata.smith]\nkind = \"package\"\nstack = \"rust-strict\"\n")
 	write("libs/core/src/lib.rs", "")
 	res, err := Discover(ws, []string{"Cargo.toml", "apps/cli/Cargo.toml", "libs/core/Cargo.toml"})
 	if err != nil {

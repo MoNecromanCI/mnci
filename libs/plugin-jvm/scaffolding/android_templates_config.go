@@ -19,9 +19,9 @@ const androidPlugin = `id("com.android.application") version "` + AGPVersion + `
 // manifest, a screen showing the greeting slice, and the slice's test. The
 // build goes to the workspace's dist/, never build/ in a source tree.
 var androidTemplates = map[string]string{
-	"[[.Dir]]/gradle.properties": `mnci.kind=[[.Kind]]
+	"[[.Dir]]/gradle.properties": `smith.kind=[[.Kind]]
 [[- if .Stack]]
-mnci.stack=[[.Stack]]
+smith.stack=[[.Stack]]
 [[- end]]
 `,
 	"[[.Dir]]/build.gradle.kts": `plugins {

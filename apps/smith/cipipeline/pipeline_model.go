@@ -1,0 +1,96 @@
+package cipipeline
+
+import (
+	"sort"
+
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+)
+
+// InstallScriptURL serves the smith installer used by generated pipelines.
+const InstallScriptURL = "https://raw.githubusercontent.com/monosmith-app/monosmith/main/install.sh"
+
+// Model is a pipeline independent of any CI provider.
+type Model struct {
+	// SmithVersion is installed by the pipeline; "latest" when smith is a dev build.
+	SmithVersion  string
+	ReleaseBranch string
+	Toolchains    []protocol.Toolchain
+	Credentials   []protocol.Credential
+	// Pack is true when a project has a package task: pushes to the release
+	// branch then run smith ci pack and keep dist/drop as the "drop" artifact.
+	Pack bool
+	// Native is true when a project is tagged native: a job per OS then runs
+	// smith ci native.
+	Native bool
+	// NativeRunners and NativeLinuxPackages configure that job.
+	NativeRunners       []string
+	NativeLinuxPackages []string
+	// Provenance is true when an app is published to npm: on GitHub the job
+	// may then request an OIDC token, which npm provenance signs with.
+	Provenance bool
+}
+
+// DefaultNativeRunners build native projects on each OS.
+var DefaultNativeRunners = []string{"ubuntu-latest", "windows-latest", "macos-latest"}
+
+// Contributions are every plugin's CI needs for this workspace.
+type Contributions struct {
+	Toolchains  []protocol.Toolchain
+	Setup       []protocol.Step
+	Audit       []protocol.Step
+	Credentials []protocol.Credential
+	// Pack is true when a project has a package task.
+	Pack bool
+	// Native is true when a project is tagged native.
+	Native              bool
+	NativeRunners       []string
+	NativeLinuxPackages []string
+	// Provenance is true when an app is published to npm.
+	Provenance bool
+}
+
+// Add merges one plugin's contribution, keeping the first of duplicates.
+func (c *Contributions) Add(r protocol.CIResult) {
+	for _, t := range r.Toolchains {
+		if !hasToolchain(c.Toolchains, t.Name) {
+			c.Toolchains = append(c.Toolchains, t)
+		}
+	}
+	c.Setup = append(c.Setup, r.Setup...)
+	c.Audit = append(c.Audit, r.Audit...)
+	for _, cred := range r.Credentials {
+		dup := false
+		for _, have := range c.Credentials {
+			dup = dup || have.Env == cred.Env
+		}
+		if !dup {
+			c.Credentials = append(c.Credentials, cred)
+		}
+	}
+}
+
+// NewModel builds the model, sorted so the YAML is deterministic.
+func NewModel(c Contributions, smithVersion, releaseBranch string) Model {
+	if smithVersion == "" || smithVersion == "dev" {
+		smithVersion = "latest"
+	}
+	m := Model{SmithVersion: smithVersion, ReleaseBranch: releaseBranch, Pack: c.Pack, Native: c.Native,
+		NativeRunners: c.NativeRunners, NativeLinuxPackages: c.NativeLinuxPackages, Provenance: c.Provenance}
+	if len(m.NativeRunners) == 0 {
+		m.NativeRunners = DefaultNativeRunners
+	}
+	m.Toolchains = append(m.Toolchains, c.Toolchains...)
+	sort.Slice(m.Toolchains, func(i, j int) bool { return m.Toolchains[i].Name < m.Toolchains[j].Name })
+	m.Credentials = append(m.Credentials, c.Credentials...)
+	sort.Slice(m.Credentials, func(i, j int) bool { return m.Credentials[i].Env < m.Credentials[j].Env })
+	return m
+}
+
+func hasToolchain(list []protocol.Toolchain, name string) bool {
+	for _, t := range list {
+		if t.Name == name {
+			return true
+		}
+	}
+	return false
+}

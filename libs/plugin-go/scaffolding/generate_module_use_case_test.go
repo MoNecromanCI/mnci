@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestGenerateUsesTheGoToolchain(t *testing.T) {
@@ -28,7 +28,7 @@ func TestGenerateUsesTheGoToolchain(t *testing.T) {
 		t.Fatalf("calls %v", calls)
 	}
 	goMod, _ := os.ReadFile(filepath.Join(ws, "packages", "my-sdk", "go.mod"))
-	if !strings.HasPrefix(string(goMod), "// mnci:kind package\n") {
+	if !strings.HasPrefix(string(goMod), "// smith:kind package\n") {
 		t.Fatalf("go.mod %q", goMod)
 	}
 	doc, _ := os.ReadFile(filepath.Join(ws, "packages", "my-sdk", "doc.go"))

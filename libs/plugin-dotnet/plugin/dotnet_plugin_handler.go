@@ -1,11 +1,11 @@
 package plugin
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-dotnet/discovery"
-	"github.com/MoNecromanCI/mnci/libs/plugin-dotnet/pipeline"
-	"github.com/MoNecromanCI/mnci/libs/plugin-dotnet/releasing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-dotnet/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-dotnet/discovery"
+	"github.com/monosmith-app/monosmith/libs/plugin-dotnet/pipeline"
+	"github.com/monosmith-app/monosmith/libs/plugin-dotnet/releasing"
+	"github.com/monosmith-app/monosmith/libs/plugin-dotnet/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name.

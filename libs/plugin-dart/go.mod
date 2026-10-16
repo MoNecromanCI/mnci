@@ -1,4 +1,4 @@
-module github.com/MoNecromanCI/mnci/libs/plugin-dart
+module github.com/monosmith-app/monosmith/libs/plugin-dart
 
 go 1.26.0
 

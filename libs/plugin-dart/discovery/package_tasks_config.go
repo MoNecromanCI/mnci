@@ -1,6 +1,6 @@
 package discovery
 
-import "github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+import "github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 
 // inputs are what a package's results depend on: its sources and the
 // workspace's resolution.
@@ -17,7 +17,7 @@ type Shape struct {
 
 // Tasks are dart's (or flutter's) for one package, run in its directory.
 // Flutter commands skip their implicit pub get (--no-pub): the workspace is
-// resolved once, by mnci install or CI's setup, so parallel tasks never
+// resolved once, by smith install or CI's setup, so parallel tasks never
 // rewrite the shared lockfile at once. An app builds into the workspace's
 // dist/<package dir>: a Flutter app for the web, a Dart app to a native
 // executable bundle.

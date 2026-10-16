@@ -51,7 +51,7 @@ type Declaration struct {
 	// Peer declarations state what a package works with, not what is
 	// installed: sync and up leave them alone.
 	Peer bool `json:"peer,omitempty"`
-	// Rewritable is false for a spec mnci must not rewrite: a URL, a git
+	// Rewritable is false for a spec smith must not rewrite: a URL, a git
 	// ref, a workspace alias, a compound range, environment markers.
 	Rewritable bool `json:"rewritable"`
 }

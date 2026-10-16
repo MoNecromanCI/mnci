@@ -43,11 +43,11 @@ plugins {
 }
 
 // gradleModuleTemplates are a Kotlin module's script and properties. Its
-// build goes to the workspace's dist/ (mnci), never build/ in a source tree.
+// build goes to the workspace's dist/ (smith), never build/ in a source tree.
 var gradleModuleTemplates = map[string]string{
-	"[[.Dir]]/gradle.properties": `mnci.kind=[[.Kind]]
+	"[[.Dir]]/gradle.properties": `smith.kind=[[.Kind]]
 [[- if .Stack]]
-mnci.stack=[[.Stack]]
+smith.stack=[[.Stack]]
 [[- end]]
 `,
 	"[[.Dir]]/build.gradle.kts": `import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -96,7 +96,7 @@ tasks.test {
 }
 [[- if eq .Kind "package"]]
 
-// mnci release publishes to MAVEN_REPOSITORY_URL with MAVEN_USERNAME and
+// smith release publishes to MAVEN_REPOSITORY_URL with MAVEN_USERNAME and
 // MAVEN_PASSWORD.
 publishing {
     publications {
@@ -108,7 +108,7 @@ publishing {
     repositories {
         System.getenv("MAVEN_REPOSITORY_URL")?.let { repository ->
             maven {
-                name = "mnci"
+                name = "smith"
                 url = uri(repository)
                 credentials {
                     username = System.getenv("MAVEN_USERNAME")

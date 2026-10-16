@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/projectkind"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/projectkind"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -44,13 +44,13 @@ func Discover(workspaceRoot string, manifests []string) (protocol.DiscoverResult
 		}
 		sort.Strings(imports)
 		importName := ImportName(py.Project.Name)
-		kind := projectkind.Resolve(py.Tool.Mnci.Kind, root, protocol.ProjectLib)
+		kind := projectkind.Resolve(py.Tool.Smith.Kind, root, protocol.ProjectLib)
 		result.Projects = append(result.Projects, protocol.Project{
 			Name:     path.Base(root),
 			Root:     root,
 			Language: "python",
 			Kind:     kind,
-			Stack:    py.Tool.Mnci.Stack,
+			Stack:    py.Tool.Smith.Stack,
 			Exports:  []string{importName},
 			Imports:  dedupe(imports),
 			Version:  py.Project.Version,

@@ -12,9 +12,9 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg.json" AND DEFINED ENV{VCPKG_ROOT} A
 endif()
 
 project([[.Target]] VERSION 0.0.0 LANGUAGES CXX)
-set(MNCI_KIND "[[.Kind]]")
+set(SMITH_KIND "[[.Kind]]")
 [[- if .Stack]]
-set(MNCI_STACK "[[.Stack]]")
+set(SMITH_STACK "[[.Stack]]")
 [[- end]]
 
 # The code, one folder per outcome under src/ (its API under include/).

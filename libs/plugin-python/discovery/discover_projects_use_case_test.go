@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func write(t *testing.T, root, rel, body string) {
@@ -22,7 +22,7 @@ func write(t *testing.T, root, rel, body string) {
 func TestDiscover(t *testing.T) {
 	ws := t.TempDir()
 	write(t, ws, "pyproject.toml", "[tool.ruff]\nline-length = 100\n")
-	write(t, ws, "apps/api/pyproject.toml", "[project]\nname = \"acme-api\"\nversion = \"0.0.0\"\ndependencies = [\"Acme-Core>=0.1\", \"requests\"]\n\n[tool.mnci]\nkind = \"app\"\n")
+	write(t, ws, "apps/api/pyproject.toml", "[project]\nname = \"acme-api\"\nversion = \"0.0.0\"\ndependencies = [\"Acme-Core>=0.1\", \"requests\"]\n\n[tool.smith]\nkind = \"app\"\n")
 	write(t, ws, "apps/api/src/acme_api/__main__.py", "import os, sys\nfrom acme_utils.x import y\nfrom . import local\n")
 	write(t, ws, "apps/api/build/lib/stale.py", "import stale\n")
 	write(t, ws, "packages/sdk/pyproject.toml", "[project]\nname = \"acme.sdk\"\nversion = \"1.2.0\"\n")

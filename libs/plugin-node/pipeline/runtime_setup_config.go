@@ -1,6 +1,6 @@
 package pipeline
 
-import "github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+import "github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 
 // runtime installs Node.js in the generated pipelines.
 func runtime(version string) protocol.Toolchain {

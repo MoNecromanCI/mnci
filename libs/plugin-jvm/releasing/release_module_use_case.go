@@ -11,15 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 )
 
 // MavenRunner runs mvn; tests replace it.
 var MavenRunner = func(dir string, argv []string) error { return toolrun.Run(dir, argv) }
 
 // skipped are directories no workspace pom lives in.
-var skipped = map[string]bool{".git": true, protocol.BuildDir: true, "node_modules": true, ".mnci": true}
+var skipped = map[string]bool{".git": true, protocol.BuildDir: true, "node_modules": true, ".smith": true}
 
 // WriteVersion records a release's version in the module's pom and in every
 // workspace pom that depends on the module with a version, or in a Gradle
@@ -91,7 +91,7 @@ var MavenCentral = "https://repo1.maven.org/maven2"
 const settings = `<settings>
   <servers>
     <server>
-      <id>mnci</id>
+      <id>smith</id>
       <username>${env.MAVEN_USERNAME}</username>
       <password>${env.MAVEN_PASSWORD}</password>
     </server>
@@ -133,7 +133,7 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 	if c := coordinates(params.Project); c != "" {
 		selector = c
 	}
-	argv := []string{"mvn", "-B", "-q", "-pl", selector, "deploy", "-DskipTests", "-s", settingsFile, "-DaltDeploymentRepository=mnci::" + repository}
+	argv := []string{"mvn", "-B", "-q", "-pl", selector, "deploy", "-DskipTests", "-s", settingsFile, "-DaltDeploymentRepository=smith::" + repository}
 	if err := MavenRunner(workspaceRoot, argv); err != nil {
 		return result, err
 	}

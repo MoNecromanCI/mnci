@@ -1,0 +1,2 @@
+review: protocol/ - 13 production files (more than 12): it usually holds two outcomes, so split it into two slices or write the exception down
+vertical-slice layout OK

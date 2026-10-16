@@ -1,6 +1,6 @@
 package tooling
 
-import "github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+import "github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 
 // Toolchain serves one Node toolchain plugin over the plugin protocol: when a
 // Node project is generated, it applies the Setup the plugin describes.

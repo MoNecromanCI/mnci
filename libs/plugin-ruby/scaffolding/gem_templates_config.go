@@ -19,7 +19,7 @@ var rootTemplates = map[string]string{
 
 source 'https://rubygems.org'
 
-# The workspace's gems, each from its own directory (mnci lists them): one
+# The workspace's gems, each from its own directory (smith lists them): one
 # resolution, one Gemfile.lock, for all of them.
 
 group :development, :test do
@@ -64,9 +64,9 @@ Gem::Specification.new do |spec|
   # Released by its tag, never pushed to a gem server.
   spec.metadata['allowed_push_host'] = 'none'
 [[- end]]
-  spec.metadata['mnci_kind'] = '[[.Kind]]'
+  spec.metadata['smith_kind'] = '[[.Kind]]'
 [[- if .Stack]]
-  spec.metadata['mnci_stack'] = '[[.Stack]]'
+  spec.metadata['smith_stack'] = '[[.Stack]]'
 [[- end]]
 end
 `,

@@ -1,8 +1,8 @@
 package discovery
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/venv"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/venv"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 var inputs = []string{"**/*", "{workspaceRoot}/requirements-dev.txt", "{workspaceRoot}/ruff.toml"}
@@ -27,7 +27,7 @@ func Tasks(root string, kind protocol.ProjectKind, importName string, mypy bool)
 		tasks["start"] = protocol.Task{Command: []string{py, "-m", importName}, Description: "Run the app"}
 		tasks["package"] = protocol.Task{
 			Command:     []string{py, "-m", "build", "--wheel", "--outdir", "{workspaceRoot}/dist/drop", "."},
-			Description: "Build the app's wheel into dist/drop (mnci ci pack)",
+			Description: "Build the app's wheel into dist/drop (smith ci pack)",
 		}
 	}
 	return tasks

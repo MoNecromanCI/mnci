@@ -1,4 +1,4 @@
-module github.com/MoNecromanCI/mnci/libs/plugin-rust
+module github.com/monosmith-app/monosmith/libs/plugin-rust
 
 go 1.26.0
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// MSBuildProject is what mnci reads from a project file.
+// MSBuildProject is what smith reads from a project file.
 type MSBuildProject struct {
 	// Name is the file's base name without extension (Acme.Core).
 	Name string
@@ -16,7 +16,7 @@ type MSBuildProject struct {
 	Version   string
 	// OutputType Exe makes an app.
 	OutputType string
-	// Kind and Stack are the MnciKind and MnciStack properties.
+	// Kind and Stack are the SmithKind and SmithStack properties.
 	Kind, Stack string
 	// Test is a tests project (IsTestProject, or one that references
 	// Microsoft.NET.Test.Sdk).
@@ -32,8 +32,8 @@ type msbuild struct {
 		Version       string `xml:"Version"`
 		OutputType    string `xml:"OutputType"`
 		IsTestProject string `xml:"IsTestProject"`
-		MnciKind      string `xml:"MnciKind"`
-		MnciStack     string `xml:"MnciStack"`
+		SmithKind     string `xml:"SmithKind"`
+		SmithStack    string `xml:"SmithStack"`
 	} `xml:"PropertyGroup"`
 	ItemGroups []struct {
 		ProjectReferences []struct {
@@ -64,8 +64,8 @@ func ParseProject(file string, src []byte) (MSBuildProject, error) {
 		first(&assembly, g.AssemblyName)
 		first(&p.Version, g.Version)
 		first(&p.OutputType, g.OutputType)
-		first(&p.Kind, g.MnciKind)
-		first(&p.Stack, g.MnciStack)
+		first(&p.Kind, g.SmithKind)
+		first(&p.Stack, g.SmithStack)
 		if strings.EqualFold(strings.TrimSpace(g.IsTestProject), "true") {
 			p.Test = true
 		}

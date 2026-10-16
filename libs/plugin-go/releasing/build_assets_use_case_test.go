@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestPublishModuleIsTheTag(t *testing.T) {
@@ -105,7 +105,7 @@ func TestBuildAssetsOfANativeApp(t *testing.T) {
 	root := t.TempDir()
 	app := filepath.Join(root, "apps", "probe")
 	_ = os.MkdirAll(app, 0o755)
-	_ = os.WriteFile(filepath.Join(app, "go.mod"), []byte("// mnci:native\nmodule example.com/probe\n\ngo 1.26.0\n"), 0o644)
+	_ = os.WriteFile(filepath.Join(app, "go.mod"), []byte("// smith:native\nmodule example.com/probe\n\ngo 1.26.0\n"), 0o644)
 	_ = os.WriteFile(filepath.Join(app, "main.go"), []byte("package main\n\nfunc main() {}\n"), 0o644)
 	host := runtime.GOOS + "/" + runtime.GOARCH
 	project := protocol.Project{Name: "probe", Root: "apps/probe", Tags: []string{"native"}}

@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestGenerate(t *testing.T) {
@@ -27,13 +27,13 @@ func TestGenerate(t *testing.T) {
 	var m struct {
 		Name, Publisher, Main string
 		Engines               struct{ VSCode string }
-		Mnci                  struct{ Kind, Stack string }
+		Smith                 struct{ Kind, Stack string }
 		Scripts               map[string]string
 	}
 	if err := json.Unmarshal(raw, &m); err != nil {
 		t.Fatalf("package.json is JSON: %v\n%s", err, raw)
 	}
-	if m.Name != "helper-tools" || m.Publisher != "acme" || m.Main != "../../dist/packages/helper-tools/main.js" || m.Engines.VSCode != "^"+engine || m.Mnci.Kind != "package" || m.Mnci.Stack != Stack {
+	if m.Name != "helper-tools" || m.Publisher != "acme" || m.Main != "../../dist/packages/helper-tools/main.js" || m.Engines.VSCode != "^"+engine || m.Smith.Kind != "package" || m.Smith.Stack != Stack {
 		t.Errorf("manifest %+v", m)
 	}
 	if _, err := os.Stat(filepath.Join(ws, "packages", "helper-tools", "src", "greeting", "greet.use-case.ts")); err != nil {

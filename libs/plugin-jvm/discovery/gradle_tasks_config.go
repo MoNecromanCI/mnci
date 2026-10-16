@@ -3,7 +3,7 @@ package discovery
 import (
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // gradleInputs are what a Gradle module's results depend on: its sources,
@@ -38,7 +38,7 @@ func GradleTasks(root string, b GradleBuild, kind protocol.ProjectKind) map[stri
 		"test":  {Command: gradle("test"), Cwd: ".", Inputs: gradleInputs, DependsOn: []string{"build"}, Cache: true, Description: "gradle test"},
 	}
 	if len(b.Lint) > 0 {
-		// Lint writes its reports into the build directory, which mnci
+		// Lint writes its reports into the build directory, which smith
 		// empties before a build: it runs after the build. Android's tasks
 		// also compile the same intermediates (assemble runs lint-vital, lint
 		// compiles the unit tests), so two Gradle builds of one Android

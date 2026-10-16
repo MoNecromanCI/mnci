@@ -1,39 +1,39 @@
-# Configuration: `mnci.toml`
+# Configuration: `smith.toml`
 
-One file at the workspace root, and the only one mnci reads. Its presence marks
+One file at the workspace root, and the only one smith reads. Its presence marks
 the workspace root. Every setting has a default; a typo in a key is an error,
 never a silently ignored setting.
 
 ## Editor support
 
-`mnci.toml` has a JSON Schema: completion, hover docs and validation in any
-editor that reads TOML schemas. `mnci new` and `mnci convert` write its
+`smith.toml` has a JSON Schema: completion, hover docs and validation in any
+editor that reads TOML schemas. `smith new` and `smith convert` write its
 address as the first line,
 
 ```toml
-#:schema https://raw.githubusercontent.com/MoNecromanCI/mnci/main/apps/mnci/workspace/mnci.schema.json
+#:schema https://raw.githubusercontent.com/monosmith-app/monosmith/main/apps/smith/workspace/smith.schema.json
 ```
 
 which Even Better TOML (VS Code) and other Taplo-based editors pick up. Add
-the line to an older workspace's `mnci.toml` to get the same. `mnci schema`
-prints the schema of the mnci you run, for tools that want it offline. The
+the line to an older workspace's `smith.toml` to get the same. `smith schema`
+prints the schema of the smith you run, for tools that want it offline. The
 schema is versioned with the file: its `schema = 1` is the version it
-describes, and `mnci upgrade` migrates older files.
+describes, and `smith upgrade` migrates older files.
 
 ## Changing a setting from the command line
 
-`mnci config` reads and changes the settings of the `[workspace]`, `[ci]`,
+`smith config` reads and changes the settings of the `[workspace]`, `[ci]`,
 `[release]`, `[cache]` and `[plugins]` tables:
 
 ```sh
-mnci config list                          # every setting, its value, what it does
-mnci config get ci.providers
-mnci config set ci.providers github azure # a list takes several values
-mnci config set cache.max_size_mb 4096
-mnci config unset release.branch          # back to the default
+smith config list                          # every setting, its value, what it does
+smith config get ci.providers
+smith config set ci.providers github azure # a list takes several values
+smith config set cache.max_size_mb 4096
+smith config unset release.branch          # back to the default
 ```
 
-Values are checked against the schema before anything is written. mnci
+Values are checked against the schema before anything is written. smith
 changes only that setting's value, so comments and every other line stay as
 they are, and it refuses to write a file that would not load. Edit stacks,
 conventions, tasks and projects in the file itself.
@@ -58,7 +58,7 @@ remote = "origin"                     # release tags are pushed here
 github_releases = false               # a GitHub Release per tag (needs GITHUB_TOKEN)
 
 [cache]
-dir = ".mnci/cache"                   # workspace-relative, or absolute
+dir = ".smith/cache"                   # workspace-relative, or absolute
 max_size_mb = 2048
 
 [plugins]
@@ -85,7 +85,7 @@ exclude = ["legacy"]                  # projects it leaves alone
 version = "^1"                        # installed on the plugin search path (docs/plugins.md)
 
 [plugins.external.rust]
-command = ["mnci-plugin-rust"]        # any executable speaking the protocol
+command = ["smith-plugin-rust"]        # any executable speaking the protocol
 ```
 
 ## Overriding a task
@@ -117,7 +117,7 @@ There is exactly one precedence rule: **plugin → `[tasks.<task>]` →
 result and where each value came from:
 
 ```sh
-mnci explain web:build
+smith explain web:build
 ```
 
 ```
@@ -125,7 +125,7 @@ web:build — Compile to dist/
   command    npm run build --silent
                from plugin node
   dependsOn  ^build, codegen
-               from mnci.toml [projects.web.tasks.build]
+               from smith.toml [projects.web.tasks.build]
   ...
 ```
 
@@ -143,6 +143,9 @@ product = "acme"                                      # default: the project nam
 platforms = ["linux/amd64", "darwin/arm64", "windows/amd64"]  # default: six
 os_alias = { darwin = "macos" }                       # names in file names only
 version_variable = "main.version"                     # Go: stamped with -X
+package_managers = ["homebrew", "scoop", "winget"]    # manifests attached to the GitHub Release
+npm = ["@acme/cli", "acme"]                           # npm packages; the first names the platform ones
+pypi = "acme"                                         # PyPI wheels
 ```
 
 See [Releasing](releasing.md#apps).
@@ -151,12 +154,12 @@ See [Releasing](releasing.md#apps).
 
 | Variable | Effect |
 |---|---|
-| `MNCI_WORKSPACE_ROOT` | use this workspace instead of searching upward |
-| `MNCI_CACHE_DIR` | cache directory, overriding `[cache] dir` |
-| `MNCI_CACHE_REMOTE` | remote cache, overriding `[cache] remote` |
-| `MNCI_CACHE_KEY` | the secret remote cache objects are signed with; without it the remote is off |
-| `MNCI_CACHE_READ_ONLY` | read the remote cache without writing to it |
-| `MNCI_CACHE_TOKEN` | bearer token for an `https://` remote cache |
-| `MNCI_BASE` | base branch for `--affected` and `mnci ci verify` |
-| `MNCI_RELEASE_ANY_BRANCH` | allow a real release from another branch |
-| `MNCI_PYPI_SIMPLE_URL` | the simple index to check before uploading to a custom Python index |
+| `SMITH_WORKSPACE_ROOT` | use this workspace instead of searching upward |
+| `SMITH_CACHE_DIR` | cache directory, overriding `[cache] dir` |
+| `SMITH_CACHE_REMOTE` | remote cache, overriding `[cache] remote` |
+| `SMITH_CACHE_KEY` | the secret remote cache objects are signed with; without it the remote is off |
+| `SMITH_CACHE_READ_ONLY` | read the remote cache without writing to it |
+| `SMITH_CACHE_TOKEN` | bearer token for an `https://` remote cache |
+| `SMITH_BASE` | base branch for `--affected` and `smith ci verify` |
+| `SMITH_RELEASE_ANY_BRANCH` | allow a real release from another branch |
+| `SMITH_PYPI_SIMPLE_URL` | the simple index to check before uploading to a custom Python index |

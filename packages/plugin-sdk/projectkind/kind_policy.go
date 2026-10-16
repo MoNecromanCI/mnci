@@ -3,7 +3,7 @@ package projectkind
 import (
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Resolve returns the declared kind when it is valid; otherwise it falls back

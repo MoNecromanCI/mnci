@@ -1,9 +1,9 @@
 package pipeline
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-docker/images"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/libs/plugin-docker/images"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 )
 
 // shipping are the projects that ship as images.

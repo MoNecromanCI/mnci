@@ -1,12 +1,12 @@
 package plugin
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/dependencies"
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/discovery"
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/pipeline"
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/releasing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/dependencies"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/discovery"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/pipeline"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/releasing"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Python is the pip-native Python language plugin.

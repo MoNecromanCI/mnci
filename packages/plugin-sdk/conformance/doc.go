@@ -4,5 +4,5 @@
 // language plugin, the projects it generates are discovered as generated.
 //
 // Plugin authors run it in their tests through an in-process connection;
-// `mnci plugin check` runs it against any plugin binary.
+// `smith plugin check` runs it against any plugin binary.
 package conformance

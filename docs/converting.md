@@ -1,17 +1,17 @@
 # Converting from Nx (and from the old mnci)
 
-`mnci convert` turns an Nx workspace into an mnci workspace in place. It also
+`smith convert` turns an Nx workspace into a smith workspace in place. It also
 converts a workspace made by the old, Nx-based mnci (4.x), whose settings it
 reads too. Projects keep their directories and sources. What changes is how
 they are described and run.
 
 ```sh
 npm ci                    # Nx must be installed: it describes the projects
-mnci convert --dry-run    # the report; changes nothing
-mnci convert              # applies it
-mnci ci setup             # toolchains, the Python venv
-mnci run lint typecheck test build
-git add -A && git commit -m "chore: convert to mnci"
+smith convert --dry-run    # the report; changes nothing
+smith convert              # applies it
+smith ci setup             # toolchains, the Python venv
+smith run lint typecheck test build
+git add -A && git commit -m "chore: convert to smith"
 ```
 
 Convert needs a git repository with a clean working tree (or `--allow-dirty`),
@@ -29,21 +29,21 @@ It is tested with Nx 23. With another major the report says so.
 
 ## What maps to what
 
-| Nx | mnci |
+| Nx | smith |
 |---|---|
 | a project | a project named after its directory; its language comes from its manifest (`package.json`, `go.mod`, `pyproject.toml`) |
 | `projectType: application` | kind `app` |
 | a project `nx release` publishes (`release.projects`, or every non-private package when unset) | kind `package` |
 | any other project | kind `lib` |
-| a kind its directory does not imply (`python-packages/x`, a published `libs/x`) | the kind written into the manifest (`"mnci": {"kind": …}`, `[tool.mnci] kind`, `// mnci:kind`) |
+| a kind its directory does not imply (`python-packages/x`, a published `libs/x`) | the kind written into the manifest (`"smith": {"kind": …}`, `[tool.smith] kind`, `// smith:kind`) |
 | a Node target running in the project root | a `package.json` script, run by the Node plugin (npm runs scripts through a shell, so nothing is lost) |
-| any other `nx:run-commands` target | an `[projects.<name>.tasks.<target>]` task in `mnci.toml`: argv, cwd, inputs, outputs, `depends_on` and cache carried over |
-| Go and Python executors (`@nx-go/nx-go`, the old mnci's Python executors) | the Go and Python plugins' own tasks; settings that differ (golangci-lint instead of `go vet`, an extra `dependsOn`) are kept in `mnci.toml` |
+| any other `nx:run-commands` target | an `[projects.<name>.tasks.<target>]` task in `smith.toml`: argv, cwd, inputs, outputs, `depends_on` and cache carried over |
+| Go and Python executors (`@nx-go/nx-go`, the old mnci's Python executors) | the Go and Python plugins' own tasks; settings that differ (golangci-lint instead of `go vet`, an extra `dependsOn`) are kept in `smith.toml` |
 | `@nx/esbuild:esbuild`, `@nx/js:tsc`, `@nx/jest:jest`, `@nx/vite:*`, `@nx/eslint:lint`, `@nx/js:node` | the command each stands for, as a script |
 | `{projectName}@{version}` tags | the same tags: a project whose Nx name differs from its directory gets `tag_prefix`, so the next release continues from the last tag |
 | `release.changelog…createRelease: "github"` | `[release] github_releases = true` |
-| a root target | a root `package.json` script (mnci runs projects, not the root) |
-| root scripts calling `nx run-many`, `nx affected`, `nx run`, `nx graph`, `nx release --dry-run` | the `mnci` command that does the same |
+| a root target | a root `package.json` script (smith runs projects, not the root) |
+| root scripts calling `nx run-many`, `nx affected`, `nx run`, `nx graph`, `nx release --dry-run` | the `smith` command that does the same |
 
 A command that only a shell can run (`&&`, pipes, redirects, `$VAR`) becomes a
 script in a Node project. Elsewhere it is reported, never turned into
@@ -54,7 +54,7 @@ something that behaves differently.
 | File | Becomes |
 |---|---|
 | `jest.preset.js` re-exporting `@nx/jest/preset` | the same preset values written out, with a mapper for `./x.js` imports of TypeScript files (the only thing Nx's resolver was needed for) |
-| a root `jest.config.ts` listing projects for Nx | removed; mnci runs each project's tests |
+| a root `jest.config.ts` listing projects for Nx | removed; smith runs each project's tests |
 | an ESLint config using `@nx/eslint-plugin` presets | `@eslint/js` and `typescript-eslint`, which those presets wrap; the module-boundary and dependency-check rules read the Nx graph, so they are removed |
 | a library built by `@nx/rollup`'s `withNx` (it needs the Nx graph) | `esbuild` for the bundle and `tsc` for the declarations, into the same files `package.json` already publishes |
 
@@ -79,9 +79,9 @@ On top of the above, a workspace made by mnci 4.x gets:
 - the targets it generated for its pack phase and for Nx release
   (`package`, `package-all`, `build-all`, `nx-release-publish`, and the
   `tools/*-version-actions.cjs` and `tools/go-app-release.cjs` hooks) removed,
-  because mnci does that itself
+  because smith does that itself
 - the per-project root scripts (`<project>:test`, …) removed in favour of
-  `mnci run <task> -p <project>`
+  `smith run <task> -p <project>`
 - pipeline slots kept: `after-install` becomes `before-setup` and
   `before-release` becomes `after-verify`. Steps in a slot with no equivalent
   are reported.
@@ -98,7 +98,7 @@ Every finding has a severity:
 |---|---|
 | **Blocking** | stops the conversion (two projects that would get the same name) |
 | **Needs you** | something convert could not do; it says what to do instead |
-| **Not supported yet** | a project in a language mnci has no plugin for yet (Flutter, .NET, Rust, JVM, …), pnpm or yarn workspaces, publishing a VS Code extension. These projects keep their files and `project.json`, but nothing builds or releases them. |
+| **Not supported yet** | a project in a language smith has no plugin for yet (Flutter, .NET, Rust, JVM, …), pnpm or yarn workspaces, publishing a VS Code extension. These projects keep their files and `project.json`, but nothing builds or releases them. |
 | **Behaves differently** | a change you should know about |
 | **Converted** / **Dropped** | what moved where, and the Nx-only plumbing that went |
 

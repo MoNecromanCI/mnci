@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/jsondoc"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/jsondoc"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // sourceEntry is an exports entry that points at a TypeScript source.

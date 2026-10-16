@@ -3,8 +3,8 @@ package astro
 import (
 	"fmt"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name in a stack.
@@ -45,7 +45,7 @@ func (p *Astro) Describe(params protocol.InitializeParams) (protocol.InitializeR
 // build is a static site released by its tag.
 func (p *Astro) Generate(params protocol.GenerateParams) (protocol.GenerateResult, error) {
 	if params.Kind != protocol.ProjectApp {
-		return protocol.GenerateResult{}, fmt.Errorf("a docs site is an app: mnci add app %s --stack %s", params.Name, DocsSite)
+		return protocol.GenerateResult{}, fmt.Errorf("a docs site is an app: smith add app %s --stack %s", params.Name, DocsSite)
 	}
 	return scaffolding.GenerateFrom(p.root, params, scaffolding.TemplateSet{Slice: templates, DevDependencies: devDependencies})
 }

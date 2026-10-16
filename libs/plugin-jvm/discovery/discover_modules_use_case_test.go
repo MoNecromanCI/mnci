@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestDiscover(t *testing.T) {
@@ -19,10 +19,10 @@ func TestDiscover(t *testing.T) {
 	write("apps/api/pom.xml", `<project>
   <parent><groupId>dev.acme</groupId><artifactId>acme-parent</artifactId><version>0.0.0</version></parent>
   <artifactId>acme-api</artifactId><version>1.2.0</version>
-  <properties><mnci.kind>app</mnci.kind><exec.mainClass>dev.acme.api.Main</exec.mainClass></properties>
+  <properties><smith.kind>app</smith.kind><exec.mainClass>dev.acme.api.Main</exec.mainClass></properties>
   <dependencies><dependency><groupId>${project.groupId}</groupId><artifactId>acme-core</artifactId></dependency><dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId></dependency></dependencies>
 </project>`)
-	write("libs/core/pom.xml", `<project><parent><groupId>dev.acme</groupId><version>0.0.0</version></parent><artifactId>acme-core</artifactId><properties><mnci.stack>java</mnci.stack></properties></project>`)
+	write("libs/core/pom.xml", `<project><parent><groupId>dev.acme</groupId><version>0.0.0</version></parent><artifactId>acme-core</artifactId><properties><smith.stack>java</smith.stack></properties></project>`)
 	res, err := Discover(ws, []string{"pom.xml", "apps/api/pom.xml", "libs/core/pom.xml"})
 	if err != nil {
 		t.Fatal(err)
@@ -69,7 +69,7 @@ dependencies {
     implementation(project(":libs:core"))
 }
 `)
-	write("apps/api/gradle.properties", "mnci.kind=app\nmnci.stack=kotlin\n")
+	write("apps/api/gradle.properties", "smith.kind=app\nsmith.stack=kotlin\n")
 	write("libs/core/build.gradle", `plugins {
     id 'java-library'
     id 'checkstyle'

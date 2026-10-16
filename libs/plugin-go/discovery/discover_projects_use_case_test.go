@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func write(t *testing.T, root, rel, body string) {
@@ -28,7 +28,7 @@ func TestDiscover(t *testing.T) {
 	write(t, ws, "apps/api/testdata/x.go", "package x\nimport \"example.com/ignored\"\n")
 	write(t, ws, "apps/api/nested/go.mod", "module example.com/nested\n")
 	write(t, ws, "apps/api/nested/n.go", "package n\nimport \"example.com/nested-only\"\n")
-	write(t, ws, "packages/sdk/go.mod", "// mnci:kind package\nmodule example.com/acme/packages/sdk\n")
+	write(t, ws, "packages/sdk/go.mod", "// smith:kind package\nmodule example.com/acme/packages/sdk\n")
 
 	res, err := Discover(ws, []string{"go.mod", "apps/api/go.mod", "packages/sdk/go.mod"})
 	if err != nil {
@@ -59,14 +59,14 @@ func TestParseModule(t *testing.T) {
 	if _, err := ParseModule("go 1.24\n"); err == nil {
 		t.Fatal("expected an error")
 	}
-	m, err := ParseModule("// mnci:kind lib\nmodule \"example.com/q\"\n")
+	m, err := ParseModule("// smith:kind lib\nmodule \"example.com/q\"\n")
 	if err != nil || m.Path != "example.com/q" || m.Kind != "lib" {
 		t.Fatalf("%+v %v", m, err)
 	}
 }
 
 func TestANativeModuleIsTaggedAndBuildsWithCgo(t *testing.T) {
-	mod, err := ParseModule("// mnci:kind app\n// mnci:native\nmodule example.com/probe\n")
+	mod, err := ParseModule("// smith:kind app\n// smith:native\nmodule example.com/probe\n")
 	if err != nil || !mod.Native || mod.Kind != "app" {
 		t.Fatalf("%+v %v", mod, err)
 	}

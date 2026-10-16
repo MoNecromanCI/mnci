@@ -1,12 +1,12 @@
 package plugin
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-go/dependencies"
-	"github.com/MoNecromanCI/mnci/libs/plugin-go/discovery"
-	"github.com/MoNecromanCI/mnci/libs/plugin-go/pipeline"
-	"github.com/MoNecromanCI/mnci/libs/plugin-go/releasing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-go/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-go/dependencies"
+	"github.com/monosmith-app/monosmith/libs/plugin-go/discovery"
+	"github.com/monosmith-app/monosmith/libs/plugin-go/pipeline"
+	"github.com/monosmith-app/monosmith/libs/plugin-go/releasing"
+	"github.com/monosmith-app/monosmith/libs/plugin-go/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Go is the Go language plugin.

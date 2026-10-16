@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-// GradleBuild is what mnci reads from a Gradle module: its build script
+// GradleBuild is what smith reads from a Gradle module: its build script
 // (build.gradle.kts or build.gradle) and the gradle.properties beside it.
 type GradleBuild struct {
 	// Path is the Gradle project path, :apps:api for apps/api.
 	Path                       string
 	Group, ArtifactID, Version string
-	// Kind and Stack are the mnci.kind and mnci.stack properties.
+	// Kind and Stack are the smith.kind and smith.stack properties.
 	Kind, Stack string
 	// Projects are the paths of the workspace projects it depends on.
 	Projects []string
@@ -39,7 +39,7 @@ func ProjectPath(root string) string { return ":" + strings.ReplaceAll(root, "/"
 var (
 	assignment        = regexp.MustCompile(`(?m)^\s*(group|version|artifactId)\s*=\s*["']([^"']*)["']`)
 	projectDependency = regexp.MustCompile(`project\(\s*(?:path\s*[=:]\s*)?["'](:[^"']*)["']`)
-	gradleProperty    = regexp.MustCompile(`(?m)^\s*(mnci\.kind|mnci\.stack|group|version)\s*[=:]\s*(\S+)`)
+	gradleProperty    = regexp.MustCompile(`(?m)^\s*(smith\.kind|smith\.stack|group|version)\s*[=:]\s*(\S+)`)
 	distBuildDir      = regexp.MustCompile(`["'](` + regexp.QuoteMeta("dist/gradle/") + `[^"']+)["']`)
 )
 
@@ -49,9 +49,9 @@ func ParseGradleBuild(root string, script, properties []byte) GradleBuild {
 	b := GradleBuild{Path: ProjectPath(root)}
 	for _, m := range gradleProperty.FindAllStringSubmatch(string(properties), -1) {
 		switch m[1] {
-		case "mnci.kind":
+		case "smith.kind":
 			b.Kind = m[2]
-		case "mnci.stack":
+		case "smith.stack":
 			b.Stack = m[2]
 		case "group":
 			b.Group = m[2]

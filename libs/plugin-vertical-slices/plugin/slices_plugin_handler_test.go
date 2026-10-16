@@ -3,8 +3,8 @@ package plugin
 import (
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/serve"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/serve"
 )
 
 func TestContribute(t *testing.T) {
@@ -21,7 +21,7 @@ func TestContribute(t *testing.T) {
 		t.Fatal(err)
 	}
 	tool := res.Projects["tool"]
-	if tool.Tasks[TaskName].Command[0] != "{mnci}" || tool.Tasks[TaskName].Inputs[0] != "**/*.go" || tool.DependsOn["lint"][0] != TaskName {
+	if tool.Tasks[TaskName].Command[0] != "{smith}" || tool.Tasks[TaskName].Inputs[0] != "**/*.go" || tool.DependsOn["lint"][0] != TaskName {
 		t.Fatalf("tool %+v", tool)
 	}
 	if kit := res.Projects["kit"]; kit.Tasks[TaskName].Inputs[0] != "**/*.py" || kit.DependsOn != nil {

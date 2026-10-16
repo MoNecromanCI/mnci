@@ -13,8 +13,8 @@ type PackageManifest struct {
 	Engines              struct {
 		VSCode string `json:"vscode"`
 	} `json:"engines"`
-	Mnci struct {
+	Smith struct {
 		Kind  string `json:"kind"`
 		Stack string `json:"stack"`
-	} `json:"mnci"`
+	} `json:"smith"`
 }

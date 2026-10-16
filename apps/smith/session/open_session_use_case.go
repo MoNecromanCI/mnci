@@ -1,0 +1,145 @@
+package session
+
+import (
+	"fmt"
+
+	"errors"
+	"github.com/monosmith-app/monosmith/apps/smith/remotecache"
+	"io"
+	"os"
+	"path/filepath"
+
+	"github.com/monosmith-app/monosmith/apps/smith/gitclient"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/taskcache"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+)
+
+// Session is an open workspace.
+type Session struct {
+	Root    string
+	Config  workspace.Config
+	Git     *gitclient.Git
+	Plugins *pluginhost.PluginSet
+	// Stacks are the stacks the workspace can use.
+	Stacks *pluginhost.Catalog
+	Graph  *projectgraph.Graph
+	// Files are tracked files plus untracked files that are not ignored.
+	Files   []string
+	Version string
+}
+
+// Options configure Open.
+type Options struct {
+	Dir     string
+	Version string
+	// Log receives plugin output; nil means stderr.
+	Log io.Writer
+	// Preview opens Dir itself with this configuration instead of finding
+	// smith.toml: a look at a repository before it is a workspace (smith adopt).
+	Preview *workspace.Config
+}
+
+// Open finds the workspace containing opts.Dir and loads everything a command
+// needs. The caller must Close it.
+func Open(opts Options) (*Session, error) {
+	var root string
+	var cfg workspace.Config
+	if opts.Preview != nil {
+		dir, err := filepath.Abs(opts.Dir)
+		if err != nil {
+			return nil, err
+		}
+		root, cfg = dir, *opts.Preview
+	} else {
+		found, err := workspace.FindRoot(opts.Dir)
+		if err != nil {
+			return nil, err
+		}
+		loaded, err := workspace.Load(found)
+		if err != nil {
+			return nil, err
+		}
+		root, cfg = found, loaded
+	}
+	git := gitclient.New(root)
+	if !git.IsRepository() {
+		return nil, errors.New("the workspace is not a git repository; run `git init` at " + root)
+	}
+	files, err := git.Files()
+	if err != nil {
+		return nil, err
+	}
+	plugins, err := pluginhost.Start(pluginhost.Options{WorkspaceRoot: root, Config: cfg, Version: opts.Version, Log: opts.Log})
+	if err != nil {
+		return nil, err
+	}
+	catalog, err := pluginhost.NewCatalog(plugins, cfg)
+	if err != nil {
+		plugins.Close()
+		return nil, err
+	}
+	graph, err := projectgraph.Discover(files, plugins, catalog, cfg)
+	if err != nil {
+		plugins.Close()
+		return nil, err
+	}
+	return &Session{Root: root, Config: cfg, Git: git, Plugins: plugins, Stacks: catalog, Graph: graph, Files: files, Version: opts.Version}, nil
+}
+
+// Storage opens the configured cache.
+func (s *Session) Storage() (taskcache.Storage, error) {
+	dir := s.Config.Cache.Dir
+	if env := os.Getenv("SMITH_CACHE_DIR"); env != "" {
+		dir = env
+	}
+	if !filepath.IsAbs(dir) {
+		dir = filepath.Join(s.Root, filepath.FromSlash(dir))
+	}
+	local, err := taskcache.NewLocalStorage(dir)
+	if err != nil {
+		return nil, err
+	}
+	remote := s.Config.Cache.Remote
+	if env := os.Getenv("SMITH_CACHE_REMOTE"); env != "" {
+		remote = env
+	}
+	if remote == "" {
+		return local, nil
+	}
+	warn := func(msg string) { fmt.Fprintln(os.Stderr, "smith: "+msg) }
+	secret := os.Getenv("SMITH_CACHE_KEY")
+	if secret == "" {
+		warn("the remote cache is off: SMITH_CACHE_KEY is not set, and nothing is shared unsigned")
+		return local, nil
+	}
+	store, err := remotecache.Open(remote)
+	if err != nil {
+		warn("the remote cache is off: " + err.Error())
+		return local, nil
+	}
+	return &remotecache.Tiered{Local: local, Remote: store, Secret: []byte(secret), ReadOnly: s.Config.Cache.RemoteReadOnly || os.Getenv("SMITH_CACHE_READ_ONLY") != "", Warn: warn}, nil
+}
+
+// Refresh re-reads files and rebuilds the graph, after a command changed the
+// workspace (smith add).
+func (s *Session) Refresh() error {
+	files, err := s.Git.Files()
+	if err != nil {
+		return err
+	}
+	graph, err := projectgraph.Discover(files, s.Plugins, s.Stacks, s.Config)
+	if err != nil {
+		return err
+	}
+	s.Files, s.Graph = files, graph
+	return nil
+}
+
+// Close stops the plugins.
+func (s *Session) Close() {
+	if s != nil && s.Plugins != nil {
+		s.Plugins.Close()
+	}
+}

@@ -10,9 +10,9 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/templating"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/templating"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 )
 
 // GoRunner runs the go command; tests replace it.
@@ -103,9 +103,9 @@ func declareKind(goMod string, kind protocol.ProjectKind, stack string) error {
 	if err != nil {
 		return err
 	}
-	head := "// mnci:kind " + string(kind) + "\n"
+	head := "// smith:kind " + string(kind) + "\n"
 	if stack != "" {
-		head += "// mnci:stack " + stack + "\n"
+		head += "// smith:stack " + stack + "\n"
 	}
 	return os.WriteFile(goMod, append([]byte(head), src...), 0o644)
 }

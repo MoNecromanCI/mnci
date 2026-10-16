@@ -2,7 +2,7 @@ package protocol
 
 // ContributeParams hands a plugin the projects it applies to: those whose
 // stack includes it, or, for a workspace-wide convention, those of the
-// languages it supports that mnci.toml enables it for.
+// languages it supports that smith.toml enables it for.
 type ContributeParams struct {
 	Projects []Project `json:"projects"`
 }

@@ -4,12 +4,12 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestPublished(t *testing.T) {
 	t.Setenv("TWINE_REPOSITORY_URL", "http://localhost:8080/")
-	t.Setenv("MNCI_PYPI_SIMPLE_URL", "")
+	t.Setenv("SMITH_PYPI_SIMPLE_URL", "")
 	p := protocol.PublishedParams{Project: protocol.Project{Name: "pykit", Exports: []string{"acme_pykit"}}}
 	page := `<html><body>
 <a href="/packages/acme_pykit-0.9.0.tar.gz#sha256=1">acme_pykit-0.9.0.tar.gz</a>

@@ -1,6 +1,6 @@
 package scaffolding
 
-import "github.com/MoNecromanCI/mnci/packages/plugin-sdk/jsondoc"
+import "github.com/monosmith-app/monosmith/packages/plugin-sdk/jsondoc"
 
 // ForgetWorkspace drops a removed workspace package from package-lock.json:
 // its own entry and the node_modules link to it. npm install alone keeps it,

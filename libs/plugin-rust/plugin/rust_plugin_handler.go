@@ -1,11 +1,11 @@
 package plugin
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-rust/discovery"
-	"github.com/MoNecromanCI/mnci/libs/plugin-rust/pipeline"
-	"github.com/MoNecromanCI/mnci/libs/plugin-rust/releasing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-rust/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-rust/discovery"
+	"github.com/monosmith-app/monosmith/libs/plugin-rust/pipeline"
+	"github.com/monosmith-app/monosmith/libs/plugin-rust/releasing"
+	"github.com/monosmith-app/monosmith/libs/plugin-rust/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name.

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 const corePom = `<project>
@@ -70,7 +70,7 @@ func TestPublish(t *testing.T) {
 	if res, err := Publish(ws, protocol.PublishParams{Project: core, Version: "1.0.0"}); err != nil || !res.Published {
 		t.Fatal(err, res)
 	}
-	if got := strings.Join(ran, " "); !strings.Contains(got, "-pl dev.acme:acme-core deploy -DskipTests -s ") || !strings.HasSuffix(got, "-DaltDeploymentRepository=mnci::https://repo.example/maven") {
+	if got := strings.Join(ran, " "); !strings.Contains(got, "-pl dev.acme:acme-core deploy -DskipTests -s ") || !strings.HasSuffix(got, "-DaltDeploymentRepository=smith::https://repo.example/maven") {
 		t.Fatal(got)
 	}
 }

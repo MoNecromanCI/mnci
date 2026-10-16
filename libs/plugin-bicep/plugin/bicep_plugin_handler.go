@@ -1,11 +1,11 @@
 package plugin
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-bicep/discovery"
-	"github.com/MoNecromanCI/mnci/libs/plugin-bicep/pipeline"
-	"github.com/MoNecromanCI/mnci/libs/plugin-bicep/releasing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-bicep/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-bicep/discovery"
+	"github.com/monosmith-app/monosmith/libs/plugin-bicep/pipeline"
+	"github.com/monosmith-app/monosmith/libs/plugin-bicep/releasing"
+	"github.com/monosmith-app/monosmith/libs/plugin-bicep/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name.

@@ -10,8 +10,8 @@ import (
 	"regexp"
 	"sort"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/jsondoc"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/jsondoc"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 var sections = []string{"dependencies", "devDependencies", "optionalDependencies", "peerDependencies"}

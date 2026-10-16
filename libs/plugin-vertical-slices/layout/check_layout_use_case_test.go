@@ -139,6 +139,35 @@ func TestCheckRust(t *testing.T) {
 	}
 }
 
+func TestCheckRuby(t *testing.T) {
+	root := tree(t,
+		"kit.gemspec", "Gemfile", "exe/kit", "Rakefile.rb",
+		"lib/kit.rb", "lib/kit/version.rb", "lib/kit/loose.rb",
+		"lib/kit/greeting/greeting.rb", "lib/kit/greeting/greet_use_case.rb", "lib/kit/greeting/stuff.rb",
+		"lib/kit/orders.rb", "lib/kit/orders/place_order_use_case.rb", "lib/kit/BadName/x_mapper.rb",
+		"spec/spec_helper.rb", "spec/kit/greeting/greet_use_case_spec.rb", "spec/support/fake_clock.rb", "spec/sample.rb",
+		"test/test_helper.rb", "test/kit/greet_use_case_test.rb",
+	)
+	r, err := Check(root, "ruby")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := strings.Join(r.Problems, "\n")
+	for _, want := range []string{
+		"lib/kit/loose.rb - the gem's namespace folder holds version.rb",
+		"lib/kit/greeting/stuff.rb - a Ruby file in a slice is <name>_<role>.rb",
+		"lib/kit/BadName/ - a Ruby folder is snake_case",
+		"spec/sample.rb - a spec is <basename>_spec.rb",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q in:\n%s", want, got)
+		}
+	}
+	if len(r.Problems) != 4 {
+		t.Errorf("want 4 problems, got:\n%s", got)
+	}
+}
+
 func TestCheckWarnsAboutLargeSlices(t *testing.T) {
 	var files []string
 	for i := range SliceSize + 1 {

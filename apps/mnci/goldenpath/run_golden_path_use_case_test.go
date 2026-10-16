@@ -263,6 +263,29 @@ func TestGoldenPath(t *testing.T) {
 		}
 	}
 	w.mnci(true, "doctor")
+	// Ready-made pipelines: written once, beside the generated CI.
+	if out := w.mnci(true, "pipeline"); !strings.Contains(out, "deploy-pages (--project <app>)") {
+		t.Fatalf("pipeline list:\n%s", out)
+	}
+	if out := w.mnci(true, "pipeline", "e2e"); !strings.Contains(out, "wrote .github/workflows/e2e.yml") || !strings.Contains(out, "wrote azure-pipelines/e2e.yml") {
+		t.Fatalf("pipeline e2e:\n%s", out)
+	}
+	if out := w.mnci(false, "pipeline", "e2e"); !strings.Contains(out, "exists and is yours") {
+		t.Fatalf("a second e2e must not overwrite:\n%s", out)
+	}
+	if out := w.mnci(false, "pipeline", "deploy-pages", "--project", "ui"); !strings.Contains(out, "deploys an app") {
+		t.Fatalf("deploy a lib:\n%s", out)
+	}
+	if out := w.mnci(true, "pipeline", "deploy-pages", "--project", "web"); !strings.Contains(out, "wrote .github/workflows/deploy-pages.yml") || strings.Contains(out, "azure-pipelines/deploy-pages") {
+		t.Fatalf("deploy-pages is GitHub's only:\n%s", out)
+	}
+	if pages := w.read(".github/workflows/deploy-pages.yml"); !strings.Contains(pages, "mnci run build -p web") || !strings.Contains(pages, "mnci ci setup") {
+		t.Fatalf("deploy-pages.yml:\n%s", pages)
+	}
+	w.mnci(true, "ci", "generate", "--check")
+	for _, f := range []string{".github/workflows/e2e.yml", "azure-pipelines/e2e.yml", ".github/workflows/deploy-pages.yml"} {
+		_ = os.Remove(filepath.Join(w.dir, filepath.FromSlash(f)))
+	}
 	// The dev container installs what CI installs, at the same versions.
 	devcontainer, _ := os.ReadFile(filepath.Join(w.dir, ".devcontainer", "devcontainer.json"))
 	for _, want := range []string{"features/node:1", "features/go:1", "features/python:1", `"golangciLintVersion": "2.14.0"`, "&& ", "/.local/bin/mnci", ` ci setup"`} {

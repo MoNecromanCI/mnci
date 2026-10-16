@@ -117,6 +117,20 @@ func (d *Document) SetJSON(key string, value any) error {
 	return nil
 }
 
+// String returns a string value; ok is false when the key is missing or not
+// a string.
+func (d *Document) String(key string) (string, bool) {
+	raw, isLeaf := d.values[key].(json.RawMessage)
+	if !isLeaf {
+		return "", false
+	}
+	var s string
+	if json.Unmarshal(raw, &s) != nil {
+		return "", false
+	}
+	return s, true
+}
+
 // Delete removes a key.
 func (d *Document) Delete(key string) {
 	if _, ok := d.values[key]; !ok {

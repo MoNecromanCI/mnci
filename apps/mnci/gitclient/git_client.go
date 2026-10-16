@@ -53,6 +53,21 @@ func (g *Git) Files() ([]string, error) {
 		return nil, err
 	}
 	files := splitNUL(out)
+	// A tracked file deleted from the working tree is still in the index;
+	// it is not part of the workspace any more.
+	if deleted, err := g.raw("ls-files", "-z", "--deleted"); err == nil && deleted != "" {
+		gone := map[string]bool{}
+		for _, f := range splitNUL(deleted) {
+			gone[f] = true
+		}
+		kept := files[:0]
+		for _, f := range files {
+			if !gone[f] {
+				kept = append(kept, f)
+			}
+		}
+		files = kept
+	}
 	sort.Strings(files)
 	return files, nil
 }

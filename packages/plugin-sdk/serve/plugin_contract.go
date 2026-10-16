@@ -44,6 +44,11 @@ type DoctorContributor interface {
 	Doctor(params protocol.DoctorParams) (protocol.DoctorResult, error)
 }
 
+// Remover cleans up after a project is removed.
+type Remover interface {
+	Remove(params protocol.RemoveParams) (protocol.RemoveResult, error)
+}
+
 // Contributor is a convention: it adds tasks to the projects it applies to.
 type Contributor interface {
 	Contribute(params protocol.ContributeParams) (protocol.ContributeResult, error)

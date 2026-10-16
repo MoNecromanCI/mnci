@@ -97,6 +97,10 @@ func dispatch(p Plugin, req protocol.Request) (any, *protocol.ResponseError) {
 		if c, ok := p.(Contributor); ok {
 			return call(req.Params, c.Contribute)
 		}
+	case protocol.MethodRemove:
+		if r, ok := p.(Remover); ok {
+			return call(req.Params, r.Remove)
+		}
 	case protocol.MethodPublished:
 		if r, ok := p.(RegistryReader); ok {
 			return call(req.Params, r.Published)
@@ -134,8 +138,9 @@ func CapabilitiesOf(p Plugin) protocol.Capabilities {
 	_, ci := p.(CIContributor)
 	_, doctor := p.(DoctorContributor)
 	_, contribute := p.(Contributor)
+	_, remove := p.(Remover)
 	_, published := p.(RegistryReader)
-	return protocol.Capabilities{Discover: discover, Generate: generate, Version: version, Publish: publish, CI: ci, Doctor: doctor, Contribute: contribute, Published: published}
+	return protocol.Capabilities{Discover: discover, Generate: generate, Version: version, Publish: publish, CI: ci, Doctor: doctor, Contribute: contribute, Remove: remove, Published: published}
 }
 
 func call[P, R any](raw json.RawMessage, fn func(P) (R, error)) (any, *protocol.ResponseError) {

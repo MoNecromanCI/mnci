@@ -71,3 +71,8 @@ func names() []string {
 	}
 	return out
 }
+
+// Uninstall removes a distribution from the venv.
+func Uninstall(workspaceRoot, distribution string) error {
+	return Runner(workspaceRoot, []string{Path(workspaceRoot), "-m", "pip", "uninstall", "--yes", "--quiet", "--disable-pip-version-check", distribution})
+}

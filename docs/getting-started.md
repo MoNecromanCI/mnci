@@ -42,6 +42,18 @@ one language, it is the default.
 Each project starts with one worked example slice (`greeting`) laid out as
 vertical slices, and passes lint, type-check, test and build immediately.
 
+To take a project out again:
+
+```sh
+mnci remove web --dry-run    # what would change
+mnci remove web              # asks first; --yes in scripts
+```
+
+It deletes the project's directory, lets its plugin clean what it owns
+elsewhere (the `go.work` entry, the npm lockfile, the Python venv), drops the
+project's tables from `mnci.toml` and regenerates the pipelines. A project
+another one imports is refused unless `--force`; its release tags are kept.
+
 ## Use one project from another
 
 Just import it — no manifest to edit:

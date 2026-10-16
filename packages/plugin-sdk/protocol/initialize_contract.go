@@ -67,6 +67,8 @@ type Capabilities struct {
 	// Contribute is a convention plugin's: it adds tasks to projects other
 	// plugins discovered.
 	Contribute bool `json:"contribute,omitempty"`
+	// Remove cleans up a removed project's traces outside its directory.
+	Remove bool `json:"remove,omitempty"`
 	// Published reports what a registry has of a project.
 	Published bool `json:"published,omitempty"`
 }

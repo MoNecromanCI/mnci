@@ -85,3 +85,15 @@ func TestSetJSONMakesObjectsEditable(t *testing.T) {
 		t.Fatalf("got:\n%s\nwant:\n%s", got, want)
 	}
 }
+
+func TestString(t *testing.T) {
+	doc, _ := ParseDocument([]byte(`{"a": "x", "n": 1, "o": {}}`))
+	if v, ok := doc.String("a"); !ok || v != "x" {
+		t.Fatalf("%q %v", v, ok)
+	}
+	for _, k := range []string{"n", "o", "missing"} {
+		if _, ok := doc.String(k); ok {
+			t.Errorf("%s is not a string", k)
+		}
+	}
+}

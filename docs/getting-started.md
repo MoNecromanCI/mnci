@@ -107,3 +107,22 @@ releasable commits. See [releasing](releasing.md).
 mnci doctor          # every failed check names its remedy
 mnci explain web     # how web's tasks resolved and where each value came from
 ```
+
+## The interactive shell
+
+`mnci` with no arguments, in a terminal, opens a shell with these tabs (tab and
+shift+tab switch between them):
+
+- **Menu**: the common tasks, asking one question at a time.
+- **Commands**: every command; type to find one, press enter, then type its
+  arguments.
+- **Doctor** (inside a workspace): every check, problems first. Press enter on
+  one to see its detail and remedy, and r to check again.
+- **Release** (inside a workspace): what the next release would do, or why it
+  is blocked. Press p to preview it and R to release.
+
+The shell never acts by itself. Each action ends as an mnci command line,
+printed before it runs: you can type the same command in a script or in CI. R,
+for example, hands over to `mnci release`, which asks for confirmation and then
+shows its progress. When stdin or stdout is not a terminal, or `CI` is set,
+`mnci` prints its help instead.

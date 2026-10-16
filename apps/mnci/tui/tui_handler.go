@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/MoNecromanCI/mnci/apps/mnci/clicontract"
 	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
 	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,9 +18,9 @@ func Interactive() bool {
 	return term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stdout.Fd())) && os.Getenv("CI") == ""
 }
 
-// Choose shows the menu and returns the mnci arguments the user built, or nil
-// when they quit.
-func Choose(version string, out io.Writer) ([]string, error) {
+// Choose shows the shell and returns the mnci arguments the user built, or
+// nil when they quit. commands feed the palette.
+func Choose(version string, out io.Writer, commands []clicontract.CommandDescription) ([]string, error) {
 	header := "mnci " + version
 	inside := false
 	enabled := pluginhost.BuiltinNames()
@@ -39,11 +40,16 @@ func Choose(version string, out io.Writer) ([]string, error) {
 		}
 		actions = append(actions, a)
 	}
-	final, err := tea.NewProgram(NewModel(header, actions), tea.WithOutput(out)).Run()
+	var sources *Sources
+	if inside {
+		s := WorkspaceSources(".", version)
+		sources = &s
+	}
+	final, err := tea.NewProgram(NewShell(NewModel(header, actions), commands, sources), tea.WithOutput(out)).Run()
 	if err != nil {
 		return nil, err
 	}
-	argv := final.(Model).Argv
+	argv := final.(Shell).Argv
 	if len(argv) > 0 {
 		fmt.Fprintf(out, "→ mnci %s\n\n", strings.Join(argv, " "))
 	}

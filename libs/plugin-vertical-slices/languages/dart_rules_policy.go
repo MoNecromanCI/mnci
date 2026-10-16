@@ -46,7 +46,7 @@ var dartRules = Rules{
 func DartFile(name string, in Dir) string {
 	switch area := dartArea(in); {
 	case area == "test" || area == "integration_test":
-		if dartTestFile.MatchString(name) || (dartTesting(in) && dartSnakeFile.MatchString(name)) {
+		if dartTestFile.MatchString(name) || (inTesting(in) && dartSnakeFile.MatchString(name)) {
 			return ""
 		}
 		return "a test is <basename>_test.dart, mirroring lib/; test doubles go in a testing/ folder"
@@ -74,15 +74,4 @@ func dartArea(in Dir) string {
 // the folder it is in.
 func dartBarrel(name string, in Dir) bool {
 	return in.Rel != "lib" && name == path.Base(in.Rel)+".dart"
-}
-
-// dartTesting reports whether a test folder is, or is in, a testing/ folder
-// of test doubles.
-func dartTesting(in Dir) bool {
-	for _, part := range strings.Split(in.Rel, "/") {
-		if part == "testing" {
-			return true
-		}
-	}
-	return false
 }

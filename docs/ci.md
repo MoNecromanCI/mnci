@@ -131,6 +131,29 @@ Go packages are published by their tag and need no secret. On GitHub, the job
 has `contents: write` so it can push tags; on Azure the checkout keeps its
 credentials (`persistCredentials`).
 
+## Ready-made pipelines
+
+Beside the generated CI, `mnci pipeline` adds a pipeline that does one thing:
+
+| Template | Providers | What it does |
+|---|---|---|
+| `e2e` | GitHub, Azure | runs every project's `e2e` task, which `mnci ci verify` leaves out |
+| `package-zip` | GitHub, Azure | packs the projects (`mnci ci pack`) and keeps `dist/drop` as the `drop` artifact |
+| `deploy-pages --project <app>` | GitHub | builds the app and deploys its build output to GitHub Pages |
+| `deploy-azure-function --project <app>` | GitHub, Azure | builds the app and deploys it to an Azure Function App (OIDC on GitHub, a service connection on Azure) |
+
+```sh
+mnci pipeline                          # list them
+mnci pipeline e2e                      # for the workspace's providers; --ci github|azure|both
+mnci pipeline deploy-pages --project web
+```
+
+Each starts the way the generated jobs do (the toolchains, mnci at the same
+version, `mnci ci setup`) and goes to `.github/workflows/<name>.yml` or
+`azure-pipelines/<name>.yml`. The file is written once and yours from then
+on: `mnci upgrade` never rewrites it, and adding it again keeps it unless
+`--force`.
+
 ## Your own steps
 
 Put team steps between the slot markers; regeneration keeps them:

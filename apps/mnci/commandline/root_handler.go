@@ -3,6 +3,7 @@ package commandline
 import (
 	"errors"
 	"fmt"
+	"github.com/MoNecromanCI/mnci/apps/mnci/pipelinetemplate"
 	"os"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
@@ -50,7 +51,7 @@ generates CI pipelines, and releases packages from conventional commits.`,
 	add("start", scaffold.NewCommand(version), scaffold.AddCommand(version), scaffold.RemoveCommand(version), convert.Command(version), configedit.Command())
 	add("work", taskrun.Commands(version)...)
 	add("work", dependencies.Commands(version)...)
-	add("ship", release.Command(version), cipipeline.Command(version))
+	add("ship", release.Command(version), cipipeline.Command(version), pipelinetemplate.Command(version))
 	add("inspect", graphview.Commands(version)...)
 	add("inspect", clicontract.Commands(version)...)
 	add("inspect", doctor.Command(version), explain.Command(version), whymiss.Command(version), pluginhost.Command(version), stackview.Command(version), slicecheck.Command())

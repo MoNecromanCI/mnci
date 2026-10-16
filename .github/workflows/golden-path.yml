@@ -73,6 +73,10 @@ jobs:
         with:
           php-version: '8.4'
           tools: composer:v2
+      # The cpp plugin's e2e, on Linux (CMake and g++ are on the image).
+      - name: Install Ninja and cppcheck
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ninja-build cppcheck
       - name: New workspace, every kind in every language, build, test, release
         working-directory: apps/mnci
         run: go test -tags e2e -timeout 40m -v -skip 'TestConvert' ./goldenpath

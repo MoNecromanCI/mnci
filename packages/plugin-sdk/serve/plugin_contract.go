@@ -56,6 +56,13 @@ type DependencyManager interface {
 	Uninstall(params protocol.UninstallParams) (protocol.DependencyResult, error)
 }
 
+// DeclarationEditor lists and rewrites the dependency specs its projects'
+// manifests declare (mnci sync, mnci up).
+type DeclarationEditor interface {
+	Declared(params protocol.DeclaredParams) (protocol.DeclaredResult, error)
+	Rewrite(params protocol.RewriteParams) (protocol.DependencyResult, error)
+}
+
 // Contributor is a convention: it adds tasks to the projects it applies to.
 type Contributor interface {
 	Contribute(params protocol.ContributeParams) (protocol.ContributeResult, error)

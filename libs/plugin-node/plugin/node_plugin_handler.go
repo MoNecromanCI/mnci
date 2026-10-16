@@ -78,3 +78,13 @@ func (n *Node) Install(params protocol.InstallParams) (protocol.DependencyResult
 func (n *Node) Uninstall(params protocol.UninstallParams) (protocol.DependencyResult, error) {
 	return dependencies.Uninstall(n.root, params)
 }
+
+// Declared implements serve.DeclarationEditor.
+func (n *Node) Declared(params protocol.DeclaredParams) (protocol.DeclaredResult, error) {
+	return dependencies.Declared(n.root, params)
+}
+
+// Rewrite implements serve.DeclarationEditor.
+func (n *Node) Rewrite(params protocol.RewriteParams) (protocol.DependencyResult, error) {
+	return dependencies.Rewrite(n.root, params)
+}

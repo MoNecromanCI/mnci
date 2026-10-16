@@ -186,6 +186,23 @@ func TestGoldenPath(t *testing.T) {
 	if after, _ := os.ReadFile(filepath.Join(w.dir, "apps", "worker", "pyproject.toml")); string(after) != string(pyproject) {
 		t.Fatalf("uninstall did not restore pyproject.toml:\n%s", after)
 	}
+	// Two projects disagree on a shared dependency; sync converges them on
+	// the highest one declared.
+	pykit, _ := os.ReadFile(filepath.Join(w.dir, "packages", "pykit", "pyproject.toml"))
+	w.write("apps/worker/pyproject.toml", strings.Replace(string(pyproject), "dependencies = []", `dependencies = ["requests>=2.31"]`, 1))
+	w.write("packages/pykit/pyproject.toml", strings.Replace(string(pykit), "dependencies = []", `dependencies = ["requests>=2.32"]`, 1))
+	if out := w.mnci(false, "sync", "--check"); !strings.Contains(out, "requests (python) → >=2.32") || !strings.Contains(out, "worker") {
+		t.Fatalf("sync --check:\n%s", out)
+	}
+	w.mnci(true, "sync", "--no-install")
+	if after, _ := os.ReadFile(filepath.Join(w.dir, "apps", "worker", "pyproject.toml")); !strings.Contains(string(after), `dependencies = ["requests>=2.32"]`) {
+		t.Fatalf("sync did not converge worker:\n%s", after)
+	}
+	if out := w.mnci(true, "sync", "--check"); !strings.Contains(out, "Every project agrees") {
+		t.Fatalf("sync --check after sync:\n%s", out)
+	}
+	w.write("apps/worker/pyproject.toml", string(pyproject))
+	w.write("packages/pykit/pyproject.toml", string(pykit))
 
 	// 4. Everything lints, type-checks, tests and builds; a re-run is all cache.
 	out := w.mnci(true, "run", "lint", "typecheck", "test", "build")

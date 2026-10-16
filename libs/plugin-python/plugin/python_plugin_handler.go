@@ -78,3 +78,13 @@ func (p *Python) Install(params protocol.InstallParams) (protocol.DependencyResu
 func (p *Python) Uninstall(params protocol.UninstallParams) (protocol.DependencyResult, error) {
 	return dependencies.Uninstall(p.root, params)
 }
+
+// Declared implements serve.DeclarationEditor.
+func (p *Python) Declared(params protocol.DeclaredParams) (protocol.DeclaredResult, error) {
+	return dependencies.Declared(p.root, params)
+}
+
+// Rewrite implements serve.DeclarationEditor.
+func (p *Python) Rewrite(params protocol.RewriteParams) (protocol.DependencyResult, error) {
+	return dependencies.Rewrite(p.root, params)
+}

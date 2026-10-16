@@ -144,6 +144,8 @@ Content-Length: 85\r\n
 | `published` | a project → the newest version its registry has, or none, or that the registry could not be asked | `published` |
 | `dependencies/install` | a project, packages, dev → the files changed, notes; with no project, the projects it serves, to install them all | `dependencies` |
 | `dependencies/uninstall` | a project, packages → the files changed, notes | `dependencies` |
+| `dependencies/declared` | the plugin's projects → every dependency their manifests declare (spec, section, peer, rewritable), and the versions installed | `declarations` |
+| `dependencies/rewrite` | declarations and their new specs → the files changed | `declarations` |
 | `contribute` | the projects whose stack includes the plugin, or a convention applies to → new tasks, replaced tasks and extra task dependencies, by project | `contribute` |
 | `shutdown` | → `{}`; the plugin then exits | always |
 

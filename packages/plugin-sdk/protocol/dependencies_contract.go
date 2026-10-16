@@ -28,3 +28,48 @@ type DependencyResult struct {
 	Files []string `json:"files,omitempty"`
 	Notes []string `json:"notes,omitempty"`
 }
+
+// DeclaredParams asks for the dependencies the plugin's projects declare
+// (and the workspace root's manifest, when the ecosystem has one).
+type DeclaredParams struct {
+	Projects []Project `json:"projects"`
+}
+
+// Declaration is one dependency one manifest declares.
+type Declaration struct {
+	// Project is the declaring project's name, "" for the root manifest.
+	Project string `json:"project,omitempty"`
+	// File is the manifest, workspace-relative.
+	File string `json:"file"`
+	// Name is the dependency's name as the ecosystem compares names.
+	Name string `json:"name"`
+	// Spec is the declared range or version (^1.2.3, >=2.31), "" when the
+	// manifest gives none.
+	Spec string `json:"spec"`
+	// Section is where it is declared: dependencies, devDependencies, dev...
+	Section string `json:"section"`
+	// Peer declarations state what a package works with, not what is
+	// installed: sync and up leave them alone.
+	Peer bool `json:"peer,omitempty"`
+	// Rewritable is false for a spec mnci must not rewrite: a URL, a git
+	// ref, a workspace alias, a compound range, environment markers.
+	Rewritable bool `json:"rewritable"`
+}
+
+// DeclaredResult is every declaration, and the version installed of each
+// name where the plugin can tell.
+type DeclaredResult struct {
+	Declarations []Declaration     `json:"declarations"`
+	Installed    map[string]string `json:"installed,omitempty"`
+}
+
+// RewriteParams asks a plugin to change declared specs in place.
+type RewriteParams struct {
+	Changes []Rewrite `json:"changes"`
+}
+
+// Rewrite changes one declaration's spec.
+type Rewrite struct {
+	Declaration Declaration `json:"declaration"`
+	Spec        string      `json:"spec"`
+}

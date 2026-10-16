@@ -19,15 +19,16 @@ func BuildDir(artifactID string) string { return protocol.BuildDir + "/maven/" +
 // as a file, which an 8.3 short temp path on Windows defeats). Each touches
 // only its own module: build installs it into the local repository
 // after the modules it depends on (^build), so the modules that use it
-// resolve it there; test and start wait for the module's build; lint is
-// Checkstyle with the root pom's rules.
+// resolve it there; test, start and lint wait for the module's build (lint
+// is Checkstyle with the root pom's rules, which writes its configuration
+// into the build directory mnci empties before a build).
 func Tasks(root, coordinates, artifactID string, kind protocol.ProjectKind) map[string]protocol.Task {
 	mvn := func(args ...string) []string { return append([]string{"mvn", "-B", "-q", "-pl", coordinates}, args...) }
 	up := strings.Repeat("../", strings.Count(root, "/")+1)
 	tasks := map[string]protocol.Task{
 		"build": {Command: mvn("install", "-DskipTests"), Cwd: ".", Inputs: inputs, Outputs: []string{up + BuildDir(artifactID)}, DependsOn: []string{"^build"}, Description: "mvn install (into the local repository, for the modules that use it)"},
 		"test":  {Command: mvn("test"), Cwd: ".", Inputs: inputs, DependsOn: []string{"build"}, Cache: true, Description: "mvn test"},
-		"lint":  {Command: mvn("checkstyle:check"), Cwd: ".", Inputs: inputs, Cache: true, Description: "Checkstyle (the root pom's rules)"},
+		"lint":  {Command: mvn("checkstyle:check"), Cwd: ".", Inputs: inputs, DependsOn: []string{"build"}, Cache: true, Description: "Checkstyle (the root pom's rules)"},
 	}
 	if kind == protocol.ProjectApp {
 		tasks["start"] = protocol.Task{Command: mvn("exec:java"), Cwd: ".", DependsOn: []string{"build"}, Description: "Run the app (exec:java)"}

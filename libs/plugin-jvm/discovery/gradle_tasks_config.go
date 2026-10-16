@@ -38,16 +38,17 @@ func GradleTasks(root string, b GradleBuild, kind protocol.ProjectKind) map[stri
 		"test":  {Command: gradle("test"), Cwd: ".", Inputs: gradleInputs, DependsOn: []string{"build"}, Cache: true, Description: "gradle test"},
 	}
 	if len(b.Lint) > 0 {
-		tasks["lint"] = protocol.Task{Command: gradle(b.Lint...), Cwd: ".", Inputs: gradleInputs, Cache: true, Description: "gradle " + strings.Join(b.Lint, " ")}
-		// Android's tasks compile the same intermediates (assemble runs
-		// lint-vital, lint compiles the unit tests): two Gradle builds of
-		// one Android module at once overwrite each other's outputs, so its
-		// tasks run one after another: build, test, lint.
+		// Lint writes its reports into the build directory, which mnci
+		// empties before a build: it runs after the build. Android's tasks
+		// also compile the same intermediates (assemble runs lint-vital, lint
+		// compiles the unit tests), so two Gradle builds of one Android
+		// module at once overwrite each other's outputs: its tasks run one
+		// after another, build, test, lint.
+		after := "build"
 		if b.Android {
-			lint := tasks["lint"]
-			lint.DependsOn = []string{"test"}
-			tasks["lint"] = lint
+			after = "test"
 		}
+		tasks["lint"] = protocol.Task{Command: gradle(b.Lint...), Cwd: ".", Inputs: gradleInputs, DependsOn: []string{after}, Cache: true, Description: "gradle " + strings.Join(b.Lint, " ")}
 	}
 	// An Android app runs on a device, not from Gradle.
 	if kind == protocol.ProjectApp && !b.Android {

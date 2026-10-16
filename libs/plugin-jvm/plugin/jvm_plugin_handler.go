@@ -11,7 +11,7 @@ import (
 // Name is the plugin's name.
 const Name = "jvm"
 
-// JVM is the JVM language plugin (Maven, Java).
+// JVM is the JVM language plugin: Java with Maven, Kotlin with Gradle.
 type JVM struct {
 	Version string
 	root    string
@@ -27,7 +27,10 @@ func (j *JVM) Describe(params protocol.InitializeParams) (protocol.InitializeRes
 		Plugin:    protocol.Peer{Name: Name, Version: j.Version},
 		Kind:      protocol.KindLanguage,
 		Languages: []string{"jvm", "java"},
-		Manifests: []string{"pom.xml"},
+		Manifests: []string{"pom.xml", "build.gradle.kts", "build.gradle"},
+		Stacks: []protocol.Stack{{
+			Name: scaffolding.KotlinStack, Description: "a Kotlin module built with Gradle, linted with ktlint", Language: Name,
+		}},
 	}, nil
 }
 

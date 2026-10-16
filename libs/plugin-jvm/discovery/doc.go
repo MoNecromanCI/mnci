@@ -1,3 +1,4 @@
-// Package discovery reads each module's pom.xml: its coordinates, kind, the
-// workspace modules it depends on, and the tasks Maven runs for it.
+// Package discovery reads each Maven module's pom.xml and each Gradle
+// module's build script: its coordinates, kind, the workspace modules it
+// depends on, and the tasks Maven or Gradle runs for it.
 package discovery

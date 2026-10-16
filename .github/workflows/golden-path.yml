@@ -87,6 +87,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      # The jvm plugin's kotlin stack's e2e.
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '9.8.1'
       - name: New workspace, every kind in every language, build, test, release
         working-directory: apps/mnci
         run: go test -tags e2e -timeout 40m -v -skip 'TestConvert' ./goldenpath

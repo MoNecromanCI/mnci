@@ -34,10 +34,29 @@ can run locally.
 | `mnci ci audit` | dependency vulnerability checks; non-blocking ones warn |
 | `mnci ci verify` | `lint`, `typecheck`, `test`, `build` — affected projects only on a pull request, everything otherwise |
 | `mnci release --dry-run --comment` | on a pull request: the release preview, in the job summary and as a comment on the pull request |
+| `mnci ci pack` | on a push to the release branch: every project's `package` task into `dist/drop`, kept as the run's `drop` artifact |
 | `mnci ci release` | on a push to the release branch: version, publish and tag |
 
 On GitHub Actions and Azure Pipelines output is grouped, failures are annotated,
-and the release report is appended to the job summary.
+and each phase adds a line (passed or failed, and how long it took) and the
+release its report to the job summary.
+
+## Packing
+
+`mnci ci pack` runs the `package` task of every project that has one and
+leaves what they make in `dist/drop`, which the pipeline keeps as the `drop`
+artifact (GitHub `actions/upload-artifact`, Azure `publish`). The steps are in
+the pipeline only when some project has a `package` task. The built-in
+plugins give every app one:
+
+| App | `package` makes |
+|---|---|
+| Node | `npm pack` of the app, after its build: `dist/drop/<scope>-<name>-<version>.tgz` |
+| Go | the binary: `dist/drop/<name>/<name>` |
+| Python | the app's wheel: `dist/drop/<name>-<version>-py3-none-any.whl` |
+
+A stack's plugin, or `[projects.<name>.tasks.package]` in `mnci.toml`, can
+replace it, for example with a zip a deploy step expects.
 
 ## The release preview comment
 

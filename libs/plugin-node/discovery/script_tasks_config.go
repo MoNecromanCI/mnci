@@ -47,3 +47,16 @@ func TaskFor(script string, scripts map[string]string) protocol.Task {
 	}
 	return t
 }
+
+// PackageTask packs an app with npm pack into dist/drop, the deliverable
+// mnci ci pack keeps, after its build when it has one.
+func PackageTask(scripts map[string]string) protocol.Task {
+	t := protocol.Task{
+		Command:     []string{"npm", "pack", "--pack-destination", "{workspaceRoot}/dist/drop"},
+		Description: "Pack the app into dist/drop (mnci ci pack)",
+	}
+	if _, ok := scripts["build"]; ok {
+		t.DependsOn = []string{"build"}
+	}
+	return t
+}

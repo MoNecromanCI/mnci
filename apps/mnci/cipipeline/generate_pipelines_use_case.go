@@ -35,6 +35,11 @@ func Collect(s *session.Session) (Contributions, error) {
 		}
 		c.Add(r)
 	}
+	for _, p := range s.Graph.Projects {
+		if _, ok := p.Tasks[PackTask]; ok {
+			c.Pack = true
+		}
+	}
 	if s.Config.Release.GitHubReleases {
 		c.Add(protocol.CIResult{Credentials: []protocol.Credential{{Env: "GITHUB_TOKEN", Description: "creates GitHub Releases and uploads their assets", Required: true}}})
 	}

@@ -16,6 +16,9 @@ type Model struct {
 	ReleaseBranch string
 	Toolchains    []protocol.Toolchain
 	Credentials   []protocol.Credential
+	// Pack is true when a project has a package task: pushes to the release
+	// branch then run mnci ci pack and keep dist/drop as the "drop" artifact.
+	Pack bool
 }
 
 // Contributions are every plugin's CI needs for this workspace.
@@ -24,6 +27,8 @@ type Contributions struct {
 	Setup       []protocol.Step
 	Audit       []protocol.Step
 	Credentials []protocol.Credential
+	// Pack is true when a project has a package task.
+	Pack bool
 }
 
 // Add merges one plugin's contribution, keeping the first of duplicates.
@@ -51,7 +56,7 @@ func NewModel(c Contributions, mnciVersion, releaseBranch string) Model {
 	if mnciVersion == "" || mnciVersion == "dev" {
 		mnciVersion = "latest"
 	}
-	m := Model{MnciVersion: mnciVersion, ReleaseBranch: releaseBranch}
+	m := Model{MnciVersion: mnciVersion, ReleaseBranch: releaseBranch, Pack: c.Pack}
 	m.Toolchains = append(m.Toolchains, c.Toolchains...)
 	sort.Slice(m.Toolchains, func(i, j int) bool { return m.Toolchains[i].Name < m.Toolchains[j].Name })
 	m.Credentials = append(m.Credentials, c.Credentials...)

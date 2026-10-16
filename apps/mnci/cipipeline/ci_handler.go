@@ -21,6 +21,8 @@ func Command(version string) *cobra.Command {
   setup    install every toolchain dependency the workspace's plugins need
   audit    check dependencies for known vulnerabilities
   verify   lint, typecheck, test and build — only affected projects on a pull request
+  pack     run every project's package task into dist/drop, kept as the pipeline's
+           "drop" artifact on pushes to the release branch
   release  version, publish and tag every package with releasable commits`,
 	}
 	for _, phase := range Phases {

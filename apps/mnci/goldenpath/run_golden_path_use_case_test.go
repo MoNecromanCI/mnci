@@ -3,6 +3,8 @@
 package goldenpath
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -175,10 +177,30 @@ func TestGoldenPath(t *testing.T) {
 	w.mnci(true, "ci", "generate", "--check")
 
 	// The phases the generated pipeline runs, exactly as CI runs them.
-	for _, phase := range []string{"setup", "audit", "verify"} {
+	for _, phase := range []string{"setup", "audit", "verify", "pack"} {
 		if out := w.mnci(true, "ci", phase); !strings.Contains(out, "mnci ci "+phase+" passed") {
 			t.Fatalf("ci %s:\n%s", phase, out)
 		}
+	}
+	// pack leaves each app's deliverable in dist/drop: an npm tarball with
+	// the built code, the Go binary, the Python wheel.
+	drop := filepath.Join(w.dir, "dist", "drop")
+	tarball := filepath.Join(drop, "acme-web-0.0.0.tgz")
+	if !tarContains(t, tarball, "package/dist/main.js") {
+		t.Fatalf("%s lacks the built app", tarball)
+	}
+	exe := ""
+	if runtime.GOOS == "windows" {
+		exe = ".exe"
+	}
+	for _, want := range []string{filepath.Join("api", "api"+exe), "acme_worker-0.0.0-py3-none-any.whl", "acme-hello-0.0.0.tgz"} {
+		if _, err := os.Stat(filepath.Join(drop, want)); err != nil {
+			entries, _ := os.ReadDir(drop)
+			t.Fatalf("dist/drop lacks %s: %v", want, entries)
+		}
+	}
+	if err := os.RemoveAll(filepath.Join(w.dir, "dist")); err != nil {
+		t.Fatal(err)
 	}
 
 	// 5. Affected follows dependents and stays narrow.
@@ -305,4 +327,28 @@ func get(t *testing.T, url string) string {
 		}
 	}
 	return b.String()
+}
+
+// tarContains reports whether a .tgz holds a file.
+func tarContains(t *testing.T, archive, name string) bool {
+	t.Helper()
+	f, err := os.Open(archive)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = f.Close() }()
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := tar.NewReader(gz)
+	for {
+		h, err := r.Next()
+		if err != nil {
+			return false
+		}
+		if h.Name == name {
+			return true
+		}
+	}
 }

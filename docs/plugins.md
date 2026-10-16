@@ -139,7 +139,7 @@ Content-Length: 85\r\n
 | `version/write` | project, version, new dependency versions, dry run → files changed | `version` |
 | `publish` | project, version, dry run → published / skipped with a reason | `publish` |
 | `ci` | the plugin's projects → toolchains (with their GitHub and Azure setup steps, or an install command), setup and audit steps, credentials | `ci` |
-| `doctor` | the plugin's projects → findings, each with a remedy | `doctor` |
+| `doctor` | the plugin's projects → findings, each with a remedy and, when the plugin can write it, a fix (files' new contents, marked safe when it only restores what the plugin owns) | `doctor` |
 | `remove` | a project whose directory the host deleted, dry run → the files the plugin cleaned (go.work, the lockfile), notes | `remove` |
 | `published` | a project → the newest version its registry has, or none, or that the registry could not be asked | `published` |
 | `dependencies/install` | a project, packages, dev → the files changed, notes; with no project, the projects it serves, to install them all | `dependencies` |

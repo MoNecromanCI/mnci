@@ -286,6 +286,18 @@ func TestGoldenPath(t *testing.T) {
 	for _, f := range []string{".github/workflows/e2e.yml", "azure-pipelines/e2e.yml", ".github/workflows/deploy-pages.yml"} {
 		_ = os.Remove(filepath.Join(w.dir, filepath.FromSlash(f)))
 	}
+	// doctor fixes what mnci and the plugins own, showing the diff first.
+	work := w.read("go.work")
+	w.write("go.work", strings.Replace(work, "./libs/core", "./libs/gone", 1))
+	if out := w.mnci(false, "doctor", "--fix"); !strings.Contains(out, "-\t./libs/gone") || !strings.Contains(out, "+\t./libs/core") || !strings.Contains(out, "Pass --yes") {
+		t.Fatalf("doctor --fix without a terminal shows the diff only:\n%s", out)
+	}
+	if out := w.mnci(true, "doctor", "--fix", "--yes"); !strings.Contains(out, "✔ make go.work use exactly the workspace's Go modules") || !strings.Contains(out, "after fixing:") {
+		t.Fatalf("doctor --fix --yes:\n%s", out)
+	}
+	if !strings.Contains(w.read("go.work"), "./libs/core") || strings.Contains(w.read("go.work"), "libs/gone") {
+		t.Fatalf("go.work:\n%s", w.read("go.work"))
+	}
 	// The dev container installs what CI installs, at the same versions.
 	devcontainer, _ := os.ReadFile(filepath.Join(w.dir, ".devcontainer", "devcontainer.json"))
 	for _, want := range []string{"features/node:1", "features/go:1", "features/python:1", `"golangciLintVersion": "2.14.0"`, "&& ", "/.local/bin/mnci", ` ci setup"`} {

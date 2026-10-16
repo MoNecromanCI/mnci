@@ -7,7 +7,8 @@
   **Python 3.12+**, **Rust** (with clippy and rustfmt), the **.NET 10 SDK**,
   **Ruby 3.2+** with Bundler,
   **PHP 8.2+** with Composer,
-  **CMake 3.25+** with Ninja, a C++ compiler and cppcheck.
+  **CMake 3.25+** with Ninja, a C++ compiler and cppcheck,
+  **Dart** (or Flutter, which carries it; installed outside the workspace).
   mnci tells you what is missing.
 
 ## Create a workspace

@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	cppp "github.com/MoNecromanCI/mnci/libs/plugin-cpp/plugin"
+	dartp "github.com/MoNecromanCI/mnci/libs/plugin-dart/plugin"
 	dotnetp "github.com/MoNecromanCI/mnci/libs/plugin-dotnet/plugin"
 	gop "github.com/MoNecromanCI/mnci/libs/plugin-go/plugin"
 	"github.com/MoNecromanCI/mnci/libs/plugin-go/pluginkit"
@@ -28,6 +29,7 @@ var Builtins = map[string]func(version string) serve.Plugin{
 	"ruby":   func(v string) serve.Plugin { return rubyp.New(v) },
 	"php":    func(v string) serve.Plugin { return phpp.New(v) },
 	"cpp":    func(v string) serve.Plugin { return cppp.New(v) },
+	"dart":   func(v string) serve.Plugin { return dartp.New(v) },
 	"python": func(v string) serve.Plugin { return pythonp.New(v) },
 	"rust":   func(v string) serve.Plugin { return rustp.New(v) },
 }

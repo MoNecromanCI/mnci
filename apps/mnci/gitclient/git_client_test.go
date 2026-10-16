@@ -45,6 +45,12 @@ func TestFilesChangesLogAndTags(t *testing.T) {
 	if !reflect.DeepEqual(files, []string{".gitignore", "apps/web/a b.txt"}) {
 		t.Fatalf("files %v", files)
 	}
+	// A tracked file deleted but not committed is not part of the workspace.
+	_ = os.Remove(filepath.Join(g.Dir, "apps", "web", "a b.txt"))
+	if files, _ := g.Files(); !reflect.DeepEqual(files, []string{".gitignore"}) {
+		t.Fatalf("after deleting a b.txt: %v", files)
+	}
+	write(t, g, "apps/web/a b.txt", "1")
 	base, _ := g.RevParse("HEAD")
 	if err := g.CreateTag("web@0.1.0", "web 0.1.0"); err != nil {
 		t.Fatal(err)

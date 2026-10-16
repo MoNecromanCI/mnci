@@ -39,13 +39,16 @@ jobs:
             echo "::endgroup::"
           done
 
+  # Two suites in parallel, each well inside its timeout: the golden path
+  # itself, and every language's workspace.
   golden-path:
-    name: golden path (${{ matrix.os }})
+    name: golden path (${{ matrix.suite }}, ${{ matrix.os }})
     needs: unit
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        suite: [core, languages]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     steps:
@@ -95,7 +98,10 @@ jobs:
           java-version: '21'
       - name: New workspace, every kind in every language, build, test, release
         working-directory: apps/mnci
-        run: go test -tags e2e -timeout 40m -v -skip 'TestConvert' ./goldenpath
+        shell: bash
+        env:
+          SUITE: ${{ matrix.suite == 'core' && '-run=^TestGoldenPath$' || '-skip=^(TestConvert.*|TestGoldenPath)$' }}
+        run: go test -tags e2e -timeout 40m -v "$SUITE" ./goldenpath
 
   convert:
     name: convert (${{ matrix.os }})

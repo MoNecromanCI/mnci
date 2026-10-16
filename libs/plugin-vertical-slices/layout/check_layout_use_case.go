@@ -27,9 +27,11 @@ func walk(r *Report, root string, rules languages.Rules, rel string, parent *lan
 	if err != nil {
 		return err
 	}
-	here := languages.Dir{Rel: rel, Files: map[string]bool{}, Parent: parent}
+	here := languages.Dir{Rel: rel, Files: map[string]bool{}, Folders: map[string]bool{}, Parent: parent}
 	for _, e := range entries {
-		if !e.IsDir() {
+		if e.IsDir() {
+			here.Folders[e.Name()] = true
+		} else {
 			here.Files[e.Name()] = true
 		}
 	}

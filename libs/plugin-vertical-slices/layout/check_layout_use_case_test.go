@@ -109,6 +109,36 @@ func TestCheckDart(t *testing.T) {
 	}
 }
 
+func TestCheckRust(t *testing.T) {
+	root := tree(t,
+		"Cargo.toml", "build.rs",
+		"src/main.rs", "src/lib.rs", "src/loose.rs",
+		"src/greeting/mod.rs", "src/greeting/greet_use_case.rs", "src/greeting/stuff.rs",
+		"src/orders.rs", "src/orders/place_order_use_case.rs", "src/BadName/mod.rs",
+		"src/bin/admin_tool.rs",
+		"tests/greet_test.rs", "tests/testing/fake_clock.rs", "tests/smoke.rs",
+		"benches/x.rs", "target/debug/x.rs",
+	)
+	r, err := Check(root, "rust")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := strings.Join(r.Problems, "\n")
+	for _, want := range []string{
+		"src/loose.rs - src/ holds main.rs, lib.rs and slice modules",
+		"src/greeting/stuff.rs - a Rust file in a slice is <name>_<role>.rs",
+		"src/BadName/ - a Rust module folder is snake_case",
+		"tests/smoke.rs - an integration test is <name>_test.rs",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q in:\n%s", want, got)
+		}
+	}
+	if len(r.Problems) != 4 {
+		t.Errorf("want 4 problems, got:\n%s", got)
+	}
+}
+
 func TestCheckWarnsAboutLargeSlices(t *testing.T) {
 	var files []string
 	for i := range SliceSize + 1 {

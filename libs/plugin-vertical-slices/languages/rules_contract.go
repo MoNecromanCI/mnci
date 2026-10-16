@@ -19,8 +19,8 @@ type Dir struct {
 	// Rel is its path from the project root, with forward slashes; "" is
 	// the root.
 	Rel string
-	// Files are the names of the files in it.
-	Files map[string]bool
+	// Files and Folders are the names of the files and folders in it.
+	Files, Folders map[string]bool
 	// Parent is the folder it is in; nil at the root.
 	Parent *Dir
 }
@@ -45,7 +45,7 @@ type Rules struct {
 	Production func(name string, in Dir) bool
 }
 
-var all = []Rules{goRules, pythonRules, dartRules}
+var all = []Rules{goRules, pythonRules, dartRules, rustRules}
 
 // For returns a language's rules.
 func For(language string) (Rules, bool) {
@@ -72,3 +72,14 @@ var (
 	snakeName       = `[a-z][a-z0-9]*(?:_[a-z0-9]+)*`
 	snakeCase       = regexp.MustCompile(`^` + snakeName + `$`)
 )
+
+// inTesting reports whether a test folder is, or is in, a testing/ folder of
+// test doubles.
+func inTesting(in Dir) bool {
+	for _, part := range strings.Split(in.Rel, "/") {
+		if part == "testing" {
+			return true
+		}
+	}
+	return false
+}

@@ -138,9 +138,9 @@ func TestTheSettingsViewEditsThroughMnciConfig(t *testing.T) {
 	if view := editing.View(); !strings.Contains(view, "ci.providers = ") || !strings.Contains(view, "github") {
 		t.Fatalf("editing:\n%s", view)
 	}
-	rejected := press(editing, " ", "g", "i", "t", "l", "a", "b", "enter")
-	if rejected.(Shell).Argv != nil || !strings.Contains(rejected.View(), `not "gitlab"`) {
-		t.Fatalf("the schema rejects gitlab:\n%s", rejected.View())
+	rejected := press(editing, " ", "g", "i", "t", "e", "a", "enter")
+	if rejected.(Shell).Argv != nil || !strings.Contains(rejected.View(), `not "gitea"`) {
+		t.Fatalf("the schema rejects gitea:\n%s", rejected.View())
 	}
 	accepted := press(editing, " ", "a", "z", "u", "r", "e", "enter")
 	if got := strings.Join(accepted.(Shell).Argv, " "); got != "config set ci.providers github azure" {

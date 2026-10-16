@@ -11,7 +11,7 @@ const Marker = "<!-- mnci:release-preview -->"
 
 // PullRequest is where the preview goes.
 type PullRequest struct {
-	// Provider is "github" or "azure".
+	// Provider is "github", "azure" or "gitlab".
 	Provider string
 	Number   int
 	Token    string
@@ -19,6 +19,8 @@ type PullRequest struct {
 	API, Repo string
 	// Azure: the collection URL, team project and repository id.
 	Collection, Project, RepoID string
+	// GitLab: the API root (API) and the project id (ProjectID).
+	ProjectID string
 }
 
 var githubPullRef = regexp.MustCompile(`^refs/pull/(\d+)/`)
@@ -67,6 +69,16 @@ func FromEnvironment(getenv func(string) string) (pr PullRequest, ok bool, why s
 			return pr, false, "SYSTEM_PULLREQUEST_PULLREQUESTID is not set"
 		}
 		return pr, true, ""
+	case getenv("GITLAB_CI") == "true":
+		if getenv("CI_PIPELINE_SOURCE") != "merge_request_event" {
+			return pr, false, "this GitLab CI pipeline is not for a merge request"
+		}
+		n, _ := strconv.Atoi(getenv("CI_MERGE_REQUEST_IID"))
+		pr = PullRequest{Provider: "gitlab", Number: n, Token: getenv("GITLAB_TOKEN"), API: strings.TrimSuffix(getenv("CI_API_V4_URL"), "/"), ProjectID: getenv("CI_PROJECT_ID")}
+		if pr.Token == "" {
+			return pr, false, "GITLAB_TOKEN is not set (a project access token with the api scope, as a masked CI/CD variable)"
+		}
+		return pr, true, ""
 	}
-	return pr, false, "not running in GitHub Actions or Azure Pipelines"
+	return pr, false, "not running in GitHub Actions, Azure Pipelines or GitLab CI"
 }

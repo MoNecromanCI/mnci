@@ -61,6 +61,8 @@ func Rendered(cfg workspace.Config, m Model) map[string]string {
 			out[GitHubPath] = RenderGitHub(m)
 		case "azure":
 			out[AzurePath] = RenderAzure(m)
+		case "gitlab":
+			out[GitLabPath] = RenderGitLab(m)
 		}
 	}
 	if cfg.CI.Devcontainer {
@@ -105,7 +107,7 @@ func Write(root string, cfg workspace.Config, m Model) (changed, lost []string, 
 
 // OwnedPaths are the files mnci generates and may rewrite or delete. A file
 // at one of them belongs to mnci only while it starts with mnci's header.
-var OwnedPaths = []string{GitHubPath, AzurePath, DevcontainerPath}
+var OwnedPaths = []string{GitHubPath, AzurePath, GitLabPath, DevcontainerPath}
 
 // Stale lists the files mnci generated that the workspace no longer asks for
 // (a provider dropped from [ci] providers): they carry mnci's header and are

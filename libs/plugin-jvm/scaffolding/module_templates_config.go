@@ -10,6 +10,11 @@ const (
 // rootTemplates are written once, by the first module. The root pom is the
 // aggregator (its <modules> list every module) and every module's parent.
 var rootTemplates = map[string]string{
+	// mnci runs Maven tasks in parallel; file locks keep processes that
+	// download into the same local repository from corrupting it.
+	".mvn/maven.config": `-Daether.syncContext.named.factory=file-lock
+-Daether.syncContext.named.nameMapper=file-gav
+`,
 	rootPom: `<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>

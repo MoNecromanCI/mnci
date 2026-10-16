@@ -92,3 +92,17 @@ common ancestor (a shallow clone), or a changed workspace-level file such as
 `mnci.toml` or a lockfile. Documentation (`*.md`, `docs/**`) never affects a
 project. Too wide costs minutes; too narrow reports green for code nothing
 checked.
+
+## Paths
+
+Inside mnci every path is POSIX and relative: project roots, task `cwd`,
+inputs and outputs, cache entries and keys, graph and JSON output. Paths keep
+the case git reports for them. Whatever a plugin or `mnci.toml` gives is put
+in that form when the workspace is read (backslashes become slashes, `.` and
+`..` segments are resolved), and an absolute path or one that climbs out of
+the workspace is an error.
+
+On disk mnci joins them to the absolute workspace root, so files nested past
+Windows' 260-character limit still save to and restore from the cache: Go
+adds the `\?\` long-path prefix to absolute paths. Git itself needs
+`git config core.longpaths true` to check such files out.

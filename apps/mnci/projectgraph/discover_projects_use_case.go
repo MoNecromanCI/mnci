@@ -1,6 +1,7 @@
 package projectgraph
 
 import (
+	"fmt"
 	"path"
 	"slices"
 	"sort"
@@ -44,6 +45,11 @@ func Discover(files []string, plugins *pluginhost.PluginSet, catalog *pluginhost
 			projects = append(projects, &Project{Project: p, Plugin: c.Info.Plugin.Name})
 		}
 	}
+	for _, p := range projects {
+		if err := normalisePaths(p); err != nil {
+			return nil, fmt.Errorf("plugin %s: %w", p.Plugin, err)
+		}
+	}
 	ResolveEdges(projects)
 	if err := ApplyStacks(projects, plugins, catalog, cfg); err != nil {
 		return nil, err
@@ -63,6 +69,10 @@ func Discover(files []string, plugins *pluginhost.PluginSet, catalog *pluginhost
 		sort.Strings(p.Conventions)
 		p.toolset = toolset(p, plugins)
 		if err := ApplyOverrides(p, cfg); err != nil {
+			return nil, err
+		}
+		// Again: conventions, stacks and mnci.toml may have set paths too.
+		if err := normalisePaths(p); err != nil {
 			return nil, err
 		}
 	}

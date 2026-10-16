@@ -108,3 +108,39 @@ func TestSelectInputs(t *testing.T) {
 		t.Fatal("project files")
 	}
 }
+
+// An output nested past Windows' 260-character MAX_PATH saves and restores:
+// mnci works with absolute paths, which Go extends with \?\ on Windows.
+func TestDeepOutputsRoundTrip(t *testing.T) {
+	ws := t.TempDir()
+	s, _ := NewLocalStorage(filepath.Join(ws, ".mnci", "cache"))
+	deep := filepath.Join(ws, "apps", "web", "dist")
+	for i := 0; i < 12; i++ {
+		deep = filepath.Join(deep, "a-rather-long-directory-name")
+	}
+	if len(deep) < 300 {
+		t.Fatalf("path is only %d characters", len(deep))
+	}
+	if err := os.MkdirAll(deep, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(deep, "chunk.js"), []byte("deep"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := Save(s, ws, "deepkey", "web:build", "apps/web", []string{"dist"}, nil, 0, nil); err != nil {
+		t.Fatal(err)
+	}
+	e, err := Lookup(s, "deepkey")
+	if err != nil || len(e.Outputs) != 1 || strings.Contains(e.Outputs[0].Path, `\`) {
+		t.Fatalf("entry %+v %v; output paths are POSIX", e.Outputs, err)
+	}
+	if err := os.RemoveAll(filepath.Join(ws, "apps", "web", "dist")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Restore(s, ws, "apps/web", []string{"dist"}, e); err != nil {
+		t.Fatal(err)
+	}
+	if body, err := os.ReadFile(filepath.Join(deep, "chunk.js")); err != nil || string(body) != "deep" {
+		t.Fatalf("restored %q %v", body, err)
+	}
+}

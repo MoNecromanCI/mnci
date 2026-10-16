@@ -2,6 +2,7 @@ package doctor
 
 import (
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
@@ -97,6 +98,16 @@ func CoreChecks(s *session.Session) []protocol.Finding {
 	out = append(out, protocol.Finding{
 		Check: "the repository has commits", OK: s.Git.HasCommits(),
 		Detail: "releases and affected detection need history", Remedy: "commit the workspace",
+	})
+	cycles := s.Graph.Cycles()
+	var paths []string
+	for _, c := range cycles {
+		paths = append(paths, strings.Join(c, " → "))
+	}
+	out = append(out, protocol.Finding{
+		Check: "projects do not import each other in a cycle", OK: len(cycles) == 0,
+		Detail: "import cycles: " + strings.Join(paths, "; ") + ". Tasks cannot be ordered and a release cannot version them",
+		Remedy: "move what both sides need into a project of its own that neither imports back, or merge the projects",
 	})
 	out = append(out, protocol.Finding{
 		Check: "the clone has full history", OK: !s.Git.IsShallow(), Warning: true,

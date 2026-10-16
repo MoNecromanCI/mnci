@@ -83,10 +83,18 @@ mnci graph --format tui            # browse it: what a project uses, what uses i
 mnci graph --focus web             # web, everything it uses and everything that uses it
 mnci graph --affected              # what changes since main affect, the changed ones marked
 mnci graph --format html -o graph.html   # a page to share; also json and dot
+mnci graph --diff v1.4.0           # how the graph changed since a revision
 ```
 
 Every format shows the same projects; `--focus` and `--affected` narrow all
-of them the same way.
+of them the same way. `--diff` discovers the graph at another revision in a
+temporary git worktree, leaving yours untouched. It lists projects and imports
+added (`+`) and removed (`-`), and kinds, stacks, plugins and directories that
+changed (`~`), as text or `--format json`.
+
+Projects that import each other in a cycle cannot be ordered. `mnci graph`
+warns with each cycle's path (`ui → core → ui`), and `mnci doctor` fails with
+the same paths and how to break them.
 
 ## Run tasks
 

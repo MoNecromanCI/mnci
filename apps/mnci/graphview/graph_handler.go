@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/affected"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
@@ -13,7 +14,7 @@ import (
 
 // Commands returns `mnci graph`, `mnci projects` and `mnci affected`.
 func Commands(version string) []*cobra.Command {
-	var format, file, graphBase string
+	var format, file, graphBase, diffFrom string
 	var focus []string
 	var onlyAffected bool
 	graph := &cobra.Command{
@@ -36,6 +37,25 @@ marks the ones that changed.`,
 				return err
 			}
 			defer s.Close()
+			for _, c := range s.Graph.Cycles() {
+				fmt.Fprintln(cmd.ErrOrStderr(), "⚠ import cycle: "+strings.Join(c, " → "))
+			}
+			if diffFrom != "" {
+				prefix, _ := s.Git.Run("rev-parse", "--show-prefix")
+				before, err := NodesAt(s.Git, diffFrom, strings.TrimSpace(prefix), version, cmd.ErrOrStderr())
+				if err != nil {
+					return err
+				}
+				d := Diff(before, Nodes(s.Graph, nil))
+				d.From, d.To = diffFrom, "the working tree"
+				if format == "json" {
+					enc := json.NewEncoder(cmd.OutOrStdout())
+					enc.SetIndent("", "  ")
+					return enc.Encode(d)
+				}
+				fmt.Fprint(cmd.OutOrStdout(), DiffText(d))
+				return nil
+			}
 			g, marked := s.Graph, map[string]bool{}
 			if len(focus) > 0 {
 				names, err := s.Graph.Select(focus)
@@ -101,6 +121,7 @@ marks the ones that changed.`,
 	graph.Flags().StringSliceVar(&focus, "focus", nil, "keep these projects and everything connected to them (names, globs, tag:x)")
 	graph.Flags().BoolVar(&onlyAffected, "affected", false, "keep the projects affected by changes since --base; mark the changed ones")
 	graph.Flags().StringVar(&graphBase, "base", "", "base branch for --affected (default: the PR target, else the release branch)")
+	graph.Flags().StringVar(&diffFrom, "diff", "", "show how the graph changed since a revision (a branch, tag or commit): projects and imports added and removed, kinds and stacks changed; text or json")
 
 	var projectsJSON bool
 	projects := &cobra.Command{

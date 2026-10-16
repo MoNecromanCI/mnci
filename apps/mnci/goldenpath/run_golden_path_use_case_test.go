@@ -453,6 +453,10 @@ func TestGoldenPath(t *testing.T) {
 			t.Fatalf("remove %s:\n%s", name, out)
 		}
 	}
+	// The graph's history: compared with the last commit, three projects went.
+	if out := w.mnci(true, "graph", "--diff", "HEAD"); !strings.Contains(out, "- gokit (go package, packages/gokit)") || !strings.Contains(out, "- hello (node app, apps/hello)") || !strings.Contains(out, "- pykit (python package, packages/pykit)") {
+		t.Fatalf("graph --diff HEAD:\n%s", out)
+	}
 	if work, _ := os.ReadFile(filepath.Join(w.dir, "go.work")); strings.Contains(string(work), "gokit") {
 		t.Fatalf("go.work still uses gokit:\n%s", work)
 	}

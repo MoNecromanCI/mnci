@@ -168,6 +168,37 @@ func TestCheckRuby(t *testing.T) {
 	}
 }
 
+func TestCheckCpp(t *testing.T) {
+	root := tree(t,
+		"CMakeLists.txt", "cmake/x.cpp", "third_party/lib/util.cpp",
+		"src/main.cpp", "src/loose.cpp",
+		"src/greeting/greet_use_case.cpp", "src/greeting/stuff.cpp",
+		"src/orders/PlaceOrderUseCase.cpp", "src/orders/PlaceOrderUseCase.h", "src/orders/OrderTotalPolicy.hpp",
+		"src/mixed/place_order_use_case.cpp", "src/mixed/OrderTotalPolicy.cpp",
+		"include/kit/greeting.hpp", "include/kit/greeting/greet_use_case.hpp", "include/kit/extra.hpp",
+		"tests/greeting/greet_use_case_test.cpp", "tests/orders/PlaceOrderUseCaseTest.cpp", "tests/testing/fake_clock.hpp", "tests/sample.cpp",
+	)
+	r, err := Check(root, "cpp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := strings.Join(r.Problems, "\n")
+	for _, want := range []string{
+		"src/loose.cpp - src/ holds main.cpp and slice folders",
+		"src/greeting/stuff.cpp - a C++ file in a slice is <name>_<role> or <Name><Role>",
+		"src/mixed/OrderTotalPolicy.cpp - this folder mixes snake_case",
+		"include/kit/extra.hpp - include/<target>/ holds the public headers",
+		"tests/sample.cpp - a test is <name>_test.cpp or <Name>Test.cpp",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q in:\n%s", want, got)
+		}
+	}
+	if len(r.Problems) != 5 {
+		t.Errorf("want 5 problems, got:\n%s", got)
+	}
+}
+
 func TestCheckWarnsAboutLargeSlices(t *testing.T) {
 	var files []string
 	for i := range SliceSize + 1 {

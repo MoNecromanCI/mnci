@@ -12,6 +12,7 @@ import (
 // that differ from mnci's defaults, in a stable order.
 func ConfigText(cfg workspace.Config) string {
 	var b strings.Builder
+	b.WriteString("#:schema " + workspace.SchemaURL + "\n")
 	b.WriteString("# mnci workspace configuration. Written by `mnci convert`; edit it freely or with the TUI.\n")
 	b.WriteString("# Every setting is optional except [workspace] name; see docs/configuration.md.\n")
 	fmt.Fprintf(&b, "schema = %d\n\n[workspace]\nname = %s\n", workspace.SchemaVersion, q(cfg.Workspace.Name))

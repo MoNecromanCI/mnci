@@ -14,6 +14,8 @@ written against the TypeScript mnci.
 `mnci doctor --json` prints `findings` (`check`, `ok`, `detail`, `remedy`,
 `warning`, `source`) with `passed`, `failed` and `warnings` counts.
 
+`mnci schema` prints the JSON Schema of `mnci.toml` (see configuration).
+
 `mnci add node-app web` is `mnci add app web --lang node`: the combined kinds
 `mnci kinds` lists are accepted as they are.
 

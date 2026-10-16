@@ -97,6 +97,14 @@ func TestGoldenPath(t *testing.T) {
 			t.Fatalf("new did not write %s", f)
 		}
 	}
+	// Editors validate and complete mnci.toml from its schema.
+	if cfg, _ := os.ReadFile(filepath.Join(w.dir, "mnci.toml")); !strings.HasPrefix(string(cfg), "#:schema https://") {
+		t.Fatalf("mnci.toml does not name its schema:\n%s", cfg)
+	}
+	var schemaDoc map[string]any
+	if err := json.Unmarshal([]byte(w.mnci(true, "schema")), &schemaDoc); err != nil || schemaDoc["title"] != "mnci.toml" {
+		t.Fatalf("mnci schema: %v %v", err, schemaDoc["title"])
+	}
 
 	// 2. An app, a lib and a package in each language. Each project picks its
 	// stack: the language default (node-jest), a published one (node-vitest),

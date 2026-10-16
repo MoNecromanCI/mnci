@@ -1,0 +1,149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/MoNecromanCI/mnci/main/apps/mnci/workspace/mnci.schema.json",
+  "title": "mnci.toml",
+  "description": "The configuration of an mnci workspace (schema 1). Every setting has a default; a key mnci does not know is an error.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["workspace"],
+  "properties": {
+    "schema": { "type": "integer", "const": 1, "description": "The mnci.toml schema version; mnci upgrade migrates older files." },
+    "workspace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "The workspace's name." },
+        "scope": { "type": "string", "description": "npm scope for Node packages, e.g. @acme." },
+        "module_prefix": { "type": "string", "description": "Go module path prefix, e.g. github.com/acme/repo." }
+      }
+    },
+    "ci": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "providers": { "type": "array", "items": { "enum": ["github", "azure"] }, "uniqueItems": true, "description": "Pipelines to generate. Default: [\"github\"]." },
+        "devcontainer": { "type": "boolean", "description": "Write .devcontainer/devcontainer.json with the toolchains CI installs. Default: false." },
+        "native_runners": { "type": "array", "items": { "type": "string" }, "description": "Machines the native job runs on, one per OS. Default: ubuntu-latest, windows-latest, macos-latest." },
+        "native_linux_packages": { "type": "array", "items": { "type": "string" }, "description": "apt packages the native job installs on Linux before building." }
+      }
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "branch": { "type": "string", "description": "The only branch a real release runs from. Default: main." },
+        "remote": { "type": "string", "description": "The remote release tags are pushed to. Default: origin." },
+        "github_releases": { "type": "boolean", "description": "Create a GitHub Release for every tag (needs GITHUB_TOKEN). Default: false." }
+      }
+    },
+    "cache": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dir": { "type": "string", "description": "The task cache directory, workspace-relative or absolute. Default: .mnci/cache." },
+        "max_size_mb": { "type": "integer", "minimum": 1, "description": "Prune the least recently used entries past this size. Default: 2048." }
+      }
+    },
+    "plugins": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "array", "items": { "type": "string" }, "description": "Built-in language plugins to load. Default: all of them." },
+        "external": {
+          "type": "object",
+          "description": "Plugins outside the mnci binary, by name; one replaces a built-in plugin of the same name.",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "command": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "The executable and its arguments. Empty: find it installed on the plugin search path." },
+              "version": { "type": "string", "description": "A version constraint: 1.2.3, ^1.2, ~1.2 or >=1.2." }
+            }
+          }
+        }
+      }
+    },
+    "conventions": {
+      "type": "object",
+      "description": "Plugins applied to every project of the languages they support, by name.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "languages": { "type": "array", "items": { "type": "string" }, "description": "Narrow the convention to some of the languages it supports." },
+          "exclude": { "type": "array", "items": { "type": "string" }, "description": "Projects it leaves alone." }
+        }
+      }
+    },
+    "stacks": {
+      "type": "object",
+      "description": "Stacks declared here, by name: the plugins a project is built with.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["language"],
+        "properties": {
+          "description": { "type": "string" },
+          "language": { "type": "string", "description": "The language plugin that discovers the stack's projects." },
+          "toolchain": { "type": "array", "items": { "type": "string" }, "description": "Toolchain plugins, in order: a later one may replace a task an earlier one added." },
+          "structure": { "type": "array", "items": { "type": "string" } },
+          "scaffold": { "type": "string", "description": "The plugin that generates new projects; empty: the language plugin." },
+          "deploy": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "default_stacks": {
+      "type": "object",
+      "description": "The stack of a project that records none, and of mnci add without --stack, by language plugin.",
+      "additionalProperties": { "type": "string" }
+    },
+    "tasks": {
+      "type": "object",
+      "description": "Overrides of a task for every project, by task name.",
+      "additionalProperties": { "$ref": "#/definitions/task" }
+    },
+    "projects": {
+      "type": "object",
+      "description": "Settings of one project, by project name.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tag_prefix": { "type": "string", "description": "Replaces the release tag prefix (<name>@ by default)." },
+          "stack": { "type": "string", "description": "Replaces the stack the project's manifest records." },
+          "release": {
+            "type": "object",
+            "description": "Makes an app releasable: versioned by its tag, its assets built and attached.",
+            "additionalProperties": false,
+            "properties": {
+              "asset_name": { "type": "string", "description": "Asset file name pattern; placeholders {product}, {version}, {os}, {arch}, {ext}." },
+              "product": { "type": "string", "description": "Fills {product}. Default: the project name." },
+              "platforms": { "type": "array", "items": { "type": "string", "pattern": "^[^/]+/[^/]+$" }, "description": "os/arch pairs." },
+              "os_alias": { "type": "object", "additionalProperties": { "type": "string" } },
+              "arch_alias": { "type": "object", "additionalProperties": { "type": "string" } },
+              "version_variable": { "type": "string", "description": "The symbol the version is stamped into. Default for Go: main.version." }
+            }
+          },
+          "tasks": { "type": "object", "additionalProperties": { "$ref": "#/definitions/task" } }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "task": {
+      "type": "object",
+      "description": "Replaces individual fields of a plugin-inferred task; unset fields keep the plugin's value.",
+      "additionalProperties": false,
+      "properties": {
+        "command": { "type": "array", "items": { "type": "string" }, "description": "argv, run without a shell; {workspaceRoot}, {projectRoot} and {mnci} are expanded." },
+        "cwd": { "type": "string", "description": "Workspace-relative working directory (. is the root)." },
+        "inputs": { "type": "array", "items": { "type": "string" }, "description": "Globs relative to the project; {workspaceRoot}/... for root files; ! excludes." },
+        "outputs": { "type": "array", "items": { "type": "string" }, "description": "Directories restored on a cache hit." },
+        "depends_on": { "type": "array", "items": { "type": "string" }, "description": "build, ^build or project:task." },
+        "env": { "type": "object", "additionalProperties": { "type": "string" } },
+        "cache": { "type": "boolean" }
+      }
+    }
+  }
+}

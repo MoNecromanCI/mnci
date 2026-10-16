@@ -91,8 +91,8 @@ func Validate(cfg *Config) error {
 		cfg.CI.Providers = []string{"github"}
 	}
 	for _, p := range cfg.CI.Providers {
-		if p != "github" && p != "azure" {
-			return fmt.Errorf("%s: unknown CI provider %q (use github or azure)", FileName, p)
+		if p != "github" && p != "azure" && p != "gitlab" {
+			return fmt.Errorf("%s: unknown CI provider %q (use github, azure or gitlab)", FileName, p)
 		}
 	}
 	if cfg.Release.Branch == "" {

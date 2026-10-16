@@ -89,3 +89,18 @@ func TestAnAPIFailureIsAnError(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 }
+
+func TestGitLabCreatesThenUpdates(t *testing.T) {
+	f, url := serve(t, map[string]string{"GET /api/v4/projects/42/merge_requests/7/notes": `[{"id": 1, "body": "lgtm"}]`})
+	pr := PullRequest{Provider: "gitlab", Number: 7, Token: "secret", API: url + "/api/v4", ProjectID: "42"}
+	if done, err := Upsert(pr, Marker+" plan"); err != nil || done != "created" {
+		t.Fatalf("%s %v", done, err)
+	}
+	f.answers["GET /api/v4/projects/42/merge_requests/7/notes"] = `[{"id": 3, "body": "` + Marker + ` old"}]`
+	if done, err := Upsert(pr, Marker+" new plan"); err != nil || done != "updated" {
+		t.Fatalf("%s %v", done, err)
+	}
+	if !strings.Contains(f.bodies["PUT /api/v4/projects/42/merge_requests/7/notes/3"], "new plan") {
+		t.Fatalf("bodies %v", f.bodies)
+	}
+}

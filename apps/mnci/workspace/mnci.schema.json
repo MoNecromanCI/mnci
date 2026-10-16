@@ -22,7 +22,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "providers": { "type": "array", "items": { "enum": ["github", "azure"] }, "uniqueItems": true, "description": "Pipelines to generate. Default: [\"github\"]." },
+        "providers": { "type": "array", "items": { "enum": ["github", "azure", "gitlab"] }, "uniqueItems": true, "description": "Pipelines to generate. Default: [\"github\"]." },
         "devcontainer": { "type": "boolean", "description": "Write .devcontainer/devcontainer.json with the toolchains CI installs. Default: false." },
         "native_runners": { "type": "array", "items": { "type": "string" }, "description": "Machines the native job runs on, one per OS. Default: ubuntu-latest, windows-latest, macos-latest." },
         "native_linux_packages": { "type": "array", "items": { "type": "string" }, "description": "apt packages the native job installs on Linux before building." }

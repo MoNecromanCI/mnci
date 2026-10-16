@@ -11,8 +11,8 @@ Each plugin contributes, for its own projects:
 
 - **toolchains** — the runtimes to install, at versions the plugin pins. The
   plugin says how: a GitHub action and an Azure task with their inputs
-  (`actions/setup-node@v4`, `UsePythonVersion@0`, …), or a shell command run
-  on either provider. mnci itself knows no runtime, so a plugin for a new
+  (`actions/setup-node@v4`, `UsePythonVersion@0`, …), and a shell command for
+  everything else (GitLab installs every toolchain this way). mnci itself knows no runtime, so a plugin for a new
   language installs it the same way; a runtime no plugin says how to install
   is left as a comment in the pipeline, to fill through the `before-setup`
   slot.
@@ -21,7 +21,23 @@ Each plugin contributes, for its own projects:
 - **credentials** — the secrets publishing needs (`NODE_AUTH_TOKEN`, `PYPI_TOKEN`)
 
 mnci merges them into one provider-neutral model, and a renderer per provider
-writes the YAML. Both providers carry the same phases, in the same order.
+writes the YAML. Every provider carries the same phases, in the same order.
+
+## GitLab CI
+
+With `"gitlab"` in `[ci] providers`, mnci writes `.gitlab-ci.yml`. It has
+one job, run for merge requests and on pushes to the release branch, on a
+`debian:bookworm` image. Each toolchain installs through its plugin's shell
+command: Node.js from NodeSource, Python through uv at the pinned version, Go
+from its release tarball. Then come the same phases as GitHub and Azure, with
+the same slots.
+
+Two masked CI/CD variables complete it. `GITLAB_TOKEN` is a project access
+token with the `api` scope, for the release preview on merge requests, and
+`write_repository`, to push release tags. Then add the publishing secrets the
+file lists at its end. Native projects build per OS in the GitHub and Azure
+pipelines only: on GitLab, add a job per runner OS that runs
+`mnci ci native`.
 
 ## The phases
 

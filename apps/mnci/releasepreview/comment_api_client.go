@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -21,6 +22,8 @@ func Upsert(pr PullRequest, body string) (string, error) {
 		return upsertGitHub(pr, body)
 	case "azure":
 		return upsertAzure(pr, body)
+	case "gitlab":
+		return upsertGitLab(pr, body)
 	}
 	return "", fmt.Errorf("unknown provider %q", pr.Provider)
 }
@@ -75,6 +78,29 @@ func upsertAzure(pr PullRequest, body string) (string, error) {
 		"status":   4,
 	}
 	return "created", call(http.MethodPost, threads+"?api-version=7.1", auth, thread, nil)
+}
+
+func upsertGitLab(pr PullRequest, body string) (string, error) {
+	auth := "Bearer " + pr.Token
+	notes := fmt.Sprintf("%s/projects/%s/merge_requests/%d/notes", pr.API, url.PathEscape(pr.ProjectID), pr.Number)
+	for page := 1; page <= 10; page++ {
+		var list []struct {
+			ID   int64  `json:"id"`
+			Body string `json:"body"`
+		}
+		if err := call(http.MethodGet, fmt.Sprintf("%s?per_page=100&page=%d", notes, page), auth, nil, &list); err != nil {
+			return "", err
+		}
+		for _, n := range list {
+			if strings.Contains(n.Body, Marker) {
+				return "updated", call(http.MethodPut, fmt.Sprintf("%s/%d", notes, n.ID), auth, map[string]string{"body": body}, nil)
+			}
+		}
+		if len(list) < 100 {
+			break
+		}
+	}
+	return "created", call(http.MethodPost, notes, auth, map[string]string{"body": body}, nil)
 }
 
 func call(method, url, auth string, in, out any) error {

@@ -36,3 +36,19 @@ func TestFromEnvironment(t *testing.T) {
 		}
 	}
 }
+
+func TestGitLabMergeRequest(t *testing.T) {
+	env := map[string]string{"GITLAB_CI": "true", "CI_PIPELINE_SOURCE": "merge_request_event", "CI_MERGE_REQUEST_IID": "7", "CI_API_V4_URL": "https://gitlab.example/api/v4", "CI_PROJECT_ID": "42"}
+	if _, ok, why := FromEnvironment(func(k string) string { return env[k] }); ok || !strings.Contains(why, "GITLAB_TOKEN") {
+		t.Fatalf("without a token: %v %s", ok, why)
+	}
+	env["GITLAB_TOKEN"] = "t"
+	pr, ok, _ := FromEnvironment(func(k string) string { return env[k] })
+	if !ok || pr.Provider != "gitlab" || pr.Number != 7 || pr.ProjectID != "42" || pr.API != "https://gitlab.example/api/v4" {
+		t.Fatalf("%+v", pr)
+	}
+	env["CI_PIPELINE_SOURCE"] = "push"
+	if _, ok, _ := FromEnvironment(func(k string) string { return env[k] }); ok {
+		t.Fatal("a push pipeline has no merge request")
+	}
+}

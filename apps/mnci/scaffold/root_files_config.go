@@ -15,7 +15,7 @@ scope = %q
 module_prefix = %q
 
 [ci]
-# Pipelines to generate: "github", "azure" or both.
+# Pipelines to generate: "github", "azure", "gitlab", or several.
 providers = [%s]
 # A dev container (.devcontainer/devcontainer.json) with the toolchains CI
 # installs, at the same versions.

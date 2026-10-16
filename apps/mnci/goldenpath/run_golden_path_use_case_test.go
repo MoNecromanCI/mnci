@@ -114,7 +114,7 @@ func TestGoldenPath(t *testing.T) {
 	if cfg, _ := os.ReadFile(filepath.Join(w.dir, "mnci.toml")); !strings.HasPrefix(string(cfg), "#:schema https://") || !strings.Contains(string(cfg), "# Pipelines to generate") {
 		t.Fatalf("config set rewrote the file:\n%s", cfg)
 	}
-	w.mnci(false, "config", "set", "ci.providers", "gitlab")
+	w.mnci(false, "config", "set", "ci.providers", "bitbucket")
 
 	// 2. An app, a lib and a package in each language. Each project picks its
 	// stack: the language default (node-jest), a published one (node-vitest),
@@ -304,6 +304,20 @@ func TestGoldenPath(t *testing.T) {
 	}
 	if !strings.Contains(w.read("go.work"), "./libs/core") || strings.Contains(w.read("go.work"), "libs/gone") {
 		t.Fatalf("go.work:\n%s", w.read("go.work"))
+	}
+	// GitLab gets the same phases, each toolchain installed by its script.
+	w.mnci(true, "config", "set", "ci.providers", "github", "azure", "gitlab")
+	w.mnci(true, "ci", "generate")
+	gitlab := w.read(".gitlab-ci.yml")
+	for _, want := range []string{"deb.nodesource.com/setup_24.x", "uv python install 3.12", ".linux-amd64.tar.gz | tar -C /usr/local -xz", "mnci ci verify", "mnci ci release"} {
+		if !strings.Contains(gitlab, want) {
+			t.Fatalf(".gitlab-ci.yml lacks %q:\n%s", want, gitlab)
+		}
+	}
+	w.mnci(true, "config", "set", "ci.providers", "github", "azure")
+	w.mnci(true, "ci", "generate")
+	if _, err := os.Stat(filepath.Join(w.dir, ".gitlab-ci.yml")); err == nil {
+		t.Fatal("dropping gitlab deletes the pipeline mnci wrote")
 	}
 	// The dev container installs what CI installs, at the same versions.
 	devcontainer, _ := os.ReadFile(filepath.Join(w.dir, ".devcontainer", "devcontainer.json"))

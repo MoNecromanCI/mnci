@@ -21,7 +21,7 @@ does not own are kept.
 
 Options: `--scope @acme` (npm scope), `--module-prefix github.com/acme/acme`
 (Go module prefix; by default it is derived from the `origin` remote) and
-`--ci github,azure`.
+`--ci github,azure` (or `gitlab`).
 
 ## Or adopt an existing repository
 

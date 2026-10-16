@@ -47,7 +47,7 @@ scope = "@acme"                       # npm scope for Node projects
 module_prefix = "github.com/acme/acme"  # Go module path prefix
 
 [ci]
-providers = ["github"]                # "github", "azure", or both
+providers = ["github"]                # "github", "azure", "gitlab", or several
 devcontainer = true                   # write .devcontainer/devcontainer.json with CI's toolchains (docs/ci.md)
 native_runners = ["ubuntu-latest", "windows-latest", "macos-latest"]  # where native projects build (docs/ci.md)
 native_linux_packages = []            # apt packages the native job installs on Linux

@@ -153,7 +153,15 @@ type ProjectRelease struct {
 	// PackageManagers are the manifests generated from the assets and
 	// attached to the GitHub Release: homebrew, scoop, winget.
 	PackageManagers []string `toml:"package_managers"`
-	// Description, Homepage and License describe the app in those manifests.
+	// NPM are the npm packages the app is published as, each installing its
+	// binary; the first also names the per-platform packages holding the
+	// binaries (<first>-<os>-<cpu>). Publishing needs NODE_AUTH_TOKEN.
+	NPM []string `toml:"npm"`
+	// PyPI is the PyPI project the app is published as, one wheel per
+	// platform. Publishing needs PYPI_TOKEN.
+	PyPI string `toml:"pypi"`
+	// Description, Homepage and License describe the app in those manifests
+	// and packages.
 	Description string `toml:"description"`
 	Homepage    string `toml:"homepage"`
 	License     string `toml:"license"`

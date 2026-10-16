@@ -126,6 +126,8 @@
               "arch_alias": { "type": "object", "additionalProperties": { "type": "string" } },
               "version_variable": { "type": "string", "description": "The symbol the version is stamped into. Default for Go: main.version." },
               "package_managers": { "type": "array", "items": { "enum": ["homebrew", "scoop", "winget"] }, "uniqueItems": true, "description": "Manifests generated from the assets and attached to the GitHub Release." },
+              "npm": { "type": "array", "items": { "type": "string", "pattern": "^(@[a-z0-9][a-z0-9._~-]*/)?[a-z0-9][a-z0-9._~-]*$" }, "minItems": 1, "uniqueItems": true, "description": "npm packages the app is published as; the first also names the per-platform packages (<first>-<os>-<cpu>). Needs NODE_AUTH_TOKEN." },
+              "pypi": { "type": "string", "pattern": "^[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?$", "description": "PyPI project the app is published as, one wheel per platform. Needs PYPI_TOKEN." },
               "description": { "type": "string", "description": "What the app is, for the package manager manifests." },
               "homepage": { "type": "string", "description": "The app's homepage. Default: the GitHub repository." },
               "license": { "type": "string", "description": "An SPDX license identifier, e.g. MIT." }

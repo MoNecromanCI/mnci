@@ -146,3 +146,14 @@ func TestPackOnlyWhenAProjectPackages(t *testing.T) {
 		t.Error("pack runs before release")
 	}
 }
+
+func TestGitHubWorkflowMayRequestAnOIDCTokenForNPMProvenance(t *testing.T) {
+	m := model()
+	if strings.Contains(RenderGitHub(m), "id-token") {
+		t.Error("id-token: write without an npm-published app")
+	}
+	m.Provenance = true
+	if !strings.Contains(RenderGitHub(m), "  pull-requests: write\n  id-token: write\n\nconcurrency:") {
+		t.Errorf("no id-token permission:\n%s", RenderGitHub(m))
+	}
+}

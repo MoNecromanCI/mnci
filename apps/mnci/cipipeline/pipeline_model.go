@@ -25,6 +25,9 @@ type Model struct {
 	// NativeRunners and NativeLinuxPackages configure that job.
 	NativeRunners       []string
 	NativeLinuxPackages []string
+	// Provenance is true when an app is published to npm: on GitHub the job
+	// may then request an OIDC token, which npm provenance signs with.
+	Provenance bool
 }
 
 // DefaultNativeRunners build native projects on each OS.
@@ -42,6 +45,8 @@ type Contributions struct {
 	Native              bool
 	NativeRunners       []string
 	NativeLinuxPackages []string
+	// Provenance is true when an app is published to npm.
+	Provenance bool
 }
 
 // Add merges one plugin's contribution, keeping the first of duplicates.
@@ -70,7 +75,7 @@ func NewModel(c Contributions, mnciVersion, releaseBranch string) Model {
 		mnciVersion = "latest"
 	}
 	m := Model{MnciVersion: mnciVersion, ReleaseBranch: releaseBranch, Pack: c.Pack, Native: c.Native,
-		NativeRunners: c.NativeRunners, NativeLinuxPackages: c.NativeLinuxPackages}
+		NativeRunners: c.NativeRunners, NativeLinuxPackages: c.NativeLinuxPackages, Provenance: c.Provenance}
 	if len(m.NativeRunners) == 0 {
 		m.NativeRunners = DefaultNativeRunners
 	}

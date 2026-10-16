@@ -14,8 +14,10 @@ import (
 	"time"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/githubrelease"
+	"github.com/MoNecromanCI/mnci/apps/mnci/npmbinaries"
 	"github.com/MoNecromanCI/mnci/apps/mnci/packagemanifests"
 	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
+	"github.com/MoNecromanCI/mnci/apps/mnci/pypiwheels"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/MoNecromanCI/mnci/apps/mnci/taskrun"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
@@ -129,6 +131,9 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 	if err := deploy(s, p, item, opts.DryRun, say); err != nil {
 		return err
 	}
+	if err := distribute(s, p, item, pr, opts.DryRun, res, say); err != nil {
+		return err
+	}
 	if opts.DryRun {
 		say("would release %s (%s)", item.Next, item.Reason)
 		if len(pr.Assets) > 0 {
@@ -228,6 +233,78 @@ func deploy(s *session.Session, p *projectgraph.Project, item Item, dryRun bool,
 			say("%s published %s to %s", plugin, item.Next, pr.Registry)
 		case pr.Skipped != "":
 			say("%s: %s", plugin, pr.Skipped)
+		}
+	}
+	return nil
+}
+
+// distribute publishes an app's binaries as npm packages and PyPI wheels,
+// made from the archives its plugin built, before the app is tagged: a
+// failure stops the release, and the re-run skips what the registries have.
+func distribute(s *session.Session, p *projectgraph.Project, item Item, pr protocol.PublishResult, dryRun bool, res *ReportResult, say func(string, ...any)) error {
+	r := p.Release
+	if r == nil || (len(r.NPM) == 0 && r.PyPI == "") {
+		return nil
+	}
+	if Native(p) {
+		say("no npm or PyPI packages: a native app's archives are built on separate runners")
+		return nil
+	}
+	binary := pr.Binary
+	if binary == "" {
+		binary = p.Name
+	}
+	homepage, repository := r.Homepage, ""
+	if repo, err := Repository(s); err == nil {
+		repository = "https://github.com/" + repo.String()
+		if homepage == "" {
+			homepage = repository
+		}
+	}
+	type archive struct{ path, os, arch string }
+	var archives []archive
+	for asset, platform := range pr.AssetPlatforms {
+		goos, goarch, _ := strings.Cut(platform, "/")
+		archives = append(archives, archive{asset, goos, goarch})
+	}
+	out := "dist/release/" + p.Name
+	verb := "published"
+	if dryRun {
+		verb = "would publish"
+	}
+	report := func(kind string, published, existing, skipped []string) {
+		res.Packages = append(res.Packages, published...)
+		res.ExistingPackages = append(res.ExistingPackages, existing...)
+		if len(published) > 0 {
+			say("%s %s %s", verb, kind, strings.Join(published, ", "))
+		}
+		if len(existing) > 0 {
+			say("%s already has %s", kind, strings.Join(existing, ", "))
+		}
+		if len(skipped) > 0 {
+			say("no %s package for %s", kind, strings.Join(skipped, ", "))
+		}
+	}
+	if len(r.NPM) > 0 {
+		release := npmbinaries.Release{Names: r.NPM, Binary: binary, Version: item.Next, Description: r.Description, License: r.License, Homepage: homepage, Repository: repository, OutDir: out + "/npm"}
+		for _, a := range archives {
+			release.Archives = append(release.Archives, npmbinaries.Archive{Path: a.path, OS: a.os, Arch: a.arch})
+		}
+		result, err := npmbinaries.Publish(s.Root, release, dryRun)
+		report("npm", result.Published, result.Existing, result.Skipped)
+		if err != nil {
+			return fmt.Errorf("npm: %w", err)
+		}
+	}
+	if r.PyPI != "" {
+		release := pypiwheels.Release{Name: r.PyPI, Binary: binary, Version: item.Next, Description: r.Description, License: r.License, Homepage: homepage, OutDir: out + "/pypi"}
+		for _, a := range archives {
+			release.Archives = append(release.Archives, pypiwheels.Archive{Path: a.path, OS: a.os, Arch: a.arch})
+		}
+		result, err := pypiwheels.Publish(s.Root, release, dryRun)
+		report("PyPI", result.Published, result.Existing, result.Skipped)
+		if err != nil {
+			return fmt.Errorf("PyPI: %w", err)
 		}
 	}
 	return nil

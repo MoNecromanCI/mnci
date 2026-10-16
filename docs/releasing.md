@@ -85,6 +85,33 @@ be copied into a tap, a bucket or winget-pkgs as it is. A manager whose
 platforms the release has no archive for is skipped, and the release says so.
 Native apps attach one archive per OS from separate jobs and get no manifests.
 
+## npm and PyPI
+
+An app released with assets can also be published to npm and PyPI from the
+same archives, so people install it with the package manager of their
+language, and nothing is downloaded after install:
+
+```toml
+[projects.cli.release]
+npm = ["@acme/cli", "acme"]   # npm install --global acme
+pypi = "acme"                 # pipx install acme, uvx acme
+```
+
+| Registry | Packages | Secret |
+|---|---|---|
+| npm | One package per platform, named after the first name (`@acme/cli-linux-x64`, `@acme/cli-win32-arm64`, ...), holding the binary and limited to its `os` and `cpu`. Then every listed name as a package whose `bin` runs the binary that npm installed from its optional dependencies. | `NODE_AUTH_TOKEN` |
+| PyPI | One wheel per platform, the binary in its scripts, so pip, pipx and uv put it on PATH with no Python in between. One Linux wheel serves glibc and musl. | `PYPI_TOKEN` |
+
+They are published after the archives are built and before the tag, platform
+packages before the packages that depend on them. A version a registry
+already has is skipped, so a re-run completes a release. On GitHub Actions
+npm packages carry [provenance](https://docs.npmjs.com/generating-provenance-statements):
+the generated workflow gets `id-token: write` for it. Publishing to npm needs
+the `npm` CLI on the runner (GitHub's and Azure's hosted images have it). A
+prerelease goes to npm's `next` tag, and to PyPI as `1.0.0rc1`; only `-alpha.N`,
+`-beta.N` and `-rc.N` have a Python spelling. Native apps are not published
+this way.
+
 ## Tags
 
 | Language | Tag | Why |

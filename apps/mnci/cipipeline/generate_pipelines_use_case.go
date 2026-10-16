@@ -43,6 +43,11 @@ func Collect(s *session.Session) (Contributions, error) {
 		}
 		if release.Native(p) {
 			c.Native = true
+			continue
+		}
+		c.Add(protocol.CIResult{Credentials: release.DistributionCredentials(p.Release)})
+		if p.Release != nil && len(p.Release.NPM) > 0 {
+			c.Provenance = true
 		}
 	}
 	c.NativeRunners, c.NativeLinuxPackages = s.Config.CI.NativeRunners, s.Config.CI.NativeLinuxPackages

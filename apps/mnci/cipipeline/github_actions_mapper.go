@@ -23,7 +23,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
-
+%[2]s
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-`, m.ReleaseBranch)
+`, m.ReleaseBranch, idToken(m))
 	for _, t := range m.Toolchains {
 		b.WriteString(githubSetup(t))
 	}
@@ -127,6 +127,15 @@ func githubNativeJob(m Model) string {
           if-no-files-found: ignore
 `, InstallScriptURL, m.MnciVersion)
 	return b.String()
+}
+
+// idToken lets the job request an OIDC token, which npm provenance signs
+// the published packages with.
+func idToken(m Model) string {
+	if !m.Provenance {
+		return ""
+	}
+	return "  id-token: write\n"
 }
 
 func header(comment string) string {

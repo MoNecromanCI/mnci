@@ -8,6 +8,7 @@ import (
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/githubrelease"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
 
@@ -38,6 +39,13 @@ func Preflight(s *session.Session, plan Plan) error {
 	plugins := map[string]bool{}
 	for _, item := range plan.Items {
 		plugins[item.Plugin] = true
+		if p := s.Graph.Get(item.Project); p != nil && !Native(p) {
+			for _, c := range DistributionCredentials(p.Release) {
+				if os.Getenv(c.Env) == "" && !alternative(c.Env) {
+					problems = append(problems, fmt.Sprintf("%s is not set: %s", c.Env, c.Description))
+				}
+			}
+		}
 	}
 	for name := range plugins {
 		var projects []protocol.Project
@@ -60,6 +68,22 @@ func Preflight(s *session.Session, plan Plan) error {
 		return fmt.Errorf("cannot release:\n  - %s", strings.Join(problems, "\n  - "))
 	}
 	return nil
+}
+
+// DistributionCredentials are the secrets publishing an app's binaries to
+// npm and PyPI needs.
+func DistributionCredentials(r *workspace.ProjectRelease) []protocol.Credential {
+	var creds []protocol.Credential
+	if r == nil {
+		return nil
+	}
+	if len(r.NPM) > 0 {
+		creds = append(creds, protocol.Credential{Env: "NODE_AUTH_TOKEN", Description: "npm token that can publish " + strings.Join(r.NPM, " and ") + " and their platform packages", Required: true})
+	}
+	if r.PyPI != "" {
+		creds = append(creds, protocol.Credential{Env: "PYPI_TOKEN", Description: "PyPI API token that can upload " + r.PyPI, Required: true})
+	}
+	return creds
 }
 
 // alternative accepts the credential forms each tool also understands.

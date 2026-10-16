@@ -55,3 +55,21 @@ type PublishResult struct {
 	// upload order; in a dry run, the files that would be built.
 	Assets []string `json:"assets,omitempty"`
 }
+
+// PublishedParams asks which version of a project its registry has.
+type PublishedParams struct {
+	Project Project `json:"project"`
+}
+
+// PublishedResult is the newest version the registry has of a project.
+type PublishedResult struct {
+	// Version is empty when the registry does not know the project: its
+	// first release is still to come.
+	Version string `json:"version,omitempty"`
+	// Registry names where the plugin looked, for messages.
+	Registry string `json:"registry,omitempty"`
+	// Unreachable is true when the registry could not be asked (offline, an
+	// error), so nothing can be concluded; Detail says why.
+	Unreachable bool   `json:"unreachable,omitempty"`
+	Detail      string `json:"detail,omitempty"`
+}

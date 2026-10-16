@@ -13,4 +13,7 @@ const (
 	MethodDoctor     = "doctor"
 	// MethodContribute asks a convention plugin for its additions.
 	MethodContribute = "contribute"
+	// MethodPublished asks for the newest version a registry has of a
+	// project, so release can check its tags against it.
+	MethodPublished = "published"
 )

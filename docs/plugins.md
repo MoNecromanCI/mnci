@@ -135,6 +135,7 @@ Content-Length: 85\r\n
 | `publish` | project, version, dry run → published / skipped with a reason | `publish` |
 | `ci` | the plugin's projects → toolchains (with their GitHub and Azure setup steps, or an install command), setup and audit steps, credentials | `ci` |
 | `doctor` | the plugin's projects → findings, each with a remedy | `doctor` |
+| `published` | a project → the newest version its registry has, or none, or that the registry could not be asked | `published` |
 | `contribute` | the projects whose stack includes the plugin, or a convention applies to → new tasks, replaced tasks and extra task dependencies, by project | `contribute` |
 | `shutdown` | → `{}`; the plugin then exits | always |
 

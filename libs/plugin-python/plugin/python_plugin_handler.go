@@ -48,6 +48,11 @@ func (p *Python) Publish(params protocol.PublishParams) (protocol.PublishResult,
 	return releasing.Publish(p.root, params)
 }
 
+// Published implements serve.RegistryReader.
+func (p *Python) Published(params protocol.PublishedParams) (protocol.PublishedResult, error) {
+	return releasing.Published(params)
+}
+
 // CI implements serve.CIContributor.
 func (p *Python) CI(params protocol.CIParams) (protocol.CIResult, error) {
 	return pipeline.CI(params), nil

@@ -34,6 +34,17 @@ after a failure resumes where it stopped.`,
 				return err
 			}
 			defer s.Close()
+			var blockers []string
+			for _, f := range CheckLineage(s, true) {
+				if f.Blocking {
+					blockers = append(blockers, f.Message)
+				} else {
+					fmt.Fprintln(cmd.ErrOrStderr(), "warning: "+f.Message)
+				}
+			}
+			if len(blockers) > 0 {
+				return fmt.Errorf("cannot release: the release tags would give wrong versions, so no plan is shown:\n  - %s", strings.Join(blockers, "\n  - "))
+			}
 			plan, err := MakePlan(s.Git, s.Graph)
 			if err != nil {
 				return err

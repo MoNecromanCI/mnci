@@ -42,6 +42,22 @@ func Output(dir string, argv []string, extraEnv ...string) (string, error) {
 	return out.String(), nil
 }
 
+// Capture executes argv in dir and returns its stdout and stderr, for a
+// caller that tells failures apart by what the tool printed.
+func Capture(dir string, argv []string, extraEnv ...string) (stdout, stderr string, err error) {
+	cmd, err := command(dir, argv, extraEnv)
+	if err != nil {
+		return "", "", err
+	}
+	var out, errOut bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &errOut
+	if err := cmd.Run(); err != nil {
+		return out.String(), errOut.String(), fmt.Errorf("%s failed: %w", strings.Join(argv, " "), err)
+	}
+	return out.String(), errOut.String(), nil
+}
+
 // Available reports whether a program can be found on PATH (honouring
 // PATHEXT on Windows, so "npm" finds npm.cmd).
 func Available(program string) bool {

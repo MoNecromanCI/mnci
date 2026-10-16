@@ -22,13 +22,13 @@ var Installer = func(workspaceRoot string) error {
 }
 
 type templateData struct {
-	Dir, Name, Package string
+	Dir, Name, Package, Stack string
 }
 
 // Generate scaffolds one Node project, adds the workspace's Node tooling the
 // first time, and installs so the new package is linked into node_modules.
 func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.GenerateResult, error) {
-	data := templateData{Dir: params.Directory, Name: params.Name, Package: packageName(params.Workspace.Scope, params.Name)}
+	data := templateData{Dir: params.Directory, Name: params.Name, Package: packageName(params.Workspace.Scope, params.Name), Stack: params.Stack}
 
 	var files []string
 	rootFiles, err := ensureWorkspace(workspaceRoot, params.Workspace.Name)

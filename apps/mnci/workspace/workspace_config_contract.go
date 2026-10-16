@@ -17,8 +17,25 @@ type Config struct {
 	// Conventions apply convention plugins, by name, to the projects of the
 	// languages they support.
 	Conventions map[string]ConventionConfig `toml:"conventions"`
-	Tasks       map[string]TaskOverride     `toml:"tasks"`
-	Projects    map[string]ProjectOverride  `toml:"projects"`
+	// Stacks declares stacks by name, next to the ones plugins publish; a
+	// stack declared here wins over a published one of the same name.
+	Stacks map[string]StackConfig `toml:"stacks"`
+	// DefaultStacks is the stack of a project that records none, and of
+	// `mnci add` without --stack, by language.
+	DefaultStacks map[string]string          `toml:"default_stacks"`
+	Tasks         map[string]TaskOverride    `toml:"tasks"`
+	Projects      map[string]ProjectOverride `toml:"projects"`
+}
+
+// StackConfig is a stack declared in mnci.toml: the plugins a project is
+// built with, by name.
+type StackConfig struct {
+	Description string   `toml:"description"`
+	Language    string   `toml:"language"`
+	Toolchain   []string `toml:"toolchain"`
+	Structure   []string `toml:"structure"`
+	Scaffold    string   `toml:"scaffold"`
+	Deploy      []string `toml:"deploy"`
 }
 
 // WorkspaceSection names the monorepo.
@@ -83,6 +100,8 @@ type ProjectOverride struct {
 	// TagPrefix replaces the release tag prefix ("<name>@" by default), so a
 	// converted project keeps its existing tags.
 	TagPrefix string `toml:"tag_prefix"`
+	// Stack replaces the stack the project's manifest records.
+	Stack string `toml:"stack"`
 	// Release makes an app releasable: it is versioned by its tag and its
 	// assets are built and attached to the release.
 	Release *ProjectRelease         `toml:"release"`

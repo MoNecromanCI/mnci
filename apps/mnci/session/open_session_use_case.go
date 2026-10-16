@@ -19,7 +19,9 @@ type Session struct {
 	Config  workspace.Config
 	Git     *gitclient.Git
 	Plugins *pluginhost.PluginSet
-	Graph   *projectgraph.Graph
+	// Stacks are the stacks the workspace can use.
+	Stacks *pluginhost.Catalog
+	Graph  *projectgraph.Graph
 	// Files are tracked files plus untracked files that are not ignored.
 	Files   []string
 	Version string
@@ -56,12 +58,17 @@ func Open(opts Options) (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	graph, err := projectgraph.Discover(files, plugins, cfg)
+	catalog, err := pluginhost.NewCatalog(plugins, cfg)
 	if err != nil {
 		plugins.Close()
 		return nil, err
 	}
-	return &Session{Root: root, Config: cfg, Git: git, Plugins: plugins, Graph: graph, Files: files, Version: opts.Version}, nil
+	graph, err := projectgraph.Discover(files, plugins, catalog, cfg)
+	if err != nil {
+		plugins.Close()
+		return nil, err
+	}
+	return &Session{Root: root, Config: cfg, Git: git, Plugins: plugins, Stacks: catalog, Graph: graph, Files: files, Version: opts.Version}, nil
 }
 
 // Storage opens the configured cache.
@@ -83,7 +90,7 @@ func (s *Session) Refresh() error {
 	if err != nil {
 		return err
 	}
-	graph, err := projectgraph.Discover(files, s.Plugins, s.Config)
+	graph, err := projectgraph.Discover(files, s.Plugins, s.Stacks, s.Config)
 	if err != nil {
 		return err
 	}

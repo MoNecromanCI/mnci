@@ -15,17 +15,23 @@ module_prefix = %q
 # Pipelines to generate: "github", "azure" or both.
 providers = [%s]
 
-# Conventions add rules on top of the language plugins. See
-# docs/conventions.md.
-#
+# A stack is the set of plugins a project is built with: its language plugin
+# and the toolchain, structure, scaffold and deploy plugins on top. Each
+# project records its own, so one monorepo can mix them; ` + "`mnci stacks`" + ` lists
+# them and ` + "`mnci add app web --stack node-vitest`" + ` picks one. Projects that record
+# none use the default of their language. See docs/stacks.md.
+[default_stacks]
+node = "node-jest"     # ESLint with @mnci/eslint-config, and Jest
+
+# [stacks.node-quick]
+# description = "Vitest only, no lint"
+# language = "node"
+# toolchain = ["vitest"]
+
+# Conventions apply a plugin to every project of the languages it supports.
 # vertical-slices gives Go and Python projects a slice-check task, run before
-# lint: role-named files, no junk-drawer folders.
+# lint: role-named files, no junk-drawer folders. See docs/conventions.md.
 [conventions.vertical-slices]
-# eslint lints new Node projects with @mnci/eslint-config, which carries the
-# same slice rules for TypeScript.
-[conventions.eslint]
-# jest tests new Node projects; swap it for [conventions.vitest] to use Vitest.
-[conventions.jest]
 
 # [release]
 # branch = "main"     # releases run only from this branch

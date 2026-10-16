@@ -5,7 +5,7 @@ import (
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
 
-// Name is the convention's name in mnci.toml ([conventions.eslint]).
+// Name is the plugin's name in a stack's toolchain list.
 const Name = "eslint"
 
 const config = `// Lint AND formatting for every Node project: @mnci/eslint-config carries the
@@ -18,9 +18,9 @@ export default [
 ]
 `
 
-// New returns the convention; version is reported in the handshake.
-func New(version string) *tooling.Convention {
-	return &tooling.Convention{Name: Name, Version: version, Setup: setup}
+// New returns the plugin; version is reported in the handshake.
+func New(version string) *tooling.Toolchain {
+	return &tooling.Toolchain{Name: Name, Version: version, Provides: []string{"lint"}, Setup: setup}
 }
 
 func setup(string, protocol.GenerateParams) tooling.Setup {

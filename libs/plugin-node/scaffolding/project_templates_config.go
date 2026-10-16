@@ -44,7 +44,7 @@ var appTemplates = map[string]string{
   "name": "[[.Package]]",
   "version": "0.0.0",
   "private": true,
-  "mnci": { "kind": "app" },
+  "mnci": { "kind": "app"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -64,7 +64,7 @@ var libTemplates = map[string]string{
   "name": "[[.Package]]",
   "version": "0.0.0",
   "private": true,
-  "mnci": { "kind": "lib" },
+  "mnci": { "kind": "lib"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -84,7 +84,7 @@ var packageTemplates = map[string]string{
   "version": "0.0.0",
   "description": "[[.Name]]",
   "license": "MIT",
-  "mnci": { "kind": "package" },
+  "mnci": { "kind": "package"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": ["dist"],

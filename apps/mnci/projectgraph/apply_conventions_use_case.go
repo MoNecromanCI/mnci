@@ -71,6 +71,12 @@ func merge(p *Project, c protocol.Contribution, source string) {
 			p.contributed[name+"."+f] = source
 		}
 	}
+	for _, name := range sortedTaskNames(c.Replace) {
+		p.Tasks[name] = c.Replace[name]
+		for _, f := range TaskFields {
+			p.contributed[name+"."+f] = source
+		}
+	}
 	for _, name := range sortedTaskNames(c.DependsOn) {
 		t, exists := p.Tasks[name]
 		if !exists {

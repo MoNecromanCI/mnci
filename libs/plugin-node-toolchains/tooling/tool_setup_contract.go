@@ -1,6 +1,6 @@
 package tooling
 
-// Setup is what a convention adds when a Node project is generated. Nothing
+// Setup is what a toolchain plugin adds when a Node project is generated. Nothing
 // already there is changed: every file, script, field and dependency is
 // added only when absent.
 type Setup struct {

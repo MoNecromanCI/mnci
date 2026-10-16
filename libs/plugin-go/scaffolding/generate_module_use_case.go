@@ -48,7 +48,7 @@ func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.Ge
 	if err := GoRunner(dir, []string{"go", "mod", "init", data.Module}); err != nil {
 		return protocol.GenerateResult{}, err
 	}
-	if err := declareKind(filepath.Join(dir, "go.mod"), params.Kind); err != nil {
+	if err := declareKind(filepath.Join(dir, "go.mod"), params.Kind, params.Stack); err != nil {
 		return protocol.GenerateResult{}, err
 	}
 	files = append(files, params.Directory+"/go.mod")
@@ -70,14 +70,18 @@ func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.Ge
 	return protocol.GenerateResult{Files: files, Notes: []string{"Import it from another Go project as " + data.Module + "/<slice>."}}, nil
 }
 
-// declareKind records the kind as the first line of go.mod, a comment the Go
-// toolchain keeps.
-func declareKind(goMod string, kind protocol.ProjectKind) error {
+// declareKind records the kind, and the stack when there is one, as the
+// first lines of go.mod: comments the Go toolchain keeps.
+func declareKind(goMod string, kind protocol.ProjectKind, stack string) error {
 	src, err := os.ReadFile(goMod)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(goMod, append([]byte("// mnci:kind "+string(kind)+"\n"), src...), 0o644)
+	head := "// mnci:kind " + string(kind) + "\n"
+	if stack != "" {
+		head += "// mnci:stack " + stack + "\n"
+	}
+	return os.WriteFile(goMod, append([]byte(head), src...), 0o644)
 }
 
 // PackageName turns a project name into a valid Go package name.

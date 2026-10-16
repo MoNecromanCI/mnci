@@ -11,27 +11,21 @@ languages it supports, in a workspace that turns it on in `mnci.toml`:
 # exclude = ["legacy"]   # projects it leaves alone
 ```
 
-`mnci new` turns on `vertical-slices`, `eslint` and `jest`. A converted
-workspace gets none of them until you add the lines: an existing codebase
-rarely follows vertical slices yet, and it already has its own lint and test
-setup.
+`mnci new` turns on `vertical-slices`. A converted workspace does not get it
+until you add the line, because an existing codebase rarely follows it yet.
+
+A convention is any plugin applied workspace-wide. To give some projects a
+plugin and not others, put it in their [stack](stacks.md) instead: a
+structure plugin such as `vertical-slices` can be either.
 
 | Convention | Languages | What it does |
 |---|---|---|
 | `vertical-slices` | Go, Python | a `slice-check` task, run before `lint` |
-| `eslint` | Node | new projects lint with ESLint and `@mnci/eslint-config` |
-| `jest` | Node | new projects test with Jest and `ts-jest` |
-| `vitest` | Node | new projects test with Vitest |
 
 ## How a convention combines with a project
 
-A convention can do two things: add tasks to every project it applies to
-(`vertical-slices`), and set a project up when `mnci add` generates it
-(`eslint`, `jest`, `vitest`).
-
-### Tasks
-
-1. The language plugin discovers each project and its tasks.
+1. The language plugin discovers each project and its tasks, and the
+   project's [stack](stacks.md) adds its plugins' tasks.
 2. Each configured convention adds its tasks to the projects it applies to. A
    task the project already has is kept as it is; a convention can also add a
    dependency to an existing task (`lint` depends on `slice-check`).
@@ -40,31 +34,8 @@ A convention can do two things: add tasks to every project it applies to
 `mnci explain <project>:<task>` shows where each field came from
 (`from convention vertical-slices`). A convention that answers `ci` or
 `doctor` is asked about the projects it applies to, so its pipeline steps and
-checks join the language plugins'.
-
-### New projects
-
-`mnci add` asks the language plugin to generate the project, then asks each
-configured convention that applies to it to add its part. A convention only
-adds: a file, script, field or dependency that already exists is kept.
-
-The node plugin generates a TypeScript project that builds and type-checks
-with `tsc`. The Node conventions add the rest:
-
-- `eslint` writes `eslint.config.mjs` at the root (once), adds `eslint` and
-  `@mnci/eslint-config` to the root devDependencies, and a `lint` script.
-- `jest` adds `jest`, `ts-jest` and `@jest/globals`, a `test` script, the
-  Jest settings in `package.json`, and the starter's spec.
-- `vitest` adds `vitest`, a `test` script (`vitest run`) and the starter's
-  spec.
-
-Configure one test runner. Switching changes only projects added after the
-switch; existing projects keep the runner they were set up with, so a
-workspace can move from Jest to Vitest one project at a time.
-
-A workspace created before these conventions existed (mnci 0.1 and earlier)
-had Jest and ESLint built into the node plugin. Add `[conventions.eslint]`
-and `[conventions.jest]` to its `mnci.toml` to keep new projects the same.
+checks join the language plugins'. A convention that can `generate` adds its
+part to every new project it applies to.
 
 ## vertical-slices
 
@@ -75,7 +46,7 @@ files named for the role they play.
 |---|---|---|
 | Go | `slice-check` task (`mnci slices check --lang go`) | a file is `<name>_<role>.go` (`_test`, and `_windows`-style platform suffixes allowed); only `doc.go` and `main.go` sit at a module's root |
 | Python | `slice-check` task (`mnci slices check --lang python`) | a module is `<name>_<role>.py`, a test `test_<name>.py`; only `__init__.py` and `__main__.py` sit at a package's top folder; packages are snake_case |
-| Node | `@mnci/eslint-config`'s vertical-slice rules, in `lint` (the `eslint` convention) | the same rules, plus slice boundaries and cycles |
+| Node | `@mnci/eslint-config`'s vertical-slice rules, in `lint` (the `eslint` toolchain plugin of the `node-jest` and `node-vitest` stacks) | the same rules, plus slice boundaries and cycles |
 
 The roles are `handler`, `use_case`, `algorithm`, `policy`, `model`,
 `contract`, `mapper`, `validator`, `repository`, `client`, `store`,

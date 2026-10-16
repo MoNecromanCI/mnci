@@ -15,14 +15,14 @@ import (
 )
 
 type templateData struct {
-	Dir, Name, Distribution, Import, Kind string
+	Dir, Name, Distribution, Import, Kind, Stack string
 }
 
 // Generate scaffolds one Python project, creating the workspace venv and its
 // tooling the first time, and installs the project in editable mode.
 func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.GenerateResult, error) {
 	distribution := distributionName(params.Workspace.Name, params.Name)
-	data := templateData{Dir: params.Directory, Name: params.Name, Distribution: distribution, Import: discovery.ImportName(distribution), Kind: string(params.Kind)}
+	data := templateData{Dir: params.Directory, Name: params.Name, Distribution: distribution, Import: discovery.ImportName(distribution), Kind: string(params.Kind), Stack: params.Stack}
 
 	templates := maps.Clone(projectTemplates)
 	switch params.Kind {

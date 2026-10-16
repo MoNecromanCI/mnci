@@ -13,8 +13,9 @@ import (
 
 // Discover asks every plugin to describe the manifests it claims among the
 // workspace's files (tracked, or untracked and not ignored), then resolves
-// edges, applies the configured conventions and then mnci.toml overrides.
-func Discover(files []string, plugins *pluginhost.PluginSet, cfg workspace.Config) (*Graph, error) {
+// edges, applies each project's stack, the configured conventions and then
+// mnci.toml overrides.
+func Discover(files []string, plugins *pluginhost.PluginSet, catalog *pluginhost.Catalog, cfg workspace.Config) (*Graph, error) {
 	var projects []*Project
 	for _, c := range plugins.Clients {
 		if !c.Info.Capabilities.Discover {
@@ -43,6 +44,9 @@ func Discover(files []string, plugins *pluginhost.PluginSet, cfg workspace.Confi
 		}
 	}
 	ResolveEdges(projects)
+	if err := ApplyStacks(projects, plugins, catalog, cfg); err != nil {
+		return nil, err
+	}
 	applied, err := ApplyConventions(projects, plugins, cfg)
 	if err != nil {
 		return nil, err

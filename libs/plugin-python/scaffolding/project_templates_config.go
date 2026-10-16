@@ -14,6 +14,9 @@ dependencies = []
 
 [tool.mnci]
 kind = "[[.Kind]]"
+[[- if .Stack]]
+stack = "[[.Stack]]"
+[[- end]]
 
 [tool.setuptools.packages.find]
 where = ["src"]

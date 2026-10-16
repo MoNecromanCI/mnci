@@ -27,6 +27,19 @@ max_size_mb = 2048
 [plugins]
 enabled = ["node", "go", "python"]    # default: every built-in plugin
 
+[default_stacks]                      # a project's stack when it records none (docs/stacks.md)
+node = "node-jest"
+
+[stacks.ts-func]                      # declare a stack: the plugins a project is built with
+language = "node"
+toolchain = ["eslint", "vitest"]
+structure = []
+scaffold = ""                         # default: the language plugin generates
+deploy = []
+
+[projects.web]
+stack = "node-vitest"                 # replaces the stack web's manifest records
+
 [conventions.vertical-slices]         # apply a convention (docs/conventions.md)
 languages = ["go"]                    # default: every language it supports
 exclude = ["legacy"]                  # projects it leaves alone

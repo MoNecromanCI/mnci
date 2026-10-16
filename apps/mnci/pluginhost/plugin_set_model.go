@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
 
 // PluginSet is the running plugins of one mnci invocation.
@@ -25,10 +26,13 @@ func (s *PluginSet) Get(name string) *host.Client {
 	return nil
 }
 
-// ForLanguage returns the plugin answering to a --lang value.
+// ForLanguage returns the language plugin answering to a --lang value.
 func (s *PluginSet) ForLanguage(lang string) (*host.Client, error) {
 	lang = strings.ToLower(strings.TrimSpace(lang))
 	for _, c := range s.Clients {
+		if !HasRole(c, protocol.RoleLanguage) {
+			continue
+		}
 		if c.Info.Plugin.Name == lang || slices.Contains(c.Info.Languages, lang) {
 			return c, nil
 		}
@@ -36,16 +40,21 @@ func (s *PluginSet) ForLanguage(lang string) (*host.Client, error) {
 	return nil, fmt.Errorf("no plugin handles language %q; available: %s", lang, strings.Join(s.Languages(), ", "))
 }
 
-// Languages lists the primary language of every plugin that can generate.
+// Languages lists every language plugin that can generate.
 func (s *PluginSet) Languages() []string {
 	var out []string
 	for _, c := range s.Clients {
-		if c.Info.Capabilities.Generate {
+		if c.Info.Capabilities.Generate && HasRole(c, protocol.RoleLanguage) {
 			out = append(out, c.Info.Plugin.Name)
 		}
 	}
 	sort.Strings(out)
 	return out
+}
+
+// HasRole reports whether a plugin can play a role in a stack.
+func HasRole(c *host.Client, role protocol.Role) bool {
+	return slices.Contains(c.Info.EffectiveRoles(), role)
 }
 
 // Call calls a method on a plugin if it supports it. ok is false when the

@@ -43,6 +43,7 @@ func Discover(workspaceRoot string, manifests []string) (protocol.DiscoverResult
 			Exports:  []string{mod.Path},
 			Imports:  imports,
 			Tasks:    Tasks(name, kind),
+			Stack:    mod.Stack,
 		}
 		if kind == protocol.ProjectPackage {
 			// Go resolves a nested module's version from a <dir>/vX.Y.Z tag.

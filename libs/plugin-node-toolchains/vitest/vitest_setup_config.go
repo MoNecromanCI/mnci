@@ -5,12 +5,20 @@ import (
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
 
-// Name is the convention's name in mnci.toml ([conventions.vitest]).
+// Name is the plugin's name in a stack's toolchain list.
 const Name = "vitest"
 
-// New returns the convention; version is reported in the handshake.
-func New(version string) *tooling.Convention {
-	return &tooling.Convention{Name: Name, Version: version, Setup: setup}
+// stacks are the stacks this plugin publishes.
+var stacks = []protocol.Stack{{
+	Name:        "node-vitest",
+	Description: "TypeScript on Node, linted by @mnci/eslint-config, tested with Vitest",
+	Language:    "node",
+	Toolchain:   []string{"eslint", Name},
+}}
+
+// New returns the plugin; version is reported in the handshake.
+func New(version string) *tooling.Toolchain {
+	return &tooling.Toolchain{Name: Name, Version: version, Provides: []string{"test"}, Stacks: stacks, Setup: setup}
 }
 
 func setup(workspaceRoot string, params protocol.GenerateParams) tooling.Setup {

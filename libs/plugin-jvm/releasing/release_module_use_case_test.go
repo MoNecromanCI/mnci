@@ -61,7 +61,7 @@ func TestPublish(t *testing.T) {
 	real := MavenRunner
 	defer func() { MavenRunner = real }()
 	MavenRunner = func(_ string, argv []string) error { ran = argv; return nil }
-	core := protocol.Project{Name: "core", Root: "libs/core", Kind: protocol.ProjectPackage}
+	core := protocol.Project{Name: "core", Root: "libs/core", Kind: protocol.ProjectPackage, Exports: []string{"dev.acme:acme-core"}}
 	if _, err := Publish(t.TempDir(), protocol.PublishParams{Project: core}); err == nil {
 		t.Fatal("a repository is required")
 	}
@@ -70,7 +70,7 @@ func TestPublish(t *testing.T) {
 	if res, err := Publish(ws, protocol.PublishParams{Project: core, Version: "1.0.0"}); err != nil || !res.Published {
 		t.Fatal(err, res)
 	}
-	if got := strings.Join(ran, " "); !strings.Contains(got, "-pl libs/core deploy -DskipTests -s ") || !strings.HasSuffix(got, "-DaltDeploymentRepository=mnci::https://repo.example/maven") {
+	if got := strings.Join(ran, " "); !strings.Contains(got, "-pl dev.acme:acme-core deploy -DskipTests -s ") || !strings.HasSuffix(got, "-DaltDeploymentRepository=mnci::https://repo.example/maven") {
 		t.Fatal(got)
 	}
 }

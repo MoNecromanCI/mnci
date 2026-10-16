@@ -40,7 +40,7 @@ func Discover(workspaceRoot string, manifests []string) (protocol.DiscoverResult
 			Exports:  []string{pom.Coordinates()},
 			Imports:  pom.Dependencies,
 			Version:  pom.Version,
-			Tasks:    Tasks(root, pom.ArtifactID, kind),
+			Tasks:    Tasks(root, pom.Coordinates(), pom.ArtifactID, kind),
 			Stack:    pom.Stack,
 		})
 	}

@@ -34,7 +34,7 @@ func TestDiscover(t *testing.T) {
 	if api.Kind != protocol.ProjectApp || api.Version != "1.2.0" || api.Exports[0] != "dev.acme:acme-api" || api.Imports[0] != "dev.acme:acme-core" || api.Tasks["start"].Command[5] != "exec:java" {
 		t.Errorf("api %+v", api)
 	}
-	if build := api.Tasks["build"]; build.Cwd != "." || build.Command[4] != "apps/api" || build.Outputs[0] != "../../dist/maven/acme-api" || build.DependsOn[0] != "^build" {
+	if build := api.Tasks["build"]; build.Cwd != "." || build.Command[4] != "dev.acme:acme-api" || build.Outputs[0] != "../../dist/maven/acme-api" || build.DependsOn[0] != "^build" {
 		t.Errorf("api build %+v", build)
 	}
 	if core.Kind != protocol.ProjectLib || core.Exports[0] != "dev.acme:acme-core" || core.Version != "0.0.0" || core.Stack != "java" {

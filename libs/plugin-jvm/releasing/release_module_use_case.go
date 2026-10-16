@@ -117,7 +117,11 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 	if err := os.WriteFile(settingsFile, []byte(settings), 0o600); err != nil {
 		return result, err
 	}
-	argv := []string{"mvn", "-B", "-q", "-pl", params.Project.Root, "deploy", "-DskipTests", "-s", settingsFile, "-DaltDeploymentRepository=mnci::" + repository}
+	selector := params.Project.Root
+	if coordinates := firstExport(params.Project); coordinates != "" {
+		selector = coordinates
+	}
+	argv := []string{"mvn", "-B", "-q", "-pl", selector, "deploy", "-DskipTests", "-s", settingsFile, "-DaltDeploymentRepository=mnci::" + repository}
 	if err := MavenRunner(workspaceRoot, argv); err != nil {
 		return result, err
 	}

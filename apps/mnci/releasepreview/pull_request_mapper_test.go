@@ -1,0 +1,38 @@
+package releasepreview
+
+import (
+	"strings"
+	"testing"
+)
+
+func env(vars map[string]string) func(string) string {
+	return func(k string) string { return vars[k] }
+}
+
+func TestFromEnvironment(t *testing.T) {
+	pr, ok, _ := FromEnvironment(env(map[string]string{
+		"GITHUB_ACTIONS": "true", "GITHUB_EVENT_NAME": "pull_request", "GITHUB_REF": "refs/pull/42/merge",
+		"GITHUB_TOKEN": "t", "GITHUB_REPOSITORY": "acme/repo",
+	}))
+	if !ok || pr.Provider != "github" || pr.Number != 42 || pr.API != "https://api.github.com" || pr.Repo != "acme/repo" {
+		t.Fatalf("github: %+v %v", pr, ok)
+	}
+	pr, ok, _ = FromEnvironment(env(map[string]string{
+		"TF_BUILD": "True", "BUILD_REASON": "PullRequest", "BUILD_REPOSITORY_PROVIDER": "TfsGit",
+		"SYSTEM_PULLREQUEST_PULLREQUESTID": "7", "SYSTEM_COLLECTIONURI": "https://dev.azure.com/acme",
+		"SYSTEM_TEAMPROJECT": "Platform", "BUILD_REPOSITORY_ID": "r1", "SYSTEM_ACCESSTOKEN": "a",
+	}))
+	if !ok || pr.Provider != "azure" || pr.Number != 7 || pr.Collection != "https://dev.azure.com/acme/" {
+		t.Fatalf("azure: %+v %v", pr, ok)
+	}
+	for want, vars := range map[string]map[string]string{
+		"not for a pull request":  {"GITHUB_ACTIONS": "true", "GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main"},
+		"GITHUB_TOKEN is not set": {"GITHUB_ACTIONS": "true", "GITHUB_EVENT_NAME": "pull_request", "GITHUB_REF": "refs/pull/1/merge"},
+		"not Azure Repos":         {"TF_BUILD": "True", "BUILD_REASON": "PullRequest", "BUILD_REPOSITORY_PROVIDER": "GitHub"},
+		"not running in":          {},
+	} {
+		if _, ok, why := FromEnvironment(env(vars)); ok || !strings.Contains(why, want) {
+			t.Errorf("%v: ok=%v why=%q", vars, ok, why)
+		}
+	}
+}

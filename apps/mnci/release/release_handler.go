@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"strings"
 
+	"github.com/MoNecromanCI/mnci/apps/mnci/releasepreview"
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
@@ -17,7 +18,7 @@ import (
 // Command is `mnci release`.
 func Command(version string) *cobra.Command {
 	var (
-		dryRun, yes, noPush, asJSON bool
+		dryRun, yes, noPush, asJSON, comment bool
 	)
 	cmd := &cobra.Command{
 		Use:   "release",
@@ -29,6 +30,14 @@ tagged; manifests are restored afterwards (the tag is the record). A re-run
 after a failure resumes where it stopped.`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := cmd.OutOrStdout()
+			if comment && !dryRun {
+				return errors.New("--comment posts a preview: use it with --dry-run")
+			}
+			preview := func(markdown string) {
+				if comment {
+					releasepreview.Post(markdown, cmd.ErrOrStderr())
+				}
+			}
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})
 			if err != nil {
 				return err
@@ -43,6 +52,7 @@ after a failure resumes where it stopped.`,
 				}
 			}
 			if len(blockers) > 0 {
+				preview("### Release preview\n\n**Blocked:** the release tags would give wrong versions, so there is no plan:\n\n- " + strings.Join(blockers, "\n- ") + "\n")
 				return fmt.Errorf("cannot release: the release tags would give wrong versions, so no plan is shown:\n  - %s", strings.Join(blockers, "\n  - "))
 			}
 			plan, err := MakePlan(s.Git, s.Graph)
@@ -53,6 +63,9 @@ after a failure resumes where it stopped.`,
 				printPlan(cmd, plan)
 			}
 			if len(plan.Items) == 0 {
+				if dryRun {
+					preview(Report{DryRun: true, Unchanged: plan.Unchanged}.Markdown())
+				}
 				if asJSON {
 					return json.NewEncoder(out).Encode(Report{DryRun: dryRun, Unchanged: plan.Unchanged, Results: []ReportResult{}})
 				}
@@ -71,6 +84,9 @@ after a failure resumes where it stopped.`,
 			ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt)
 			defer stop()
 			report, err := Execute(ctx, s, plan, Options{DryRun: dryRun, Push: !noPush, Out: out})
+			if dryRun {
+				preview(report.Markdown())
+			}
 			if asJSON {
 				enc := json.NewEncoder(out)
 				enc.SetIndent("", "  ")
@@ -86,6 +102,7 @@ after a failure resumes where it stopped.`,
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "do not ask for confirmation")
 	cmd.Flags().BoolVar(&noPush, "no-push", false, "create tags locally only")
 	cmd.Flags().BoolVar(&asJSON, "json", false, "print the release report as JSON")
+	cmd.Flags().BoolVar(&comment, "comment", false, "with --dry-run in a pull request build, post the preview on the pull request (GitHub, Azure Repos), updating mnci's earlier comment")
 	return cmd
 }
 

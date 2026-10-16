@@ -111,3 +111,16 @@ func TestWriteKeepsSlotsAndReportsDrift(t *testing.T) {
 		t.Fatalf("an unchanged workspace rewrites nothing: %v", changed)
 	}
 }
+
+func TestThePreviewIsPostedOnPullRequests(t *testing.T) {
+	m := model()
+	gh, az := RenderGitHub(m), RenderAzure(m)
+	for _, want := range []string{"  pull-requests: write\n", "run: mnci release --dry-run --comment\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n"} {
+		if !strings.Contains(gh, want) {
+			t.Errorf("GitHub workflow lacks %q", want)
+		}
+	}
+	if !strings.Contains(az, "bash: mnci release --dry-run --comment\n    displayName: Release preview\n    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))\n    env:\n      SYSTEM_ACCESSTOKEN: $(System.AccessToken)\n") {
+		t.Errorf("Azure pipeline lacks the preview comment step:\n%s", az)
+	}
+}

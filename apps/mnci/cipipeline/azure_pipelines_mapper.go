@@ -43,9 +43,11 @@ steps:
     displayName: Verify
 `)
 	b.WriteString(slot("  ", "after-verify"))
-	fmt.Fprintf(&b, `  - bash: mnci release --dry-run
+	fmt.Fprintf(&b, `  - bash: mnci release --dry-run --comment
     displayName: Release preview
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
   - bash: mnci ci release
     displayName: Release
     condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'), eq(variables['Build.SourceBranch'], 'refs/heads/%s'))

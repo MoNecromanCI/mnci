@@ -22,6 +22,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -54,7 +55,9 @@ jobs:
 	b.WriteString(slot("      ", "after-verify"))
 	fmt.Fprintf(&b, `      - name: Release preview
         if: github.event_name == 'pull_request'
-        run: mnci release --dry-run
+        run: mnci release --dry-run --comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Release
         if: github.event_name == 'push' && github.ref_name == '%s'
         run: mnci ci release

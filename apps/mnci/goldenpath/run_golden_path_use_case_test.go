@@ -264,6 +264,40 @@ func TestGoldenPath(t *testing.T) {
 	if plan := w.mnci(true, "release", "--dry-run"); !strings.Contains(plan, "0.1.0 → 0.1.1") {
 		t.Fatalf("a fix must plan a patch:\n%s", plan)
 	}
+
+	// 8. Removing projects: one others import is refused; the rest go with
+	// their traces (go.work, the lockfile, the venv) and the pipelines follow.
+	if out := w.mnci(false, "remove", "core", "--dry-run"); !strings.Contains(out, "core is imported by api") {
+		t.Fatalf("removing an imported project must be refused:\n%s", out)
+	}
+	if out := w.mnci(true, "remove", "gokit", "--dry-run"); !strings.Contains(out, "Would remove gokit (packages/gokit)") || !strings.Contains(out, "changes go.work") {
+		t.Fatalf("dry run:\n%s", out)
+	}
+	if _, err := os.Stat(filepath.Join(w.dir, "packages", "gokit")); err != nil {
+		t.Fatal("a dry run changes nothing")
+	}
+	// npm installs from the public registry again, not the test one.
+	w.write(".npmrc", string(npmrc))
+	for _, name := range []string{"gokit", "hello", "pykit"} {
+		if out := w.mnci(true, "remove", name, "--yes"); strings.Contains(out, "warning") {
+			t.Fatalf("remove %s:\n%s", name, out)
+		}
+	}
+	if work, _ := os.ReadFile(filepath.Join(w.dir, "go.work")); strings.Contains(string(work), "gokit") {
+		t.Fatalf("go.work still uses gokit:\n%s", work)
+	}
+	if lock, _ := os.ReadFile(filepath.Join(w.dir, "package-lock.json")); strings.Contains(string(lock), "apps/hello") {
+		t.Fatal("the lockfile still has hello")
+	}
+	for _, gone := range []string{"packages/gokit", "apps/hello", "packages/pykit"} {
+		if _, err := os.Stat(filepath.Join(w.dir, filepath.FromSlash(gone))); err == nil {
+			t.Fatalf("%s still exists", gone)
+		}
+	}
+	w.mnci(true, "ci", "generate", "--check")
+	if out := w.mnci(true, "run", "build"); !strings.Contains(out, "tasks succeeded") {
+		t.Fatalf("the workspace still builds:\n%s", out)
+	}
 }
 
 func hasEdge(graphJSON, from, to string) bool {

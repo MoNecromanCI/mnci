@@ -16,6 +16,7 @@ mnci new acme && cd acme
 mnci add app web --lang node        # deployed, never published
 mnci add lib core --lang go         # imported internally, never published
 mnci add package sdk --lang python  # published on release
+mnci remove web                     # delete a project and its traces (--dry-run first)
 
 mnci build                          # every project, in dependency order, cached
 mnci test --affected                # only what changed since main

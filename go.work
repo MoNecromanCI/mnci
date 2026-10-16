@@ -5,6 +5,7 @@ use (
 	./libs/plugin-bicep
 	./libs/plugin-cpp
 	./libs/plugin-dart
+	./libs/plugin-docker
 	./libs/plugin-dotnet
 	./libs/plugin-go
 	./libs/plugin-jvm

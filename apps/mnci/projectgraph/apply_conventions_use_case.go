@@ -50,6 +50,7 @@ func ApplyConventions(projects []*Project, plugins *pluginhost.PluginSet, cfg wo
 		}
 		for _, p := range targets {
 			merge(p, res.Projects[p.Name], "convention "+name)
+			p.addDeployer(name, c.Info, res.Projects[p.Name])
 		}
 	}
 	return applied, nil

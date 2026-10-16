@@ -25,6 +25,9 @@ type Project struct {
 	Release *workspace.ProjectRelease `json:"release,omitempty"`
 	// Conventions are the conventions that apply to the project, sorted.
 	Conventions []string `json:"conventions,omitempty"`
+	// Deployers are the deploy plugins that contributed to the project (an
+	// image to build): a release publishes it with each of them too.
+	Deployers []string `json:"deployers,omitempty"`
 	// contributed maps "task.field" to the plugin or convention that set it.
 	contributed map[string]string
 	// stackPlugins are the plugins of the project's stack, other than its
@@ -46,9 +49,19 @@ func (p *Project) Toolset() string {
 }
 
 // Releases reports whether the project takes part in releases: every
-// package, and an app that opted in.
+// package, and an app that opted in or that a deploy plugin ships.
 func (p *Project) Releases() bool {
-	return p.Kind == protocol.ProjectPackage || (p.Kind == protocol.ProjectApp && p.Release != nil)
+	return p.Kind == protocol.ProjectPackage || (p.Kind == protocol.ProjectApp && (p.Release != nil || len(p.Deployers) > 0))
+}
+
+// addDeployer records a deploy plugin that contributed to the project.
+func (p *Project) addDeployer(plugin string, info protocol.InitializeResult, c protocol.Contribution) {
+	empty := len(c.Tasks) == 0 && len(c.Replace) == 0 && len(c.DependsOn) == 0
+	if empty || !slices.Contains(info.Roles, protocol.RoleDeploy) || slices.Contains(p.Deployers, plugin) {
+		return
+	}
+	p.Deployers = append(p.Deployers, plugin)
+	sort.Strings(p.Deployers)
 }
 
 // ServedBy reports whether a plugin owns the project, is part of its stack,

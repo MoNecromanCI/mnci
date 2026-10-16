@@ -65,6 +65,6 @@ func (v doctorView) view() string {
 			}
 		}
 	}
-	b.WriteString(hintStyle.Render("\n↑/↓ move · enter details and remedy · r re-check (mnci doctor)") + "\n")
+	b.WriteString(hintStyle.Render("\n↑/↓ move · enter details and remedy · r re-check · f fix (mnci doctor --fix)") + "\n")
 	return b.String()
 }

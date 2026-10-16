@@ -170,8 +170,17 @@ releasable commits. See [releasing](releasing.md).
 
 ```sh
 mnci doctor          # every failed check names its remedy
+mnci doctor --fix    # show the fixes doctor can make as diffs, apply the safe ones
 mnci explain web     # how web's tasks resolved and where each value came from
 ```
+
+`--fix` shows every fix as a unified diff before anything changes, then asks
+for confirmation (`--yes` skips the question; without a terminal it only
+shows). Only safe fixes are applied. A safe fix restores what mnci or a plugin
+owns without losing anything of yours: a `go.work` that lists exactly the
+workspace's Go modules, `.mnci/` in `.gitignore`, or pipelines regenerated with
+your slot contents kept. A fix that could lose something is shown, never
+applied.
 
 ## The interactive shell
 

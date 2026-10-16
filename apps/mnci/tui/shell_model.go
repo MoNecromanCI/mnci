@@ -115,6 +115,8 @@ func (sh Shell) key(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		case "r":
 			sh.doctor = doctorView{}
 			return sh, sh.enter()
+		case "f":
+			return sh.run("doctor", "--fix")
 		}
 		sh.doctor = sh.doctor.update(msg)
 	case tabSettings:

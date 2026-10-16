@@ -22,9 +22,13 @@ func Doctor(workspaceRoot string, params protocol.DoctorParams) protocol.DoctorR
 	work := ParseGoWork(string(src))
 	listed := map[string]bool{}
 	var findings []protocol.Finding
+	fixed := string(src)
 	for _, entry := range work.Use {
 		listed[entry] = true
 		_, err := os.Stat(filepath.Join(workspaceRoot, filepath.FromSlash(entry), "go.mod"))
+		if err != nil {
+			fixed, _ = DropUse(fixed, entry)
+		}
 		findings = append(findings, protocol.Finding{
 			Check: "go.work entry " + entry + " exists", OK: err == nil,
 			Detail: entry + " is listed in go.work but has no go.mod", Remedy: "remove `" + entry + "` from go.work (`go work edit -dropuse=./" + entry + "`)",
@@ -32,12 +36,24 @@ func Doctor(workspaceRoot string, params protocol.DoctorParams) protocol.DoctorR
 	}
 	lints := false
 	for _, p := range params.Projects {
+		if !listed[p.Root] {
+			fixed = AddUse(fixed, p.Root)
+		}
 		findings = append(findings, protocol.Finding{
 			Check: "go.work lists " + p.Root, OK: listed[p.Root],
 			Detail: p.Root + " has a go.mod but go.work does not use it", Remedy: "run `go work use ./" + p.Root + "`",
 		})
 		if lint, ok := p.Tasks["lint"]; ok && len(lint.Command) > 0 && lint.Command[0] == "golangci-lint" {
 			lints = true
+		}
+	}
+	// One fix makes go.work match the modules, for every finding it clears.
+	if fixed != string(src) {
+		fix := &protocol.Fix{Description: "make go.work use exactly the workspace's Go modules", Safe: true, Files: []protocol.FileEdit{{Path: "go.work", Content: fixed}}}
+		for i := range findings {
+			if !findings[i].OK {
+				findings[i].Fix = fix
+			}
 		}
 	}
 	required := work.GoVersion

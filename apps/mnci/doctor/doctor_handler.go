@@ -1,9 +1,14 @@
 package doctor
 
 import (
+	"bufio"
+	"os"
+	"strings"
+
 	"encoding/json"
 	"errors"
 	"fmt"
+	"golang.org/x/term"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/spf13/cobra"
@@ -14,11 +19,19 @@ var ErrUnhealthy = errors.New("the workspace has problems")
 
 // Command is `mnci doctor`.
 func Command(version string) *cobra.Command {
-	var asJSON bool
+	var asJSON, fix, yes bool
 	cmd := &cobra.Command{
 		Use:   "doctor",
 		Short: "Check the workspace's health; every problem names its remedy",
-		Args:  cobra.NoArgs,
+		Long: `Check the workspace's health: mnci's invariants and each plugin's checks.
+Every problem names its remedy. With --fix, doctor shows the fixes it can make
+as diffs, then applies the safe ones once you confirm (or with --yes): a safe
+fix only restores what mnci or a plugin owns, like go.work or a generated
+pipeline with its slots kept. Others are shown, never applied.`,
+		Example: `  mnci doctor
+  mnci doctor --fix        # review the diffs, then confirm
+  mnci doctor --fix --yes`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})
 			if err != nil {
@@ -47,6 +60,11 @@ func Command(version string) *cobra.Command {
 				}
 				fmt.Fprintf(out, "\n%d passed, %d failed, %d warning(s)\n", report.Passed, report.Failed, report.Warnings)
 			}
+			if fix {
+				if report, err = fixAll(cmd, s, report, yes); err != nil {
+					return err
+				}
+			}
 			if report.Failed > 0 {
 				return ErrUnhealthy
 			}
@@ -54,5 +72,54 @@ func Command(version string) *cobra.Command {
 		},
 	}
 	cmd.Flags().BoolVar(&asJSON, "json", false, "print the report as JSON")
+	cmd.Flags().BoolVar(&fix, "fix", false, "show the fixes doctor can make as diffs, and apply the safe ones")
+	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "with --fix, apply without asking")
 	return cmd
+}
+
+// fixAll shows every fix the findings carry, applies the safe ones once
+// confirmed, and checks again.
+func fixAll(cmd *cobra.Command, s *session.Session, report Report, yes bool) (Report, error) {
+	out := cmd.OutOrStdout()
+	safe, manual := Fixes(report)
+	if len(safe)+len(manual) == 0 {
+		fmt.Fprintln(out, "\nNothing doctor can fix itself: follow the remedies above.")
+		return report, nil
+	}
+	fmt.Fprintln(out)
+	for _, f := range manual {
+		fmt.Fprintln(out, "not applied (it could lose something of yours; apply it by hand):")
+		if err := ShowFix(out, s.Root, f); err != nil {
+			return report, err
+		}
+	}
+	if len(safe) == 0 {
+		return report, nil
+	}
+	for _, f := range safe {
+		if err := ShowFix(out, s.Root, f); err != nil {
+			return report, err
+		}
+	}
+	if !yes {
+		if !term.IsTerminal(int(os.Stdin.Fd())) {
+			fmt.Fprintln(out, "\nPass --yes to apply these fixes.")
+			return report, nil
+		}
+		fmt.Fprintf(out, "\nApply %d fix(es)? [y/N] ", len(safe))
+		answer, _ := bufio.NewReader(cmd.InOrStdin()).ReadString('\n')
+		if a := strings.ToLower(strings.TrimSpace(answer)); a != "y" && a != "yes" {
+			fmt.Fprintln(out, "Nothing applied.")
+			return report, nil
+		}
+	}
+	for _, f := range safe {
+		if err := ApplyFix(s.Root, f); err != nil {
+			return report, err
+		}
+		fmt.Fprintf(out, "✔ %s\n", f.Description)
+	}
+	after := Run(s)
+	fmt.Fprintf(out, "\nafter fixing: %d passed, %d failed, %d warning(s)\n", after.Passed, after.Failed, after.Warnings)
+	return after, nil
 }

@@ -1,6 +1,8 @@
 package doctor
 
 import (
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -88,13 +90,15 @@ func lineageChecks(s *session.Session) []protocol.Finding {
 // CoreChecks are mnci's own invariants.
 func CoreChecks(s *session.Session) []protocol.Finding {
 	var out []protocol.Finding
-	ignored, _ := s.Git.Run("check-ignore", "-q", ".mnci/cache/x")
 	_, err := s.Git.Run("check-ignore", ".mnci/cache/x")
-	_ = ignored
-	out = append(out, protocol.Finding{
+	ignoreCache := protocol.Finding{
 		Check: "the cache directory is ignored by git", OK: err == nil,
 		Detail: ".mnci/ is not in .gitignore, so cache files could be committed", Remedy: "add `.mnci/` to .gitignore",
-	})
+	}
+	if err != nil {
+		ignoreCache.Fix = ignoreFix(s.Root)
+	}
+	out = append(out, ignoreCache)
 	out = append(out, protocol.Finding{
 		Check: "the repository has commits", OK: s.Git.HasCommits(),
 		Detail: "releases and affected detection need history", Remedy: "commit the workspace",
@@ -114,15 +118,30 @@ func CoreChecks(s *session.Session) []protocol.Finding {
 		Detail: "a shallow clone cannot compute versions or affected projects", Remedy: "`git fetch --unshallow` (in CI: checkout with fetch-depth 0)",
 	})
 	if c, err := cipipeline.Collect(s); err == nil {
-		drift := cipipeline.Drift(s.Root, s.Config, cipipeline.NewModel(c, s.Version, s.Config.Release.Branch))
+		model := cipipeline.NewModel(c, s.Version, s.Config.Release.Branch)
+		drift := cipipeline.Drift(s.Root, s.Config, model)
 		detail := ""
 		if len(drift) > 0 {
 			detail = drift[0]
 		}
-		out = append(out, protocol.Finding{
+		pipelines := protocol.Finding{
 			Check: "CI pipelines match the workspace", OK: len(drift) == 0,
 			Detail: detail, Remedy: "run `mnci ci generate` and commit the result",
-		})
+		}
+		planned, lost := cipipeline.Planned(s.Root, s.Config, model)
+		stale := cipipeline.Stale(s.Root, cipipeline.Rendered(s.Config, model))
+		if len(planned)+len(stale) > 0 {
+			// Regenerating is safe when every slot's content survives it; a
+			// stale file carries mnci's header, so it is mnci's to delete.
+			pipelines.Fix = &protocol.Fix{Description: "regenerate the pipelines, keeping your slot contents", Safe: len(lost) == 0}
+			for _, path := range sortedKeys(planned) {
+				pipelines.Fix.Files = append(pipelines.Fix.Files, protocol.FileEdit{Path: path, Content: planned[path]})
+			}
+			for _, path := range stale {
+				pipelines.Fix.Files = append(pipelines.Fix.Files, protocol.FileEdit{Path: path, Delete: true})
+			}
+		}
+		out = append(out, pipelines)
 	}
 	for _, p := range s.Graph.Projects {
 		missing := []string{}
@@ -139,4 +158,23 @@ func CoreChecks(s *session.Session) []protocol.Finding {
 		}
 	}
 	return out
+}
+
+// ignoreFix adds .mnci/ to the workspace's .gitignore (creating it).
+func ignoreFix(root string) *protocol.Fix {
+	raw, _ := os.ReadFile(filepath.Join(root, ".gitignore"))
+	text := string(raw)
+	if text != "" && !strings.HasSuffix(text, "\n") {
+		text += "\n"
+	}
+	return &protocol.Fix{Description: "ignore the cache directory", Safe: true, Files: []protocol.FileEdit{{Path: ".gitignore", Content: text + "\n# mnci\n.mnci/\n"}}}
+}
+
+func sortedKeys(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }

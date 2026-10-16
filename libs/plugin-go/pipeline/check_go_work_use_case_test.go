@@ -31,6 +31,14 @@ func TestDoctorFindsStaleAndMissingEntries(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %v", got)
 	}
+	for _, f := range res.Findings {
+		if f.OK != (f.Fix == nil) && f.Check != "Go is at least 1.24 (go.work)" {
+			t.Errorf("%s: a failed go.work finding carries the fix, a passing one none", f.Check)
+		}
+		if f.Fix != nil && (!f.Fix.Safe || f.Fix.Files[0].Content != "go 1.24\nuse (\n\t./apps/api\n\t./libs/new\n)\n") {
+			t.Errorf("fix %+v", f.Fix)
+		}
+	}
 }
 
 func TestCIReadsGoVersion(t *testing.T) {

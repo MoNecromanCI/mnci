@@ -3,6 +3,7 @@ go 1.26.0
 use (
 	./apps/mnci
 	./libs/plugin-dotnet
+	./libs/plugin-cpp
 	./libs/plugin-go
 	./libs/plugin-node
 	./libs/plugin-node-toolchains

@@ -11,6 +11,7 @@ with through its [stack](stacks.md).
 | Plugin | Roles | Does | Release |
 |---|---|---|---|
 | `node` | language (+ default toolchain, scaffold) | `package.json` projects (npm workspaces); every package.json script is a task; scaffolds plain JavaScript | `npm publish`, skipping an existing version |
+| `cpp` | language (+ default toolchain, scaffold) | CMake projects (a `CMakeLists.txt` that calls `project()`), using each other with `add_subdirectory`; `configure` (Ninja, into `dist/<project dir>`), `build`, CTest (test), cppcheck (lint); vcpkg when a project has a `vcpkg.json` and `VCPKG_ROOT` is set | none: released by its tag |
 | `go` | language (+ default toolchain, scaffold) | `go.mod` projects (in a root `go.work`); `go build`, `go test`, `go vet` | a `<dir>/vX.Y.Z` module tag |
 | `dotnet` | language (+ default toolchain, scaffold) | `*.csproj`/`*.fsproj` projects, each with its `tests/` project; `dotnet build`, `test`, `format --verify-no-changes` (lint), `pack`; bin/ and obj/ under `dist/dotnet` | `dotnet nuget push` of packages (`NUGET_API_KEY`), skipping a version the feed has |
 | `php` | language (+ default toolchain, scaffold) | Composer packages the root `composer.json` requires through path repositories, one `vendor/`; PHPStan level 8 (lint), PHPUnit (test), the `bin` script (start) | none to upload: Packagist reads the release's tags |

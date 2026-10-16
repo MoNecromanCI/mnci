@@ -19,12 +19,18 @@ import (
 // root: caches, never sources.
 var gradleState = []string{".gradle", ".kotlin"}
 
-// GenerateGradle writes a Kotlin module, includes it in the settings, and
-// writes the settings and root script the first time.
+// GenerateGradle writes a Kotlin module (the kotlin stack) or an Android
+// app (the android stack), includes it in the settings, and writes the
+// settings and root script the first time; an Android app also pins AGP in
+// the root script.
 func GenerateGradle(workspaceRoot string, params protocol.GenerateParams) (protocol.GenerateResult, error) {
 	dir := filepath.Join(workspaceRoot, filepath.FromSlash(params.Directory))
 	if _, err := os.Stat(dir); err == nil {
 		return protocol.GenerateResult{}, fmt.Errorf("%s already exists", params.Directory)
+	}
+	android := params.Stack == AndroidStack
+	if android && params.Kind != protocol.ProjectApp {
+		return protocol.GenerateResult{}, fmt.Errorf("the android stack writes apps; a library shared with an Android app is a Kotlin module: mnci add %s %s --stack %s", params.Kind, params.Name, KotlinStack)
 	}
 	settingsFile := filepath.Join(workspaceRoot, settings)
 	workspace := params.Workspace.Name
@@ -32,6 +38,9 @@ func GenerateGradle(workspaceRoot string, params protocol.GenerateParams) (proto
 	maps.Copy(templates, gradleModuleTemplates)
 	if params.Kind == protocol.ProjectApp {
 		maps.Copy(templates, kotlinAppTemplates)
+	}
+	if android {
+		templates = maps.Clone(androidTemplates)
 	}
 	src, err := os.ReadFile(settingsFile)
 	switch {
@@ -66,12 +75,35 @@ func GenerateGradle(workspaceRoot string, params protocol.GenerateParams) (proto
 			files = append(files, settings)
 		}
 	}
+	if android {
+		changed, err := pinAndroidPlugin(workspaceRoot)
+		if err != nil {
+			return protocol.GenerateResult{}, err
+		}
+		if changed && !slices.Contains(files, rootScript) {
+			files = append(files, rootScript)
+		}
+	}
 	if added, err := ignoreGradleState(workspaceRoot); err != nil {
 		return protocol.GenerateResult{}, err
 	} else if added {
 		files = append(files, ".gitignore")
 	}
 	return protocol.GenerateResult{Files: files, Notes: []string{"Depend on it from another module with implementation(project(\"" + path + "\"))."}}, nil
+}
+
+// pinAndroidPlugin pins AGP in the root script, once.
+func pinAndroidPlugin(workspaceRoot string) (bool, error) {
+	file := filepath.Join(workspaceRoot, rootScript)
+	src, err := os.ReadFile(file)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return false, err
+	}
+	out, changed := AddRootPlugin(string(src), androidPlugin)
+	if !changed {
+		return false, nil
+	}
+	return true, os.WriteFile(file, []byte(out), 0o644)
 }
 
 // ignoreGradleState adds Gradle's and Kotlin's workspace caches to the

@@ -37,8 +37,9 @@ func Version(workspaceRoot string) string {
 	return JavaVersion
 }
 
-// buildTools says which build tools the projects use.
-type buildTools struct{ maven, gradle bool }
+// buildTools says which build tools the projects use, and whether any is
+// an Android module.
+type buildTools struct{ maven, gradle, android bool }
 
 func usedBuildTools(workspaceRoot string, projects []protocol.Project) buildTools {
 	var used buildTools
@@ -48,8 +49,9 @@ func usedBuildTools(workspaceRoot string, projects []protocol.Project) buildTool
 			used.maven = true
 		}
 		for _, script := range []string{"build.gradle.kts", "build.gradle"} {
-			if _, err := os.Stat(filepath.Join(dir, script)); err == nil {
+			if src, err := os.ReadFile(filepath.Join(dir, script)); err == nil {
 				used.gradle = true
+				used.android = used.android || strings.Contains(string(src), "com.android.")
 			}
 		}
 	}
@@ -105,6 +107,9 @@ func CI(workspaceRoot string, params protocol.CIParams) protocol.CIResult {
 	if used.gradle {
 		result.Toolchains = append(result.Toolchains, gradle())
 	}
+	if used.android {
+		result.Toolchains = append(result.Toolchains, androidSDK())
+	}
 	if used.maven {
 		result.Setup = []protocol.Step{{Name: "Resolve Maven dependencies", Command: []string{"mvn", "-B", "-q", "dependency:go-offline"}, Blocking: true}}
 	}
@@ -123,8 +128,8 @@ func CI(workspaceRoot string, params protocol.CIParams) protocol.CIResult {
 // probe runs a tool for its output; tests replace it.
 var probe = func(dir string, argv []string) (string, error) { return toolrun.Output(dir, argv) }
 
-// Doctor checks that a JDK is installed, and Maven or Gradle for the
-// modules that build with them.
+// Doctor checks that a JDK is installed, Maven or Gradle for the modules
+// that build with them, and the Android SDK for an Android module.
 func Doctor(workspaceRoot string, params protocol.DoctorParams) protocol.DoctorResult {
 	if len(params.Projects) == 0 {
 		return protocol.DoctorResult{Findings: []protocol.Finding{}}
@@ -142,6 +147,9 @@ func Doctor(workspaceRoot string, params protocol.DoctorParams) protocol.DoctorR
 	if used.gradle {
 		_, err := probe(workspaceRoot, []string{"gradle", "--version"})
 		findings = append(findings, protocol.Finding{Check: "Gradle is installed", OK: err == nil, Detail: "gradle is not on PATH", Remedy: "install Gradle " + GradleVersion + " (https://gradle.org/install)"})
+	}
+	if used.android {
+		findings = append(findings, protocol.Finding{Check: "the Android SDK is installed", OK: androidSDKFound(workspaceRoot), Detail: "neither ANDROID_HOME nor local.properties' sdk.dir names an SDK", Remedy: "install the Android SDK command-line tools (https://developer.android.com/tools) and set ANDROID_HOME"})
 	}
 	return protocol.DoctorResult{Findings: findings}
 }

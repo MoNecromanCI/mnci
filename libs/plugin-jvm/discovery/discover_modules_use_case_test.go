@@ -37,6 +37,9 @@ func TestDiscover(t *testing.T) {
 	if build := api.Tasks["build"]; build.Cwd != "." || build.Command[4] != "dev.acme:acme-api" || build.Outputs[0] != "../../dist/maven/acme-api" || build.DependsOn[0] != "^build" {
 		t.Errorf("api build %+v", build)
 	}
+	if api.Tasks["lint"].DependsOn[0] != "build" {
+		t.Error("lint runs after the build, which empties the directory Checkstyle writes to")
+	}
 	if core.Kind != protocol.ProjectLib || core.Exports[0] != "dev.acme:acme-core" || core.Version != "0.0.0" || core.Stack != "java" {
 		t.Errorf("core %+v", core)
 	}
@@ -98,7 +101,7 @@ publishing {
 	if build := api.Tasks["build"]; build.Cwd != "." || build.Command[3] != ":apps:api:assemble" || build.Outputs[0] != "../../dist/gradle/acme-api" || build.DependsOn[0] != "^build" {
 		t.Errorf("api build %+v", build)
 	}
-	if lint := api.Tasks["lint"]; lint.Command[3] != ":apps:api:ktlintCheck" || api.Tasks["start"].Command[3] != ":apps:api:run" {
+	if lint := api.Tasks["lint"]; lint.Command[3] != ":apps:api:ktlintCheck" || lint.DependsOn[0] != "build" || api.Tasks["start"].Command[3] != ":apps:api:run" {
 		t.Errorf("api lint %+v, start %+v", lint, api.Tasks["start"])
 	}
 	if core.Kind != protocol.ProjectLib || core.Version != "0.3.0" || core.Exports[1] != "dev.acme:acme-core" || len(core.Tasks["build"].Outputs) != 0 {

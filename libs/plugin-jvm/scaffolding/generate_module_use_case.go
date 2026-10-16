@@ -41,9 +41,10 @@ func identifier(name string) string {
 func GroupID(workspace string) string { return "dev." + identifier(workspace) }
 
 // Generate writes a module, lists it in the root pom, and writes the root
-// pom the first time. The kotlin stack writes a Gradle module instead.
+// pom the first time. The kotlin and android stacks write a Gradle module
+// instead.
 func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.GenerateResult, error) {
-	if params.Stack == KotlinStack {
+	if params.Stack == KotlinStack || params.Stack == AndroidStack {
 		return GenerateGradle(workspaceRoot, params)
 	}
 	dir := filepath.Join(workspaceRoot, filepath.FromSlash(params.Directory))

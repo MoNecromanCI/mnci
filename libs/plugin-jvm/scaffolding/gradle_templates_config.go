@@ -9,20 +9,31 @@ const (
 	KtlintVersion = "14.2.0"
 	JUnitBOM      = "6.1.3"
 	settings      = "settings.gradle.kts"
+	rootScript    = "build.gradle.kts"
 )
 
 // gradleRootTemplates are written once, by the first Gradle module: the
-// settings list every module, the root script pins the plugins' versions.
+// settings list every module and the repositories (Google's for Android),
+// the root script pins the plugins' versions.
 var gradleRootTemplates = map[string]string{
 	settings: `rootProject.name = "[[.Workspace]]"
 
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 dependencyResolutionManagement {
     repositories {
+        google()
         mavenCentral()
     }
 }
 `,
-	"build.gradle.kts": `// The plugins' versions, for every module; each module applies the ones it
+	rootScript: `// The plugins' versions, for every module; each module applies the ones it
 // uses.
 plugins {
     kotlin("jvm") version "` + KotlinVersion + `" apply false

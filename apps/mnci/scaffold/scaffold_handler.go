@@ -44,13 +44,16 @@ func NewCommand(version string) *cobra.Command {
 func AddCommand(version string) *cobra.Command {
 	var lang, stack string
 	cmd := &cobra.Command{
-		Use:   "add <app|lib|package> <name>",
+		Use:   "add <kind> <name>",
 		Short: "Add an app, an internal lib or a publishable package",
 		Long: `Add a project. The kind says what happens to it:
 
   app      deployed, never published         → apps/<name>
   lib      imported internally, never published → libs/<name>
   package  published to its registry on release → packages/<name>
+
+A combined kind from ` + "`mnci kinds`" + ` names the language too: node-app is
+app --lang node.
 
 The project lints, type-checks, tests and builds immediately, and the CI
 pipelines are regenerated to install its toolchain.`,
@@ -65,7 +68,12 @@ pipelines are regenerated to install its toolchain.`,
 				return err
 			}
 			defer s.Close()
-			res, err := AddProject(s, AddOptions{Kind: args[0], Name: args[1], Lang: lang, Stack: stack, Out: cmd.OutOrStdout()})
+			kind := args[0]
+			// "node-app" is "app --lang node": the form `mnci kinds` lists.
+			if k, l, ok := SplitKind(kind); ok && lang == "" {
+				kind, lang = k, l
+			}
+			res, err := AddProject(s, AddOptions{Kind: kind, Name: args[1], Lang: lang, Stack: stack, Out: cmd.OutOrStdout()})
 			if err != nil {
 				return err
 			}

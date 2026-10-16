@@ -58,6 +58,7 @@ npm, PyPI, Homebrew and Scoop packages are planned (epic #18).
 - [Stacks: the plugins each project is built with](docs/stacks.md)
 - [Conventions (vertical slices)](docs/conventions.md)
 - [Plugins and the plugin protocol](docs/plugins.md)
+- [Editors: the --json contracts](docs/editors.md)
 - [Working on mnci](docs/development.md)
 - Background: [decisions](docs/decisions.md) and [research](docs/research/)
 

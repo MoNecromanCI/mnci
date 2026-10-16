@@ -11,17 +11,35 @@ import (
 )
 
 // Node is a project as the graph views show it; it is also the JSON contract
-// of `mnci graph --json` and `mnci projects --json`.
+// of `mnci graph --json` and `mnci projects --json`. Dir, Ecosystem and
+// Targets repeat Root, the package ecosystem and Tasks under the names the
+// mnci VS Code extension reads (it was written against the TypeScript mnci).
 type Node struct {
-	Name     string   `json:"name"`
-	Root     string   `json:"root"`
-	Kind     string   `json:"kind"`
-	Language string   `json:"language"`
-	Plugin   string   `json:"plugin"`
-	Version  string   `json:"version,omitempty"`
-	Deps     []string `json:"deps"`
-	Tasks    []string `json:"tasks"`
-	Tags     []string `json:"tags,omitempty"`
+	Name      string   `json:"name"`
+	Root      string   `json:"root"`
+	Dir       string   `json:"dir"`
+	Kind      string   `json:"kind"`
+	Language  string   `json:"language"`
+	Ecosystem string   `json:"ecosystem"`
+	Plugin    string   `json:"plugin"`
+	Stack     string   `json:"stack,omitempty"`
+	Version   string   `json:"version,omitempty"`
+	Deps      []string `json:"deps"`
+	Tasks     []string `json:"tasks"`
+	Targets   []string `json:"targets"`
+	Tags      []string `json:"tags,omitempty"`
+}
+
+// ecosystems names a language plugin's package ecosystem as the TypeScript
+// mnci did; any other plugin's ecosystem is its name.
+var ecosystems = map[string]string{"node": "npm", "python": "pip", "go": "go"}
+
+// Ecosystem is a plugin's package ecosystem.
+func Ecosystem(plugin string) string {
+	if e, ok := ecosystems[plugin]; ok {
+		return e
+	}
+	return plugin
 }
 
 // Nodes converts the graph, sorted by name.
@@ -37,7 +55,10 @@ func Nodes(g *projectgraph.Graph) []Node {
 		if deps == nil {
 			deps = []string{}
 		}
-		out = append(out, Node{Name: p.Name, Root: p.Root, Kind: string(p.Kind), Language: p.Language, Plugin: p.Plugin, Version: p.Version, Deps: deps, Tasks: tasks, Tags: p.Tags})
+		out = append(out, Node{
+			Name: p.Name, Root: p.Root, Dir: p.Root, Kind: string(p.Kind), Language: p.Language, Ecosystem: Ecosystem(p.Plugin),
+			Plugin: p.Plugin, Stack: p.Stack, Version: p.Version, Deps: deps, Tasks: tasks, Targets: tasks, Tags: p.Tags,
+		})
 	}
 	return out
 }

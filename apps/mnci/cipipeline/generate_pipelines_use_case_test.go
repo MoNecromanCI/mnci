@@ -35,3 +35,19 @@ func TestWriteDeletesWhatItNoLongerGenerates(t *testing.T) {
 		t.Fatalf("a pipeline the team wrote is kept: %v", changed)
 	}
 }
+
+// Turning the dev container off deletes the one mnci generated.
+func TestWriteDeletesTheDevcontainerWhenTurnedOff(t *testing.T) {
+	root := t.TempDir()
+	on := workspace.Config{CI: workspace.CISection{Providers: []string{"github"}, Devcontainer: true}}
+	m := model()
+	if _, _, err := Write(root, on, m); err != nil {
+		t.Fatal(err)
+	}
+	off := on
+	off.CI.Devcontainer = false
+	changed, _, err := Write(root, off, m)
+	if err != nil || strings.Join(changed, ",") != DevcontainerPath {
+		t.Fatalf("changed %v %v", changed, err)
+	}
+}

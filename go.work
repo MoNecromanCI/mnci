@@ -6,6 +6,7 @@ use (
 	./libs/plugin-go
 	./libs/plugin-node
 	./libs/plugin-node-toolchains
+	./libs/plugin-php
 	./libs/plugin-python
 	./libs/plugin-ruby
 	./libs/plugin-rust

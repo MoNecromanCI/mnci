@@ -11,6 +11,7 @@ import (
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/typescript"
 	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/vitest"
 	nodep "github.com/MoNecromanCI/mnci/libs/plugin-node/plugin"
+	phpp "github.com/MoNecromanCI/mnci/libs/plugin-php/plugin"
 	pythonp "github.com/MoNecromanCI/mnci/libs/plugin-python/plugin"
 	rubyp "github.com/MoNecromanCI/mnci/libs/plugin-ruby/plugin"
 	rustp "github.com/MoNecromanCI/mnci/libs/plugin-rust/plugin"
@@ -24,6 +25,7 @@ var Builtins = map[string]func(version string) serve.Plugin{
 	"go":     func(v string) serve.Plugin { return gop.New(v) },
 	"dotnet": func(v string) serve.Plugin { return dotnetp.New(v) },
 	"ruby":   func(v string) serve.Plugin { return rubyp.New(v) },
+	"php":    func(v string) serve.Plugin { return phpp.New(v) },
 	"python": func(v string) serve.Plugin { return pythonp.New(v) },
 	"rust":   func(v string) serve.Plugin { return rustp.New(v) },
 }

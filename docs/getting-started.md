@@ -5,7 +5,8 @@
 - **git**, always.
 - The toolchain of each language you use: **Node 24** (with npm), **Go 1.26**,
   **Python 3.12+**, **Rust** (with clippy and rustfmt), the **.NET 10 SDK**,
-  **Ruby 3.2+** with Bundler.
+  **Ruby 3.2+** with Bundler,
+  **PHP 8.2+** with Composer.
   mnci tells you what is missing.
 
 ## Create a workspace

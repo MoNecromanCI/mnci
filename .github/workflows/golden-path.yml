@@ -68,6 +68,11 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.4'
+      # The php plugin's e2e.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
       - name: New workspace, every kind in every language, build, test, release
         working-directory: apps/mnci
         run: go test -tags e2e -timeout 40m -v -skip 'TestConvert' ./goldenpath

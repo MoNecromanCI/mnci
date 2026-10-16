@@ -9,7 +9,7 @@
   **PHP 8.2+** with Composer,
   **CMake 3.25+** with Ninja, a C++ compiler and cppcheck,
   **Dart** (or Flutter, which carries it; installed outside the workspace),
-  a **JDK 21** with **Maven**,
+  a **JDK 21** with **Maven** (or **Gradle 9** for Kotlin),
   the **Azure CLI** with Bicep.
   mnci tells you what is missing.
 

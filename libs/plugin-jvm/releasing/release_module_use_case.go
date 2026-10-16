@@ -22,11 +22,15 @@ var MavenRunner = func(dir string, argv []string) error { return toolrun.Run(dir
 var skipped = map[string]bool{".git": true, protocol.BuildDir: true, "node_modules": true, ".mnci": true}
 
 // WriteVersion records a release's version in the module's pom and in every
-// workspace pom that depends on the module with a version.
+// workspace pom that depends on the module with a version, or in a Gradle
+// module's script.
 func WriteVersion(workspaceRoot string, params protocol.VersionParams) (protocol.VersionResult, error) {
+	if script := gradleScript(workspaceRoot, params.Project.Root); script != "" {
+		return writeGradleVersion(workspaceRoot, script, params)
+	}
 	result := protocol.VersionResult{Files: []string{}}
 	own := path.Join(params.Project.Root, "pom.xml")
-	group, artifact, _ := strings.Cut(firstExport(params.Project), ":")
+	group, artifact, _ := strings.Cut(coordinates(params.Project), ":")
 	err := filepath.WalkDir(workspaceRoot, func(full string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -67,9 +71,13 @@ func WriteVersion(workspaceRoot string, params protocol.VersionParams) (protocol
 	return result, err
 }
 
-func firstExport(p protocol.Project) string {
-	if len(p.Exports) > 0 {
-		return p.Exports[0]
+// coordinates is groupId:artifactId among a module's exports (a Gradle
+// module also exports its :project:path).
+func coordinates(p protocol.Project) string {
+	for _, e := range p.Exports {
+		if !strings.HasPrefix(e, ":") {
+			return e
+		}
 	}
 	return ""
 }
@@ -92,7 +100,8 @@ const settings = `<settings>
 `
 
 // Publish deploys a package to MAVEN_REPOSITORY_URL with the credentials in
-// MAVEN_USERNAME and MAVEN_PASSWORD. Apps and libraries release by their tag.
+// MAVEN_USERNAME and MAVEN_PASSWORD, with Maven or Gradle. Apps and
+// libraries release by their tag.
 func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.PublishResult, error) {
 	if params.Assets != nil {
 		return protocol.PublishResult{Skipped: "JVM release assets are not built yet: the app is released by its tag"}, nil
@@ -109,6 +118,9 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 	if repository == "" {
 		return result, fmt.Errorf("set MAVEN_REPOSITORY_URL to the repository %s deploys to", params.Project.Name)
 	}
+	if gradleScript(workspaceRoot, params.Project.Root) != "" {
+		return publishGradle(workspaceRoot, params.Project, result)
+	}
 	dir := filepath.Join(workspaceRoot, protocol.BuildDir, "maven")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return result, err
@@ -118,8 +130,8 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 		return result, err
 	}
 	selector := params.Project.Root
-	if coordinates := firstExport(params.Project); coordinates != "" {
-		selector = coordinates
+	if c := coordinates(params.Project); c != "" {
+		selector = c
 	}
 	argv := []string{"mvn", "-B", "-q", "-pl", selector, "deploy", "-DskipTests", "-s", settingsFile, "-DaltDeploymentRepository=mnci::" + repository}
 	if err := MavenRunner(workspaceRoot, argv); err != nil {
@@ -132,7 +144,7 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 // Published reads the newest release from the repository's
 // maven-metadata.xml (MAVEN_REPOSITORY_URL, else Maven Central).
 func Published(params protocol.PublishedParams) (protocol.PublishedResult, error) {
-	group, artifact, ok := strings.Cut(firstExport(params.Project), ":")
+	group, artifact, ok := strings.Cut(coordinates(params.Project), ":")
 	if params.Project.Kind != protocol.ProjectPackage || !ok {
 		return protocol.PublishedResult{}, nil
 	}

@@ -20,7 +20,7 @@ structure plugin such as `vertical-slices` can be either.
 
 | Convention | Languages | What it does |
 |---|---|---|
-| `vertical-slices` | Go, Python, Dart, Rust, Ruby | a `slice-check` task, run before `lint` |
+| `vertical-slices` | Go, Python, Dart, Rust, Ruby, C++ | a `slice-check` task, run before `lint` |
 
 ## How a convention combines with a project
 
@@ -49,6 +49,7 @@ files named for the role they play.
 | Dart, Flutter | `slice-check` task (`smith slices check --lang dart`) | files and folders are lowercase_with_underscores (Effective Dart); a slice under `lib/src/` holds `<name>_<role>.dart` files and its barrel `<slice>.dart`; `lib/` holds the public libraries (and a Flutter app's `main.dart`), `bin/` the entry points; tests mirror `lib/` under `test/` as `<basename>_test.dart`, with test doubles in a `testing/` folder; generated `*.g.dart`-style files and the platform folders are not checked |
 | Rust | `slice-check` task (`smith slices check --lang rust`) | modules are snake_case; `src/` holds `main.rs`, `lib.rs` and slice modules, each a folder of `<name>_<role>.rs` files whose API is its `mod.rs` (or the `<slice>.rs` beside the folder); `src/bin/` holds binaries; integration tests in `tests/` are `<name>_test.rs`, test doubles in a `testing/` folder |
 | Ruby | `slice-check` task (`smith slices check --lang ruby`) | files and folders are snake_case; `lib/<gem>.rb` loads the gem, and `lib/<gem>/` holds `version.rb` and the slices, each a folder of `<name>_<role>.rb` files whose API is the barrel named after it (`orders/orders.rb`, or `orders.rb` beside the folder); specs and tests mirror `lib/` as `<basename>_spec.rb` or `<basename>_test.rb`, shared setup in `support/` |
+| C, C++ | `slice-check` task (`smith slices check --lang cpp`) | both common spellings, snake_case (Google style) or PascalCase (LLVM, Qt), but not mixed in one folder; `src/` holds `main.cpp` and the slices, each a folder of `<name>_<role>` or `<Name><Role>` files; `include/<target>/` holds the public headers, a slice's API being the header named after it; tests in `tests/` are `<name>_test.cpp` or `<Name>Test.cpp`, test doubles in a `testing/` folder |
 | Node | `@mnci/eslint-config`'s vertical-slice rules, in `lint` (the `eslint` toolchain plugin of the `node-jest` and `node-vitest` stacks) | the same rules, plus slice boundaries and cycles |
 
 The roles are `handler`, `use_case`, `algorithm`, `policy`, `model`,

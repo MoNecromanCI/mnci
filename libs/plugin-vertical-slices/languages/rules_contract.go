@@ -45,7 +45,7 @@ type Rules struct {
 	Production func(name string, in Dir) bool
 }
 
-var all = []Rules{goRules, pythonRules, dartRules, rustRules, rubyRules}
+var all = []Rules{goRules, pythonRules, dartRules, rustRules, rubyRules, cppRules}
 
 // For returns a language's rules.
 func For(language string) (Rules, bool) {
@@ -71,7 +71,24 @@ var (
 	roleAlternation = strings.Join(Roles, "|")
 	snakeName       = `[a-z][a-z0-9]*(?:_[a-z0-9]+)*`
 	snakeCase       = regexp.MustCompile(`^` + snakeName + `$`)
+	// pascalName is a PascalCase name; pascalRole one ending in a role
+	// (PlaceOrderUseCase), for languages that name files after classes.
+	pascalName = `[A-Z][A-Za-z0-9]*`
+	pascalRole = regexp.MustCompile(`^` + pascalName + `(?:` + strings.Join(pascalRoles(), "|") + `)$`)
 )
+
+// pascalRoles spells the roles in PascalCase: use_case → UseCase.
+func pascalRoles() []string {
+	out := make([]string, len(Roles))
+	for i, role := range Roles {
+		var b strings.Builder
+		for _, word := range strings.Split(role, "_") {
+			b.WriteString(strings.ToUpper(word[:1]) + word[1:])
+		}
+		out[i] = b.String()
+	}
+	return out
+}
 
 // inTesting reports whether a test folder is, or is in, a testing/ folder of
 // test doubles.

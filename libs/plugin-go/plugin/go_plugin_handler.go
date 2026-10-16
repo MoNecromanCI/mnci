@@ -52,3 +52,8 @@ func (g *Go) CI(params protocol.CIParams) (protocol.CIResult, error) {
 func (g *Go) Doctor(params protocol.DoctorParams) (protocol.DoctorResult, error) {
 	return pipeline.Doctor(g.root, params), nil
 }
+
+// Remove implements serve.Remover.
+func (g *Go) Remove(params protocol.RemoveParams) (protocol.RemoveResult, error) {
+	return pipeline.Remove(g.root, params)
+}

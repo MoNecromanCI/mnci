@@ -62,3 +62,8 @@ func (n *Node) CI(params protocol.CIParams) (protocol.CIResult, error) {
 func (n *Node) Doctor(params protocol.DoctorParams) (protocol.DoctorResult, error) {
 	return pipeline.Doctor(n.root, params), nil
 }
+
+// Remove implements serve.Remover.
+func (n *Node) Remove(params protocol.RemoveParams) (protocol.RemoveResult, error) {
+	return scaffolding.Remove(n.root, params)
+}

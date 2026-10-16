@@ -48,6 +48,11 @@ func (n *Node) Publish(params protocol.PublishParams) (protocol.PublishResult, e
 	return releasing.Publish(n.root, params)
 }
 
+// Published implements serve.RegistryReader.
+func (n *Node) Published(params protocol.PublishedParams) (protocol.PublishedResult, error) {
+	return releasing.Published(n.root, params)
+}
+
 // CI implements serve.CIContributor.
 func (n *Node) CI(params protocol.CIParams) (protocol.CIResult, error) {
 	return pipeline.CI(params, scaffolding.NodeVersion), nil

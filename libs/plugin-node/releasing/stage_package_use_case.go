@@ -1,0 +1,91 @@
+package releasing
+
+import (
+	"errors"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/jsondoc"
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+)
+
+// sourceEntry is an exports entry that points at a TypeScript source.
+var sourceEntry = regexp.MustCompile(`^\./src/(.+)\.ts$`)
+
+// Stage makes a project's build directory (dist/<project dir>) a package npm
+// can pack or publish: its package.json, with the paths that pointed into the
+// build directory made relative to it, and the README and LICENSE beside it.
+// A project that does not build into dist/ (plain JavaScript) is packed from
+// its own directory, which Stage returns unchanged.
+func Stage(workspaceRoot, root string) (string, error) {
+	project := filepath.Join(workspaceRoot, filepath.FromSlash(root))
+	built := filepath.Join(workspaceRoot, filepath.FromSlash(protocol.ProjectBuildDir(root)))
+	if _, err := os.Stat(built); errors.Is(err, fs.ErrNotExist) {
+		return project, nil
+	} else if err != nil {
+		return "", err
+	}
+	raw, err := os.ReadFile(filepath.Join(project, "package.json"))
+	if err != nil {
+		return "", err
+	}
+	text := RelativeToBuild(string(raw), root)
+	doc, err := jsondoc.ParseDocument([]byte(text))
+	if err != nil {
+		return "", err
+	}
+	// The build is the package: no files list to filter it, and no scripts,
+	// which would run in a directory they were not written for.
+	doc.Delete("files")
+	doc.Delete("scripts")
+	// Inside the workspace a package is read from its sources
+	// (exports: ./src/index.ts); what is published is their build.
+	if exports, ok := doc.String("exports"); ok {
+		if m := sourceEntry.FindStringSubmatch(exports); m != nil {
+			if err := doc.SetJSON("exports", map[string]string{"types": "./" + m[1] + ".d.ts", "default": "./" + m[1] + ".js"}); err != nil {
+				return "", err
+			}
+			doc.SetString("main", "./"+m[1]+".js")
+			doc.SetString("types", "./"+m[1]+".d.ts")
+		}
+	}
+	if err := os.WriteFile(filepath.Join(built, "package.json"), doc.Bytes(), 0o644); err != nil {
+		return "", err
+	}
+	entries, err := os.ReadDir(project)
+	if err != nil {
+		return "", err
+	}
+	for _, e := range entries {
+		upper := strings.ToUpper(e.Name())
+		goesWith := strings.HasPrefix(upper, "README") || strings.HasPrefix(upper, "LICENSE") || strings.HasPrefix(upper, "LICENCE") || upper == ".NPMRC"
+		if e.IsDir() || !goesWith {
+			continue
+		}
+		content, err := os.ReadFile(filepath.Join(project, e.Name()))
+		if err != nil {
+			return "", err
+		}
+		if err := os.WriteFile(filepath.Join(built, e.Name()), content, 0o644); err != nil {
+			return "", err
+		}
+	}
+	return built, nil
+}
+
+// RelativeToBuild rewrites the paths a package.json gives into the project's
+// build directory (../../dist/apps/web/main.js) as paths inside it
+// (./main.js).
+func RelativeToBuild(packageJSON, root string) string {
+	prefix := protocol.BuildDirFromProject(root)
+	out := packageJSON
+	for _, p := range []string{"./" + prefix, prefix} {
+		out = strings.ReplaceAll(out, `"`+p+`/`, `"./`)
+		out = strings.ReplaceAll(out, `"`+p+`"`, `"."`)
+		out = strings.ReplaceAll(out, ` `+p+`/`, ` ./`)
+	}
+	return out
+}

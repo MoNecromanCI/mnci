@@ -103,6 +103,12 @@ func CoreChecks(s *session.Session) []protocol.Finding {
 		Check: "the repository has commits", OK: s.Git.HasCommits(),
 		Detail: "releases and affected detection need history", Remedy: "commit the workspace",
 	})
+	outside := OutsideBuildDir(s.Graph.Projects)
+	out = append(out, protocol.Finding{
+		Check: "every build writes to " + protocol.BuildDir + "/", OK: len(outside) == 0,
+		Detail: strings.Join(outside, "; "),
+		Remedy: "build each project into " + protocol.BuildDir + "/<project dir>/: point the tool there (tsconfig outDir, --outdir, -o) and the task's outputs (mnci.toml outputs = [...]); for a plugin's own task, update the plugin",
+	})
 	cycles := s.Graph.Cycles()
 	var paths []string
 	for _, c := range cycles {

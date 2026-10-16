@@ -40,7 +40,7 @@ func WriteVersion(workspaceRoot string, params protocol.VersionParams) (protocol
 	return protocol.VersionResult{Files: []string{manifest}}, nil
 }
 
-// Publish uploads dist/* with twine. TWINE_REPOSITORY_URL picks the index;
+// Publish uploads the build in the workspace's dist/<project dir> with twine. TWINE_REPOSITORY_URL picks the index;
 // PYPI_TOKEN, when set, is used as an API token.
 func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.PublishResult, error) {
 	dir := filepath.Join(workspaceRoot, filepath.FromSlash(params.Project.Root))
@@ -53,7 +53,8 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 		result.Skipped = "dry run"
 		return result, nil
 	}
-	dists, _ := filepath.Glob(filepath.Join(dir, "dist", "*"))
+	built := filepath.Join(workspaceRoot, filepath.FromSlash(protocol.ProjectBuildDir(params.Project.Root)))
+	dists, _ := filepath.Glob(filepath.Join(built, "*"))
 	sort.Strings(dists)
 	var files []string
 	for _, d := range dists {
@@ -62,7 +63,7 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 		}
 	}
 	if len(files) == 0 {
-		return result, errors.New("no distribution for version " + params.Version + " in " + params.Project.Root + "/dist; build it first")
+		return result, errors.New("no distribution for version " + params.Version + " in " + protocol.ProjectBuildDir(params.Project.Root) + "; build it first")
 	}
 	project := params.Project.Name
 	if len(params.Project.Exports) > 0 {

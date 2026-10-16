@@ -17,7 +17,7 @@ var workspaceInputs = []string{
 // scriptTasks describes how each well-known script runs. Scripts not listed
 // still become tasks, uncached and without dependencies.
 var scriptTasks = map[string]protocol.Task{
-	"build":     {Outputs: []string{"dist"}, DependsOn: []string{"^build"}, Cache: true, Description: "Compile to dist/"},
+	"build":     {DependsOn: []string{"^build"}, Cache: true, Description: "Compile into the workspace's dist/<project dir>"},
 	"typecheck": {DependsOn: []string{"^build"}, Cache: true, Description: "Type-check without emitting"},
 	"test":      {DependsOn: []string{"^build"}, Cache: true, Description: "Run unit tests"},
 	"lint":      {DependsOn: []string{"^build"}, Cache: true, Description: "Lint and check formatting"},
@@ -29,8 +29,12 @@ var scriptTasks = map[string]protocol.Task{
 // node_modules/.bin is on PATH exactly as when a developer runs it. A
 // dependency on another script of the same project (start on build) is kept
 // only when the project has that script: plain JavaScript has no build.
-func TaskFor(script string, scripts map[string]string) protocol.Task {
+func TaskFor(script, root string, scripts map[string]string) protocol.Task {
 	t, known := scriptTasks[script]
+	if script == "build" {
+		// Every build goes to the workspace's dist/<project dir>.
+		t.Outputs = []string{protocol.BuildDirFromProject(root)}
+	}
 	var deps []string
 	for _, d := range t.DependsOn {
 		if _, has := scripts[d]; has || strings.HasPrefix(d, "^") {
@@ -49,13 +53,17 @@ func TaskFor(script string, scripts map[string]string) protocol.Task {
 }
 
 // PackageTask packs an app with npm pack into dist/drop, the deliverable
-// mnci ci pack keeps, after its build when it has one.
-func PackageTask(scripts map[string]string) protocol.Task {
+// mnci ci pack keeps. An app that builds is packed from its build directory,
+// staged with its package.json (mnci npm-pack); one that does not, from its
+// own directory.
+func PackageTask(root string, scripts map[string]string) protocol.Task {
 	t := protocol.Task{
 		Command:     []string{"npm", "pack", "--pack-destination", "{workspaceRoot}/dist/drop"},
 		Description: "Pack the app into dist/drop (mnci ci pack)",
 	}
 	if _, ok := scripts["build"]; ok {
+		t.Command = []string{"{mnci}", "npm-pack", root}
+		t.Description = "Pack the app's build (" + protocol.ProjectBuildDir(root) + ") into dist/drop (mnci ci pack)"
 		t.DependsOn = []string{"build"}
 	}
 	return t

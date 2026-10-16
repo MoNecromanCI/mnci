@@ -38,7 +38,17 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 		result.Skipped = "already published"
 		return result, nil
 	}
-	if err := npm.run(dir, []string{"npm", "publish", "--access", "public"}); err != nil {
+	// A project that builds into dist/ is published from there, staged.
+	staged, err := Stage(workspaceRoot, params.Project.Root)
+	if err != nil {
+		return result, err
+	}
+	if staged == dir {
+		err = npm.run(dir, []string{"npm", "publish", "--access", "public"})
+	} else {
+		err = npm.run(workspaceRoot, []string{"npm", "publish", staged, "--access", "public"})
+	}
+	if err != nil {
 		return result, err
 	}
 	result.Published = true

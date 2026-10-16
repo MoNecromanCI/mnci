@@ -61,10 +61,10 @@ func describe(workspaceRoot, root, manifest string) (protocol.Project, error) {
 	}
 	project.Imports = mergeDeclared(imports, pkg)
 	for script := range pkg.Scripts {
-		project.Tasks[script] = TaskFor(script, pkg.Scripts)
+		project.Tasks[script] = TaskFor(script, root, pkg.Scripts)
 	}
 	if _, own := pkg.Scripts["package"]; !own && project.Kind == protocol.ProjectApp {
-		project.Tasks["package"] = PackageTask(pkg.Scripts)
+		project.Tasks["package"] = PackageTask(root, pkg.Scripts)
 	}
 	return project, nil
 }

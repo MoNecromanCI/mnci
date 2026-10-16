@@ -41,6 +41,11 @@ version = "^1.2"                 # installed on the search path; "1.2.3", "~1.2"
 
 An external plugin with the name of a built-in one replaces it.
 
+A plugin builds every project into `protocol.ProjectBuildDir(root)`
+(`dist/<project dir>`), and declares that directory as the task's outputs with
+`protocol.BuildDirFromProject(root)` (`../../dist/apps/web`, relative to the
+project). `mnci doctor` fails any output elsewhere.
+
 ### Installing a plugin
 
 An installed plugin is a directory holding a `plugin.json`:

@@ -31,10 +31,15 @@ func setup(workspaceRoot string, params protocol.GenerateParams) tooling.Setup {
 		},
 		Files:   tooling.StarterSpec(workspaceRoot, params, "@jest/globals"),
 		Scripts: map[string]string{"test": "jest"},
+		// Jest runs CommonJS: ts-jest compiles to it, and a relative import
+		// rewritten to .js finds the .ts source.
 		Fields: map[string]any{"jest": map[string]any{
-			"preset":          "ts-jest",
-			"testEnvironment": "node",
-			"roots":           []string{"<rootDir>/src"},
+			"testEnvironment":  "node",
+			"roots":            []string{"<rootDir>/src"},
+			"moduleNameMapper": map[string]string{`^(\.{1,2}/.*)\.js$`: "$1"},
+			"transform": map[string]any{`^.+\.ts$`: []any{"ts-jest", map[string]any{"tsconfig": map[string]any{
+				"module": "commonjs", "moduleResolution": "bundler", "verbatimModuleSyntax": false,
+			}}}},
 		}},
 	}
 }

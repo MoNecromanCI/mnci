@@ -2,7 +2,6 @@ package discovery
 
 import (
 	"runtime"
-	"strings"
 
 	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 )
@@ -30,9 +29,8 @@ func Tasks(name, root string, kind protocol.ProjectKind, native bool) map[string
 		// the project's path: a directory inside it would be walked by go
 		// test ./... and go vet ./..., which fail if it changes under them
 		// while the build runs beside them.
-		out := "dist/" + root
-		up := strings.Repeat("../", strings.Count(root, "/")+1)
-		tasks["build"] = protocol.Task{Command: []string{"go", "build", "-trimpath", "-o", "{workspaceRoot}/" + out + "/" + binary, "."}, Inputs: inputs, Outputs: []string{up + out}, Cache: true, Description: "Build the binary into " + out + "/"}
+		out := protocol.ProjectBuildDir(root)
+		tasks["build"] = protocol.Task{Command: []string{"go", "build", "-trimpath", "-o", "{workspaceRoot}/" + out + "/" + binary, "."}, Inputs: inputs, Outputs: []string{protocol.BuildDirFromProject(root)}, Cache: true, Description: "Build the binary into " + out + "/"}
 		tasks["start"] = protocol.Task{Command: []string{"go", "run", "."}, Description: "Run the app"}
 		tasks["package"] = protocol.Task{
 			Command:     []string{"go", "build", "-trimpath", "-o", "{workspaceRoot}/dist/drop/" + name + "/" + binary, "."},

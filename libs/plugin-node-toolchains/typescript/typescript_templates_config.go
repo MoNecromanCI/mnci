@@ -25,7 +25,7 @@ export interface Greeting {
   message: string
 }
 `,
-	"[[.Dir]]/src/greeting/greet.use-case.ts": `import type { Greeting } from './greeting.contract'
+	"[[.Dir]]/src/greeting/greet.use-case.ts": `import type { Greeting } from './greeting.contract.ts'
 
 /**
  * Greets someone by name.
@@ -36,14 +36,14 @@ export function greet (name: string): Greeting {
   return { message: ` + "`Hello, ${name}!`" + ` }
 }
 `,
-	"[[.Dir]]/src/greeting/index.ts": `export { greet } from './greet.use-case'
-export type { Greeting } from './greeting.contract'
+	"[[.Dir]]/src/greeting/index.ts": `export { greet } from './greet.use-case.ts'
+export type { Greeting } from './greeting.contract.ts'
 `,
 	"[[.Dir]]/tsconfig.json": `{
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "[[.Build]]"
   },
   "include": ["src"]
 }
@@ -60,16 +60,17 @@ var appTemplates = map[string]string{
   "name": "[[.Package]]",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "mnci": { "kind": "app"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
-  "main": "dist/main.js",
+  "main": "[[.Build]]/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "node dist/main.js"
+    "start": "node [[.Build]]/main.js"
   }
 }
 `,
-	"[[.Dir]]/src/main.ts": `import { greet } from './greeting'
+	"[[.Dir]]/src/main.ts": `import { greet } from './greeting/index.ts'
 
 process.stdout.write(greet('world').message + '\n')
 `,
@@ -80,17 +81,16 @@ var libTemplates = map[string]string{
   "name": "[[.Package]]",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "mnci": { "kind": "lib"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "exports": "./src/index.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }
 `,
-	"[[.Dir]]/src/index.ts": `export { greet } from './greeting'
-export type { Greeting } from './greeting'
+	"[[.Dir]]/src/index.ts": `export { greet } from './greeting/index.ts'
+export type { Greeting } from './greeting/index.ts'
 `,
 }
 
@@ -100,10 +100,9 @@ var packageTemplates = map[string]string{
   "version": "0.0.0",
   "description": "[[.Name]]",
   "license": "MIT",
+  "type": "module",
   "mnci": { "kind": "package"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "exports": "./src/index.ts",
   "publishConfig": { "access": "public" },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -111,8 +110,8 @@ var packageTemplates = map[string]string{
   }
 }
 `,
-	"[[.Dir]]/src/index.ts": `export { greet } from './greeting'
-export type { Greeting } from './greeting'
+	"[[.Dir]]/src/index.ts": `export { greet } from './greeting/index.ts'
+export type { Greeting } from './greeting/index.ts'
 `,
 	"[[.Dir]]/README.md": `# [[.Package]]
 
@@ -135,6 +134,9 @@ var rootTemplates = map[string]string{
     "declaration": true,
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "rewriteRelativeImportExtensions": true,
     "types": ["node"]
   }
 }

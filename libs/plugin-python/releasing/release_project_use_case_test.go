@@ -11,7 +11,7 @@ import (
 
 func TestPublishUploadsOnlyThisVersion(t *testing.T) {
 	ws := t.TempDir()
-	dist := filepath.Join(ws, "packages", "sdk", "dist")
+	dist := filepath.Join(ws, "dist", "packages", "sdk")
 	_ = os.MkdirAll(dist, 0o755)
 	for _, f := range []string{"acme_sdk-1.0.0-py3-none-any.whl", "acme_sdk-1.0.0.tar.gz", "acme_sdk-0.9.0.tar.gz"} {
 		_ = os.WriteFile(filepath.Join(dist, f), nil, 0o644)

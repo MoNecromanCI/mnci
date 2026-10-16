@@ -10,9 +10,9 @@ import (
 
 // SimpleIndexURL returns the PEP 503 "simple" index matching an upload URL:
 // upload.pypi.org/legacy/ → pypi.org/simple/, test.pypi.org likewise, and any
-// other index <url>/simple/. MNCI_PYPI_SIMPLE_URL overrides it.
+// other index <url>/simple/. SMITH_PYPI_SIMPLE_URL overrides it.
 func SimpleIndexURL(uploadURL string) string {
-	if env := os.Getenv("MNCI_PYPI_SIMPLE_URL"); env != "" {
+	if env := os.Getenv("SMITH_PYPI_SIMPLE_URL"); env != "" {
 		return strings.TrimSuffix(env, "/") + "/"
 	}
 	u := strings.TrimSuffix(uploadURL, "/")

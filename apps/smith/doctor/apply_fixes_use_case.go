@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// Fixes are the distinct fixes the failed findings carry: safe ones mnci
+// Fixes are the distinct fixes the failed findings carry: safe ones smith
 // may apply, and the others, which it only shows.
 func Fixes(r Report) (safe, manual []protocol.Fix) {
 	seen := map[string]bool{}

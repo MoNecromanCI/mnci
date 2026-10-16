@@ -7,9 +7,9 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/host"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Options configure Start.
@@ -39,7 +39,7 @@ func Start(opts Options) (*PluginSet, error) {
 	}
 	for _, name := range enabled {
 		if _, ok := Builtins[name]; !ok {
-			return nil, fmt.Errorf("mnci.toml enables unknown plugin %q; built-in plugins are %v", name, BuiltinNames())
+			return nil, fmt.Errorf("smith.toml enables unknown plugin %q; built-in plugins are %v", name, BuiltinNames())
 		}
 		if _, replaced := opts.Config.Plugins.External[name]; replaced {
 			continue
@@ -54,7 +54,7 @@ func Start(opts Options) (*PluginSet, error) {
 	for _, name := range external {
 		command, err := LaunchCommand(opts.WorkspaceRoot, opts.Config.Plugins.External, name)
 		if err != nil {
-			return nil, fmt.Errorf("mnci.toml [plugins.external.%s]: %w", name, err)
+			return nil, fmt.Errorf("smith.toml [plugins.external.%s]: %w", name, err)
 		}
 		launches = append(launches, launch{name, command})
 	}
@@ -62,7 +62,7 @@ func Start(opts Options) (*PluginSet, error) {
 		_, external := opts.Config.Plugins.External[name]
 		_, builtin := BuiltinAddons[name]
 		if !external && !builtin {
-			return nil, fmt.Errorf("mnci.toml configures unknown convention %q; built-in ones are %v, and an external one is declared under [plugins.external.%s]", name, sortedNames(BuiltinAddons), name)
+			return nil, fmt.Errorf("smith.toml configures unknown convention %q; built-in ones are %v, and an external one is declared under [plugins.external.%s]", name, sortedNames(BuiltinAddons), name)
 		}
 	}
 	for _, name := range sortedNames(BuiltinAddons) {
@@ -85,10 +85,10 @@ func Start(opts Options) (*PluginSet, error) {
 			defer wg.Done()
 			clients[i], errs[i] = host.Start(host.Options{
 				Command:       l.command,
-				Env:           append(os.Environ(), "MNCI_PLUGIN=1"),
+				Env:           append(os.Environ(), "SMITH_PLUGIN=1"),
 				WorkspaceRoot: opts.WorkspaceRoot,
 				Stderr:        log,
-				Host:          protocol.Peer{Name: "mnci", Version: opts.Version},
+				Host:          protocol.Peer{Name: "smith", Version: opts.Version},
 			})
 		}()
 	}
@@ -112,18 +112,18 @@ func Start(opts Options) (*PluginSet, error) {
 }
 
 // checkExternal checks that an external plugin answered with the name it is
-// declared under and a version mnci.toml accepts.
+// declared under and a version smith.toml accepts.
 func checkExternal(set *PluginSet, name string, cfg workspace.ExternalPlugin) error {
 	c := set.Get(name)
 	if c == nil {
-		return fmt.Errorf("mnci.toml [plugins.external.%s]: the plugin calls itself something else; declare it under its own name", name)
+		return fmt.Errorf("smith.toml [plugins.external.%s]: the plugin calls itself something else; declare it under its own name", name)
 	}
 	ok, err := Satisfies(c.Info.Plugin.Version, cfg.Version)
 	if err != nil {
-		return fmt.Errorf("mnci.toml [plugins.external.%s]: %w", name, err)
+		return fmt.Errorf("smith.toml [plugins.external.%s]: %w", name, err)
 	}
 	if !ok {
-		return fmt.Errorf("mnci.toml [plugins.external.%s] wants version %s, but the plugin is %s", name, cfg.Version, c.Info.Plugin.Version)
+		return fmt.Errorf("smith.toml [plugins.external.%s] wants version %s, but the plugin is %s", name, cfg.Version, c.Info.Plugin.Version)
 	}
 	return nil
 }

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/projectkind"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/host"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/projectkind"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Options configure Check.

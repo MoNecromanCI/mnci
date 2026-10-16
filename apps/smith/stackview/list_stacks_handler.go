@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/spf13/cobra"
 )
 
-// row is one stack as mnci stacks reports it.
+// row is one stack as smith stacks reports it.
 type row struct {
 	pluginhost.CatalogStack
 	// Default lists the languages whose default stack this is.
@@ -19,7 +19,7 @@ type row struct {
 	Projects []string `json:"projects,omitempty"`
 }
 
-// Command is `mnci stacks`.
+// Command is `smith stacks`.
 func Command(version string) *cobra.Command {
 	var asJSON bool
 	cmd := &cobra.Command{
@@ -27,9 +27,9 @@ func Command(version string) *cobra.Command {
 		Short: "List the stacks projects can be built with, and who uses each",
 		Long: `A stack is a named set of plugins a project is built with: a language plugin,
 and the toolchain, structure, scaffold and deploy plugins on top. Plugins
-publish stacks; mnci.toml declares more under [stacks.<name>].
+publish stacks; smith.toml declares more under [stacks.<name>].
 
-  mnci add app web --stack node-vitest`,
+  smith add app web --stack node-vitest`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})
@@ -59,7 +59,7 @@ publish stacks; mnci.toml declares more under [stacks.<name>].
 				return enc.Encode(rows)
 			}
 			if len(rows) == 0 {
-				fmt.Fprintln(out, "No stacks: no plugin publishes one and mnci.toml declares none.")
+				fmt.Fprintln(out, "No stacks: no plugin publishes one and smith.toml declares none.")
 				return nil
 			}
 			for _, r := range rows {

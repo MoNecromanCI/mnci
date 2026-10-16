@@ -1,12 +1,12 @@
 package plugin
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-php/dependencies"
-	"github.com/MoNecromanCI/mnci/libs/plugin-php/discovery"
-	"github.com/MoNecromanCI/mnci/libs/plugin-php/pipeline"
-	"github.com/MoNecromanCI/mnci/libs/plugin-php/releasing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-php/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-php/dependencies"
+	"github.com/monosmith-app/monosmith/libs/plugin-php/discovery"
+	"github.com/monosmith-app/monosmith/libs/plugin-php/pipeline"
+	"github.com/monosmith-app/monosmith/libs/plugin-php/releasing"
+	"github.com/monosmith-app/monosmith/libs/plugin-php/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name.

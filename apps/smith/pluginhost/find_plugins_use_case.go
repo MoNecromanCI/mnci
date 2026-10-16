@@ -11,19 +11,19 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
 // SearchPath lists the directories installed plugins are looked for in, in
-// order, the first match winning: the workspace's .mnci/plugins, each
-// directory of MNCI_PLUGIN_PATH, then $MNCI_HOME/plugins (MNCI_HOME defaults
-// to ~/.mnci). None of it depends on where or how mnci itself is installed.
+// order, the first match winning: the workspace's .smith/plugins, each
+// directory of SMITH_PLUGIN_PATH, then $SMITH_HOME/plugins (SMITH_HOME defaults
+// to ~/.smith). None of it depends on where or how smith itself is installed.
 func SearchPath(workspaceRoot string) []string {
 	var dirs []string
 	if workspaceRoot != "" {
-		dirs = append(dirs, filepath.Join(workspaceRoot, ".mnci", "plugins"))
+		dirs = append(dirs, filepath.Join(workspaceRoot, ".smith", "plugins"))
 	}
-	for _, d := range filepath.SplitList(os.Getenv("MNCI_PLUGIN_PATH")) {
+	for _, d := range filepath.SplitList(os.Getenv("SMITH_PLUGIN_PATH")) {
 		if d != "" {
 			dirs = append(dirs, d)
 		}
@@ -34,13 +34,13 @@ func SearchPath(workspaceRoot string) []string {
 	return dirs
 }
 
-// Home is mnci's per-user directory: MNCI_HOME, or ~/.mnci.
+// Home is smith's per-user directory: SMITH_HOME, or ~/.smith.
 func Home() string {
-	if h := os.Getenv("MNCI_HOME"); h != "" {
+	if h := os.Getenv("SMITH_HOME"); h != "" {
 		return h
 	}
 	if u, err := os.UserHomeDir(); err == nil {
-		return filepath.Join(u, ".mnci")
+		return filepath.Join(u, ".smith")
 	}
 	return ""
 }
@@ -91,10 +91,10 @@ func FindPlugin(workspaceRoot, name string) (Installed, error) {
 			return p, nil
 		}
 	}
-	return Installed{}, fmt.Errorf("plugin %q is not installed: no %s/%s in %s; give its command in mnci.toml, or install it there", name, name, ManifestFile, strings.Join(SearchPath(workspaceRoot), ", "))
+	return Installed{}, fmt.Errorf("plugin %q is not installed: no %s/%s in %s; give its command in smith.toml, or install it there", name, name, ManifestFile, strings.Join(SearchPath(workspaceRoot), ", "))
 }
 
-// LaunchCommand is how a plugin is started by name: the command mnci.toml
+// LaunchCommand is how a plugin is started by name: the command smith.toml
 // gives, else the built-in one, else the one installed on the search path.
 func LaunchCommand(workspaceRoot string, external map[string]workspace.ExternalPlugin, name string) ([]string, error) {
 	if e, ok := external[name]; ok && len(e.Command) > 0 {

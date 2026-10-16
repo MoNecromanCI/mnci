@@ -9,7 +9,7 @@ import (
 
 // KeySchema versions the key encoding. Changing what goes into a key, or how,
 // requires a new schema so old entries can never be mistaken for new ones.
-const KeySchema = "mnci-task-key-v1"
+const KeySchema = "smith-task-key-v1"
 
 // FileDigest is one input file: workspace-relative path and content digest.
 type FileDigest struct {
@@ -34,7 +34,7 @@ type KeyInputs struct {
 	// the keys go into this key.
 	Deps     map[string]string `json:"deps,omitempty"`
 	Platform string            `json:"platform"`
-	// Tool is the version of mnci and of every plugin that shapes the
+	// Tool is the version of smith and of every plugin that shapes the
 	// project ("0.2.0/node@0.2.0+jest@0.2.0").
 	Tool string `json:"tool"`
 }

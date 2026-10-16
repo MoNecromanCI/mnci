@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // CatalogStack is one stack the workspace can use, and where it was declared.
 type CatalogStack struct {
 	protocol.Stack
-	// Source is "mnci.toml" or "plugin <name>".
+	// Source is "smith.toml" or "plugin <name>".
 	Source string `json:"source"`
 	// Problem says why the stack cannot be used with the loaded plugins;
 	// empty when it can.
@@ -19,13 +19,13 @@ type CatalogStack struct {
 }
 
 // Catalog is every stack the workspace can use: those its plugins publish
-// and those mnci.toml declares, which win over a published one of the same
+// and those smith.toml declares, which win over a published one of the same
 // name.
 type Catalog struct {
 	stacks map[string]CatalogStack
 }
 
-// NewCatalog collects and checks the stacks. A stack mnci.toml declares that
+// NewCatalog collects and checks the stacks. A stack smith.toml declares that
 // cannot be used is an error; a published one is kept with its problem, which
 // is reported when a project uses it.
 func NewCatalog(set *PluginSet, cfg workspace.Config) (*Catalog, error) {
@@ -46,13 +46,13 @@ func NewCatalog(set *PluginSet, cfg workspace.Config) (*Catalog, error) {
 			Toolchain: sc.Toolchain, Structure: sc.Structure, Scaffold: sc.Scaffold, Deploy: sc.Deploy,
 		}
 		if err := ValidateStack(st, set); err != nil {
-			return nil, fmt.Errorf("mnci.toml [stacks.%s]: %w", name, err)
+			return nil, fmt.Errorf("smith.toml [stacks.%s]: %w", name, err)
 		}
 		c.stacks[name] = CatalogStack{Stack: st, Source: workspace.FileName}
 	}
 	for lang, name := range cfg.DefaultStacks {
 		if _, ok := c.stacks[name]; !ok {
-			return nil, fmt.Errorf("mnci.toml [default_stacks] %s = %q: no such stack; known stacks: %s", lang, name, strings.Join(c.Names(), ", "))
+			return nil, fmt.Errorf("smith.toml [default_stacks] %s = %q: no such stack; known stacks: %s", lang, name, strings.Join(c.Names(), ", "))
 		}
 	}
 	return c, nil
@@ -62,7 +62,7 @@ func NewCatalog(set *PluginSet, cfg workspace.Config) (*Catalog, error) {
 func (c *Catalog) Get(name string) (protocol.Stack, error) {
 	st, ok := c.stacks[name]
 	if !ok {
-		return protocol.Stack{}, fmt.Errorf("no stack named %q; known stacks: %s (mnci stacks lists them)", name, strings.Join(c.Names(), ", "))
+		return protocol.Stack{}, fmt.Errorf("no stack named %q; known stacks: %s (smith stacks lists them)", name, strings.Join(c.Names(), ", "))
 	}
 	if st.Problem != "" {
 		return protocol.Stack{}, fmt.Errorf("stack %s (%s) cannot be used: %s", name, st.Source, st.Problem)

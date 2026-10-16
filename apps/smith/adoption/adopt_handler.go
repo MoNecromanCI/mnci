@@ -13,25 +13,25 @@ import (
 // ErrBlocked is a report with blockers left.
 var ErrBlocked = errors.New("something blocks; each blocker above names the step that clears it")
 
-// Command is `mnci adopt`.
+// Command is `smith adopt`.
 func Command(version string) *cobra.Command {
 	var asJSON, tags, initialise bool
 	cmd := &cobra.Command{
 		Use:   "adopt",
-		Short: "Report what bringing an existing repository under mnci involves, and take the steps",
+		Short: "Report what bringing an existing repository under smith involves, and take the steps",
 		Long: `Read an existing repository (npm workspaces, Go modules, Python projects) and
-report what bringing it under mnci involves: the projects mnci would see, the
+report what bringing it under smith involves: the projects smith would see, the
 blockers and warnings, and the step that clears each. Read-only unless a step
 is asked for, and both steps need a clean git tree:
 
   --tags  creates, locally, the release tags a project needs where its tags
           were made under another name (nothing is pushed)
-  --init  writes mnci.toml and the pipelines and commits; a pipeline of yours
-          at a path mnci owns is kept beside it as .pre-mnci
+  --init  writes smith.toml and the pipelines and commits; a pipeline of yours
+          at a path smith owns is kept beside it as .pre-smith
 
-An Nx workspace is mnci convert's. Exits non-zero while something blocks.`,
-		Example: `  mnci adopt
-  mnci adopt --tags --init`,
+An Nx workspace is smith convert's. Exits non-zero while something blocks.`,
+		Example: `  smith adopt
+  smith adopt --tags --init`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := cmd.OutOrStdout()
@@ -51,7 +51,7 @@ An Nx workspace is mnci convert's. Exits non-zero while something blocks.`,
 				if err := Init(report, version, out); err != nil {
 					return err
 				}
-				fmt.Fprintln(out, "✔ adopted: mnci doctor checks the workspace, mnci run build builds it")
+				fmt.Fprintln(out, "✔ adopted: smith doctor checks the workspace, smith run build builds it")
 				return nil
 			}
 			if tags {
@@ -76,7 +76,7 @@ An Nx workspace is mnci convert's. Exits non-zero while something blocks.`,
 	}
 	cmd.Flags().BoolVar(&asJSON, "json", false, "print the report as JSON")
 	cmd.Flags().BoolVar(&tags, "tags", false, "create the baseline release tags the report asks for, locally")
-	cmd.Flags().BoolVar(&initialise, "init", false, "write mnci.toml and the pipelines, and commit")
+	cmd.Flags().BoolVar(&initialise, "init", false, "write smith.toml and the pipelines, and commit")
 	return cmd
 }
 
@@ -96,7 +96,7 @@ func printReport(w io.Writer, r Report) {
 	}
 	switch {
 	case len(r.Blockers) == 0 && r.Adoptable():
-		fmt.Fprintln(w, "✔ nothing blocks: mnci adopt --init makes it a workspace")
+		fmt.Fprintln(w, "✔ nothing blocks: smith adopt --init makes it a workspace")
 	case r.Adoptable():
 		fmt.Fprintln(w, "Nothing blocks --init; the release blockers above need clearing before the first release.")
 	}

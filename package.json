@@ -1,15 +1,15 @@
 {
-  "name": "@mnci/source",
+  "name": "@monosmith/source",
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "mnci run build",
-    "lint": "mnci run lint",
-    "test": "mnci run test",
-    "typecheck": "mnci run typecheck",
-    "affected": "mnci run lint --affected && mnci run typecheck test build --affected",
-    "graph": "mnci graph",
-    "release:preview": "mnci release --dry-run",
+    "build": "smith run build",
+    "lint": "smith run lint",
+    "test": "smith run test",
+    "typecheck": "smith run typecheck",
+    "affected": "smith run lint --affected && smith run typecheck test build --affected",
+    "graph": "smith graph",
+    "release:preview": "smith release --dry-run",
     "prepare": "husky",
     "format": "eslint . --fix --cache",
     "lint:workspace": "eslint . --cache --ignore-pattern \"apps/**\" --ignore-pattern \"libs/**\" --ignore-pattern \"packages/**\" --ignore-pattern \"python-packages/**\" --ignore-pattern package-lock.json"

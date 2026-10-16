@@ -21,11 +21,11 @@ func TestBicepWorkspace(t *testing.T) {
 		t.Skip("the Bicep CLI is not installed: " + err.Error())
 	}
 	base := t.TempDir()
-	w := &workspace{t: t, bin: buildMnci(t, base), dir: base, env: identity()}
-	w.mnci(true, "new", "mnci-e2e-bicep", "--ci", "github")
-	w.dir = filepath.Join(base, "mnci-e2e-bicep")
-	w.mnci(true, "add", "app", "infra", "--lang", "bicep")
-	w.mnci(true, "add", "lib", "storage", "--lang", "bicep")
+	w := &workspace{t: t, bin: buildSmith(t, base), dir: base, env: identity()}
+	w.smith(true, "new", "smith-e2e-bicep", "--ci", "github")
+	w.dir = filepath.Join(base, "smith-e2e-bicep")
+	w.smith(true, "add", "app", "infra", "--lang", "bicep")
+	w.smith(true, "add", "lib", "storage", "--lang", "bicep")
 
 	// infra deploys its storage through the lib: a module is a graph edge.
 	w.write("apps/infra/main.bicep", strings.Replace(w.read("apps/infra/main.bicep"), "output storageId string = storage.id", `module shared '../../libs/storage/main.bicep' = {
@@ -38,10 +38,10 @@ func TestBicepWorkspace(t *testing.T) {
 
 output storageId string = storage.id
 output sharedId string = shared.outputs.storageId`, 1))
-	if !hasEdge(w.mnci(true, "graph", "--format", "json"), "infra", "storage") {
+	if !hasEdge(w.smith(true, "graph", "--format", "json"), "infra", "storage") {
 		t.Fatal("a module from a lib is a graph edge")
 	}
-	out := w.mnci(true, "run", "lint", "build")
+	out := w.smith(true, "run", "lint", "build")
 	for _, want := range []string{"infra:lint ✔", "storage:lint ✔", "infra:params ✔", "infra:build ✔", "storage:build ✔"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("%s did not pass:\n%s", want, out)
@@ -52,16 +52,16 @@ output sharedId string = shared.outputs.storageId`, 1))
 			t.Errorf("dist/%s was not built", file)
 		}
 	}
-	if out := w.mnci(true, "run", "lint", "build"); !strings.Contains(out, "(5 from cache") {
+	if out := w.smith(true, "run", "lint", "build"); !strings.Contains(out, "(5 from cache") {
 		t.Fatalf("a re-run replays from the cache:\n%s", out)
 	}
 	// The linter's rules are errors: an unused parameter fails lint.
 	w.write("libs/storage/main.bicep", w.read("libs/storage/main.bicep")+"\nparam unused string\n")
-	if out := w.mnci(false, "run", "lint", "-p", "storage"); !strings.Contains(out, "no-unused-params") {
+	if out := w.smith(false, "run", "lint", "-p", "storage"); !strings.Contains(out, "no-unused-params") {
 		t.Fatalf("lint fails on an unused parameter:\n%s", out)
 	}
 	w.write("libs/storage/main.bicep", strings.Replace(w.read("libs/storage/main.bicep"), "\nparam unused string\n", "", 1))
-	if out := w.mnci(true, "doctor"); !strings.Contains(out, "✔ the Bicep CLI is installed") {
+	if out := w.smith(true, "doctor"); !strings.Contains(out, "✔ the Bicep CLI is installed") {
 		t.Fatalf("doctor:\n%s", out)
 	}
 	if ci := w.read(".github/workflows/ci.yml"); !strings.Contains(ci, "az bicep install") {

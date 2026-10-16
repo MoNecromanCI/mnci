@@ -3,9 +3,9 @@ package explain
 import (
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestExplainShowsSources(t *testing.T) {
@@ -26,7 +26,7 @@ func TestExplainShowsSources(t *testing.T) {
 	for _, f := range tasks[0].Fields {
 		fields[f.Name] = f
 	}
-	if fields["cache"].Value != "false" || fields["cache"].Source != "mnci.toml [tasks.build]" || fields["command"].Source != "plugin node" {
+	if fields["cache"].Value != "false" || fields["cache"].Source != "smith.toml [tasks.build]" || fields["command"].Source != "plugin node" {
 		t.Fatalf("fields %+v", fields)
 	}
 	if all, _ := Explain(g, "web"); len(all) != 2 {

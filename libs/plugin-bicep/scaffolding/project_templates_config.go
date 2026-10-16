@@ -4,9 +4,9 @@ package scaffolding
 // fail lint (az bicep lint exits 0 on warnings).
 var templates = map[string]string{
 	"[[.Dir]]/main.bicep": `metadata version = '0.0.0'
-metadata mnciKind = '[[.Kind]]'
+metadata smithKind = '[[.Kind]]'
 [[- if .Stack]]
-metadata mnciStack = '[[.Stack]]'
+metadata smithStack = '[[.Stack]]'
 [[- end]]
 
 @description('Where the resources are deployed.')

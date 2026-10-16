@@ -10,27 +10,27 @@ import (
 	"fmt"
 	"golang.org/x/term"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/spf13/cobra"
 )
 
 // ErrUnhealthy makes doctor exit non-zero.
 var ErrUnhealthy = errors.New("the workspace has problems")
 
-// Command is `mnci doctor`.
+// Command is `smith doctor`.
 func Command(version string) *cobra.Command {
 	var asJSON, fix, yes bool
 	cmd := &cobra.Command{
 		Use:   "doctor",
 		Short: "Check the workspace's health; every problem names its remedy",
-		Long: `Check the workspace's health: mnci's invariants and each plugin's checks.
+		Long: `Check the workspace's health: smith's invariants and each plugin's checks.
 Every problem names its remedy. With --fix, doctor shows the fixes it can make
 as diffs, then applies the safe ones once you confirm (or with --yes): a safe
-fix only restores what mnci or a plugin owns, like go.work or a generated
+fix only restores what smith or a plugin owns, like go.work or a generated
 pipeline with its slots kept. Others are shown, never applied.`,
-		Example: `  mnci doctor
-  mnci doctor --fix        # review the diffs, then confirm
-  mnci doctor --fix --yes`,
+		Example: `  smith doctor
+  smith doctor --fix        # review the diffs, then confirm
+  smith doctor --fix --yes`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})

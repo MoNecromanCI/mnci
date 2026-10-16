@@ -10,9 +10,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-jvm/discovery"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/templating"
+	"github.com/monosmith-app/monosmith/libs/plugin-jvm/discovery"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/templating"
 )
 
 // gradleState is what Gradle and the Kotlin compiler keep in the workspace
@@ -30,7 +30,7 @@ func GenerateGradle(workspaceRoot string, params protocol.GenerateParams) (proto
 	}
 	android := params.Stack == AndroidStack
 	if android && params.Kind != protocol.ProjectApp {
-		return protocol.GenerateResult{}, fmt.Errorf("the android stack writes apps; a library shared with an Android app is a Kotlin module: mnci add %s %s --stack %s", params.Kind, params.Name, KotlinStack)
+		return protocol.GenerateResult{}, fmt.Errorf("the android stack writes apps; a library shared with an Android app is a Kotlin module: smith add %s %s --stack %s", params.Kind, params.Name, KotlinStack)
 	}
 	settingsFile := filepath.Join(workspaceRoot, settings)
 	workspace := params.Workspace.Name

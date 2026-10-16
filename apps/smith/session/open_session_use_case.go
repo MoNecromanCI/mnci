@@ -4,16 +4,16 @@ import (
 	"fmt"
 
 	"errors"
-	"github.com/MoNecromanCI/mnci/apps/mnci/remotecache"
+	"github.com/monosmith-app/monosmith/apps/smith/remotecache"
 	"io"
 	"os"
 	"path/filepath"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/gitclient"
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskcache"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/gitclient"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/taskcache"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
 // Session is an open workspace.
@@ -37,7 +37,7 @@ type Options struct {
 	// Log receives plugin output; nil means stderr.
 	Log io.Writer
 	// Preview opens Dir itself with this configuration instead of finding
-	// mnci.toml: a look at a repository before it is a workspace (mnci adopt).
+	// smith.toml: a look at a repository before it is a workspace (smith adopt).
 	Preview *workspace.Config
 }
 
@@ -91,7 +91,7 @@ func Open(opts Options) (*Session, error) {
 // Storage opens the configured cache.
 func (s *Session) Storage() (taskcache.Storage, error) {
 	dir := s.Config.Cache.Dir
-	if env := os.Getenv("MNCI_CACHE_DIR"); env != "" {
+	if env := os.Getenv("SMITH_CACHE_DIR"); env != "" {
 		dir = env
 	}
 	if !filepath.IsAbs(dir) {
@@ -102,16 +102,16 @@ func (s *Session) Storage() (taskcache.Storage, error) {
 		return nil, err
 	}
 	remote := s.Config.Cache.Remote
-	if env := os.Getenv("MNCI_CACHE_REMOTE"); env != "" {
+	if env := os.Getenv("SMITH_CACHE_REMOTE"); env != "" {
 		remote = env
 	}
 	if remote == "" {
 		return local, nil
 	}
-	warn := func(msg string) { fmt.Fprintln(os.Stderr, "mnci: "+msg) }
-	secret := os.Getenv("MNCI_CACHE_KEY")
+	warn := func(msg string) { fmt.Fprintln(os.Stderr, "smith: "+msg) }
+	secret := os.Getenv("SMITH_CACHE_KEY")
 	if secret == "" {
-		warn("the remote cache is off: MNCI_CACHE_KEY is not set, and nothing is shared unsigned")
+		warn("the remote cache is off: SMITH_CACHE_KEY is not set, and nothing is shared unsigned")
 		return local, nil
 	}
 	store, err := remotecache.Open(remote)
@@ -119,11 +119,11 @@ func (s *Session) Storage() (taskcache.Storage, error) {
 		warn("the remote cache is off: " + err.Error())
 		return local, nil
 	}
-	return &remotecache.Tiered{Local: local, Remote: store, Secret: []byte(secret), ReadOnly: s.Config.Cache.RemoteReadOnly || os.Getenv("MNCI_CACHE_READ_ONLY") != "", Warn: warn}, nil
+	return &remotecache.Tiered{Local: local, Remote: store, Secret: []byte(secret), ReadOnly: s.Config.Cache.RemoteReadOnly || os.Getenv("SMITH_CACHE_READ_ONLY") != "", Warn: warn}, nil
 }
 
 // Refresh re-reads files and rebuilds the graph, after a command changed the
-// workspace (mnci add).
+// workspace (smith add).
 func (s *Session) Refresh() error {
 	files, err := s.Git.Files()
 	if err != nil {

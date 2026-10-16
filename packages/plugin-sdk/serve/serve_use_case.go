@@ -7,8 +7,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/transport"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/transport"
 )
 
 // Main serves the plugin on the process's stdin and stdout and exits. Use it

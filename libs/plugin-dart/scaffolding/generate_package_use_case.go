@@ -10,10 +10,10 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-dart/discovery"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/templating"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/libs/plugin-dart/discovery"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/templating"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 )
 
 // Runner runs flutter create and pub get; tests replace it.
@@ -120,7 +120,7 @@ func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.Ge
 }
 
 // createFlutterApp runs flutter create for the web platform files, then
-// removes what mnci writes its own way.
+// removes what smith writes its own way.
 func createFlutterApp(workspaceRoot, dir, pkg string) error {
 	rel, _ := filepath.Rel(workspaceRoot, dir)
 	if err := Runner(workspaceRoot, []string{"flutter", "create", "--no-pub", "--empty", "--platforms", "web", "--project-name", pkg, "-t", "app", filepath.ToSlash(rel)}); err != nil {

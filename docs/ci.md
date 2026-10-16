@@ -1,8 +1,8 @@
 # CI pipelines
 
-mnci generates the pipeline from what is in the workspace and keeps it in step:
-`mnci new` writes it, every `mnci add` regenerates it, and `mnci ci generate`
-does it on demand. `mnci doctor` (and `mnci ci generate --check`) fails when the
+smith generates the pipeline from what is in the workspace and keeps it in step:
+`smith new` writes it, every `smith add` regenerates it, and `smith ci generate`
+does it on demand. `smith doctor` (and `smith ci generate --check`) fails when the
 committed pipeline is out of date.
 
 ## How it is built
@@ -12,7 +12,7 @@ Each plugin contributes, for its own projects:
 - **toolchains** — the runtimes to install, at versions the plugin pins. The
   plugin says how: a GitHub action and an Azure task with their inputs
   (`actions/setup-node@v4`, `UsePythonVersion@0`, …), and a shell command for
-  everything else (GitLab installs every toolchain this way). mnci itself knows no runtime, so a plugin for a new
+  everything else (GitLab installs every toolchain this way). smith itself knows no runtime, so a plugin for a new
   language installs it the same way; a runtime no plugin says how to install
   is left as a comment in the pipeline, to fill through the `before-setup`
   slot.
@@ -20,12 +20,12 @@ Each plugin contributes, for its own projects:
 - **audit** — `npm audit` (blocking), `pip-audit` and `govulncheck` (reported)
 - **credentials** — the secrets publishing needs (`NODE_AUTH_TOKEN`, `PYPI_TOKEN`)
 
-mnci merges them into one provider-neutral model, and a renderer per provider
+smith merges them into one provider-neutral model, and a renderer per provider
 writes the YAML. Every provider carries the same phases, in the same order.
 
 ## GitLab CI
 
-With `"gitlab"` in `[ci] providers`, mnci writes `.gitlab-ci.yml`. It has
+With `"gitlab"` in `[ci] providers`, smith writes `.gitlab-ci.yml`. It has
 one job, run for merge requests and on pushes to the release branch, on a
 `debian:bookworm` image. Each toolchain installs through its plugin's shell
 command: Node.js from NodeSource, Python through uv at the pinned version, Go
@@ -37,22 +37,22 @@ token with the `api` scope, for the release preview on merge requests, and
 `write_repository`, to push release tags. Then add the publishing secrets the
 file lists at its end. Native projects build per OS in the GitHub and Azure
 pipelines only: on GitLab, add a job per runner OS that runs
-`mnci ci native`.
+`smith ci native`.
 
 ## The phases
 
-The YAML is thin: each step calls `mnci ci <phase>`, so what CI runs is what you
+The YAML is thin: each step calls `smith ci <phase>`, so what CI runs is what you
 can run locally.
 
 | Phase | Does |
 |---|---|
-| `mnci ci setup` | every setup step the plugins contributed |
-| `mnci ci audit` | dependency vulnerability checks; non-blocking ones warn |
-| `mnci ci verify` | `lint`, `typecheck`, `test`, `build` — affected projects only on a pull request, everything otherwise |
-| `mnci release --dry-run --comment` | on a pull request: the release preview, in the job summary and as a comment on the pull request |
-| `mnci ci pack` | on a push to the release branch: every project's `package` task into `dist/drop`, kept as the run's `drop` artifact |
-| `mnci ci native` | in a job per OS, after the ci job: lint, test, build and package the projects tagged native |
-| `mnci ci release` | on a push to the release branch: version, publish and tag |
+| `smith ci setup` | every setup step the plugins contributed |
+| `smith ci audit` | dependency vulnerability checks; non-blocking ones warn |
+| `smith ci verify` | `lint`, `typecheck`, `test`, `build` — affected projects only on a pull request, everything otherwise |
+| `smith release --dry-run --comment` | on a pull request: the release preview, in the job summary and as a comment on the pull request |
+| `smith ci pack` | on a push to the release branch: every project's `package` task into `dist/drop`, kept as the run's `drop` artifact |
+| `smith ci native` | in a job per OS, after the ci job: lint, test, build and package the projects tagged native |
+| `smith ci release` | on a push to the release branch: version, publish and tag |
 
 On GitHub Actions and Azure Pipelines output is grouped, failures are annotated,
 and each phase adds a line (passed or failed, and how long it took) and the
@@ -60,7 +60,7 @@ release its report to the job summary.
 
 ## Packing
 
-`mnci ci pack` runs the `package` task of every project that has one and
+`smith ci pack` runs the `package` task of every project that has one and
 leaves what they make in `dist/drop`, which the pipeline keeps as the `drop`
 artifact (GitHub `actions/upload-artifact`, Azure `publish`). The steps are in
 the pipeline only when some project has a `package` task. The built-in
@@ -69,10 +69,10 @@ plugins give every app one:
 | App | `package` makes |
 |---|---|
 | Node | `npm pack` of the app, after its build: `dist/drop/<scope>-<name>-<version>.tgz` |
-| Go | the binary: `dist/drop/<name>/<name>` (a plain `mnci build` writes it to `dist/<project dir>/`) |
+| Go | the binary: `dist/drop/<name>/<name>` (a plain `smith build` writes it to `dist/<project dir>/`) |
 | Python | the app's wheel: `dist/drop/<name>-<version>-py3-none-any.whl` |
 
-A stack's plugin, or `[projects.<name>.tasks.package]` in `mnci.toml`, can
+A stack's plugin, or `[projects.<name>.tasks.package]` in `smith.toml`, can
 replace it, for example with a zip a deploy step expects.
 
 ## The release preview comment
@@ -91,26 +91,26 @@ is a warning, never a failure.
 Nothing installs "latest". Each plugin pins what it installs: Node.js 24,
 Python 3.12 and its tools (`requirements-dev.txt`), Go at the version
 `go.work` names and golangci-lint 2.14.0; actions are pinned to a major.
-Generated pipelines install mnci at the version that generated them.
+Generated pipelines install smith at the version that generated them.
 
-With `[ci] devcontainer = true` (which `mnci new` sets), mnci also writes
+With `[ci] devcontainer = true` (which `smith new` sets), smith also writes
 `.devcontainer/devcontainer.json`: a base image plus one dev container
 feature per toolchain, at the versions CI installs, and a post-create command
-that installs the same mnci and runs `mnci ci setup`. Like the pipelines, it
-is rewritten by `mnci add` and `mnci ci generate`, and `ci generate --check`
+that installs the same smith and runs `smith ci setup`. Like the pipelines, it
+is rewritten by `smith add` and `smith ci generate`, and `ci generate --check`
 and doctor report it when it is out of date.
 
-`mnci doctor` compares the tools on your machine with the pins: an older Go
+`smith doctor` compares the tools on your machine with the pins: an older Go
 than `go.work` requires fails; a different Node.js major, venv Python or
 golangci-lint warns, since results may then differ from CI's.
 
 ## Native projects
 
 A project tagged `native` must be built on each operating system rather than
-cross-compiled: a Go app using cgo, marked with a `// mnci:native` line at the
-top of its `go.mod` (its tasks then build with `CGO_ENABLED=1`). `mnci ci
-verify` and `mnci ci pack` leave native projects out; the generated pipelines
-add a `native` job that runs after the ci job on each OS and calls `mnci ci
+cross-compiled: a Go app using cgo, marked with a `// smith:native` line at the
+top of its `go.mod` (its tasks then build with `CGO_ENABLED=1`). `smith ci
+verify` and `smith ci pack` leave native projects out; the generated pipelines
+add a `native` job that runs after the ci job on each OS and calls `smith ci
 native`, which lints, tests, builds and packages them there and keeps
 `dist/drop` as the `native-<os>` artifact.
 
@@ -127,13 +127,13 @@ native_linux_packages = ["libsqlite3-dev"]   # apt packages installed before bui
 
 On Azure Pipelines a workspace with a native project gets a `jobs:` pipeline:
 the ci job, and the native job with a matrix of runner images. Steps kept in
-the `mnci:slot` markers move with the job.
+the `smith:slot` markers move with the job.
 
-## Installing mnci in CI
+## Installing smith in CI
 
-Generated pipelines install the mnci version that generated them with the
-install script (`MNCI_VERSION`), so a pipeline does not change behaviour until
-you regenerate it with a newer mnci.
+Generated pipelines install the smith version that generated them with the
+install script (`SMITH_VERSION`), so a pipeline does not change behaviour until
+you regenerate it with a newer smith.
 
 ## Secrets
 
@@ -149,25 +149,25 @@ credentials (`persistCredentials`).
 
 ## Ready-made pipelines
 
-Beside the generated CI, `mnci pipeline` adds a pipeline that does one thing:
+Beside the generated CI, `smith pipeline` adds a pipeline that does one thing:
 
 | Template | Providers | What it does |
 |---|---|---|
-| `e2e` | GitHub, Azure | runs every project's `e2e` task, which `mnci ci verify` leaves out |
-| `package-zip` | GitHub, Azure | packs the projects (`mnci ci pack`) and keeps `dist/drop` as the `drop` artifact |
+| `e2e` | GitHub, Azure | runs every project's `e2e` task, which `smith ci verify` leaves out |
+| `package-zip` | GitHub, Azure | packs the projects (`smith ci pack`) and keeps `dist/drop` as the `drop` artifact |
 | `deploy-pages --project <app>` | GitHub | builds the app and deploys its build output to GitHub Pages |
 | `deploy-azure-function --project <app>` | GitHub, Azure | builds the app and deploys it to an Azure Function App (OIDC on GitHub, a service connection on Azure) |
 
 ```sh
-mnci pipeline                          # list them
-mnci pipeline e2e                      # for the workspace's providers; --ci github|azure|both
-mnci pipeline deploy-pages --project web
+smith pipeline                          # list them
+smith pipeline e2e                      # for the workspace's providers; --ci github|azure|both
+smith pipeline deploy-pages --project web
 ```
 
-Each starts the way the generated jobs do (the toolchains, mnci at the same
-version, `mnci ci setup`) and goes to `.github/workflows/<name>.yml` or
+Each starts the way the generated jobs do (the toolchains, smith at the same
+version, `smith ci setup`) and goes to `.github/workflows/<name>.yml` or
 `azure-pipelines/<name>.yml`. The file is written once and yours from then
-on: `mnci upgrade` never rewrites it, and adding it again keeps it unless
+on: `smith upgrade` never rewrites it, and adding it again keeps it unless
 `--force`.
 
 ## Your own steps
@@ -175,10 +175,10 @@ on: `mnci upgrade` never rewrites it, and adding it again keeps it unless
 Put team steps between the slot markers; regeneration keeps them:
 
 ```yaml
-      # mnci:slot after-verify
+      # smith:slot after-verify
       - name: End-to-end tests
         run: npm run e2e
-      # mnci:slot-end after-verify
+      # smith:slot-end after-verify
 ```
 
 Slots: `before-setup`, `after-verify`.

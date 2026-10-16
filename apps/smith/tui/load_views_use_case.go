@@ -3,11 +3,11 @@ package tui
 import (
 	"io"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/configedit"
-	"github.com/MoNecromanCI/mnci/apps/mnci/doctor"
-	"github.com/MoNecromanCI/mnci/apps/mnci/release"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/configedit"
+	"github.com/monosmith-app/monosmith/apps/smith/doctor"
+	"github.com/monosmith-app/monosmith/apps/smith/release"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
 // Sources load what the shell's views show; tests replace them.

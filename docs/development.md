@@ -1,13 +1,13 @@
-# Working on mnci
+# Working on smith
 
 ## Layout
 
-This repository was bootstrapped with the old, Nx-based mnci (#19) and
-converted with `mnci convert` (#129): it is an mnci workspace, built, tested and
-released by the mnci it contains.
+This repository was bootstrapped with the old, Nx-based smith (#19) and
+converted with `smith convert` (#129): it is a smith workspace, built, tested and
+released by the smith it contains.
 
 ```
-apps/mnci/              the CLI: the language-agnostic core, one package per slice
+apps/smith/              the CLI: the language-agnostic core, one package per slice
 packages/plugin-sdk/    the plugin protocol, framing, runtime, host client and helpers (published)
 libs/plugin-node/       the Node language plugin
 libs/plugin-go/         the Go language plugin
@@ -23,29 +23,29 @@ package per outcome, files named `<name>_<role>.go` (`use_case`, `policy`,
 `model`, `contract`, `mapper`, `algorithm`, `client`, `repository`, `store`,
 `handler`, `config`, …), and each slice owns its CLI handler.
 
-Core slices in `apps/mnci`:
+Core slices in `apps/smith`:
 
 | Slice | Outcome |
 |---|---|
-| `workspace` | find the root, load `mnci.toml` |
-| `pluginhost` | find and start plugins (the search path, `plugin.json`), route calls, the stack catalog, `mnci plugin list/check` |
+| `workspace` | find the root, load `smith.toml` |
+| `pluginhost` | find and start plugins (the search path, `plugin.json`), route calls, the stack catalog, `smith plugin list/check` |
 | `projectgraph` | projects, edges from imports, overrides with provenance, selection |
 | `taskgraph` | expand requested tasks with their dependencies |
 | `taskcache` | cache keys, the `Storage` interface and local backend, save/restore/prune |
-| `taskrun` | the scheduler, process trees, `mnci run/build/test/lint/typecheck` |
+| `taskrun` | the scheduler, process trees, `smith run/build/test/lint/typecheck` |
 | `affected` | changed projects and their dependents |
-| `release` | plan and execute releases, `mnci release` |
+| `release` | plan and execute releases, `smith release` |
 | `releaselineage` | decide whether release tags can be trusted: old names, published but untagged, behind the registry |
 | `releasepreview` | post the release preview on the pull request (GitHub, Azure Repos) |
-| `cipipeline` | pipeline model, renderers, `mnci ci` |
-| `nativebuild` | `mnci ci native`: build native (cgo) projects on each OS and attach their release assets |
-| `scaffold` | `mnci new`, `mnci add` |
-| `upgrade` | `mnci upgrade`: migrate mnci.toml, regenerate what mnci owns |
-| `nxworkspace`, `convertplan`, `convert` | read an Nx workspace, plan its conversion, apply it (`mnci convert`) |
+| `cipipeline` | pipeline model, renderers, `smith ci` |
+| `nativebuild` | `smith ci native`: build native (cgo) projects on each OS and attach their release assets |
+| `scaffold` | `smith new`, `smith add` |
+| `upgrade` | `smith upgrade`: migrate smith.toml, regenerate what smith owns |
+| `nxworkspace`, `convertplan`, `convert` | read an Nx workspace, plan its conversion, apply it (`smith convert`) |
 | `githubrelease` | GitHub Releases and their assets |
-| `slicecheck` | `mnci slices check`, the vertical-slices convention's check |
+| `slicecheck` | `smith slices check`, the vertical-slices convention's check |
 | `doctor`, `explain`, `whymiss`, `stackview`, `graphview` | inspection commands |
-| `clicontract` | `mnci commands`, `mnci kinds`, `mnci info`: the --json contracts editors read |
+| `clicontract` | `smith commands`, `smith kinds`, `smith info`: the --json contracts editors read |
 | `session` | open a workspace for a command |
 | `gitclient` | every git call |
 | `commandline` | assemble the command tree |
@@ -54,34 +54,34 @@ Core slices in `apps/mnci`:
 ## Checks
 
 ```sh
-for m in apps/mnci libs/plugin-node libs/plugin-node-toolchains libs/plugin-go libs/plugin-python libs/plugin-vertical-slices packages/plugin-sdk; do
-  (cd $m && go vet ./... && go test ./... && golangci-lint run ./... && go run github.com/MoNecromanCI/mnci/apps/mnci slices check .)
+for m in apps/smith libs/plugin-node libs/plugin-node-toolchains libs/plugin-go libs/plugin-python libs/plugin-vertical-slices packages/plugin-sdk; do
+  (cd $m && go vet ./... && go test ./... && golangci-lint run ./... && go run github.com/monosmith-app/monosmith/apps/smith slices check .)
 done
 
 # the golden path, end to end (needs Node 24, Go, Python 3.12 and network)
-cd apps/mnci && go test -tags e2e -timeout 40m -v ./goldenpath
+cd apps/smith && go test -tags e2e -timeout 40m -v ./goldenpath
 ```
 
-`mnci run lint test build` runs the same through the workspace (lint includes
-the vertical-slices convention's `slice-check`), with the cache. Use the mnci you are working on:
-`go run ./apps/mnci run lint test build`.
+`smith run lint test build` runs the same through the workspace (lint includes
+the vertical-slices convention's `slice-check`), with the cache. Use the smith you are working on:
+`go run ./apps/smith run lint test build`.
 
 ## Building
 
 ```sh
-cd apps/mnci && go build -o ../../dist/dev/mnci .
+cd apps/smith && go build -o ../../dist/dev/smith .
 ```
 
-`mnci release` builds the release binaries: the Go plugin stamps `main.version`
+`smith release` builds the release binaries: the Go plugin stamps `main.version`
 and builds six static binaries (`CGO_ENABLED=0`, `-trimpath`), as configured in
-`[projects.mnci.release]` of `mnci.toml`.
+`[projects.smith.release]` of `smith.toml`.
 
-## Releasing mnci
+## Releasing smith
 
-mnci releases itself. The generated pipeline builds mnci from the commit (the
-`before-setup` slot of `.github/workflows/ci.yml`) and runs `mnci ci release` on
-`main`. A conventional commit touching `apps/mnci` (or a lib it bundles) tags
-`mnci@<version>` and attaches `mnci_<version>_<os>_<arch>.zip` for six platforms
+smith releases itself. The generated pipeline builds smith from the commit (the
+`before-setup` slot of `.github/workflows/ci.yml`) and runs `smith ci release` on
+`main`. A conventional commit touching `apps/smith` (or a lib it bundles) tags
+`smith@<version>` and attaches `smith_<version>_<os>_<arch>.zip` for six platforms
 and `checksums.txt` to its GitHub Release, which is what `install.sh`
 downloads. `packages/plugin-sdk` releases as the Go module tag
 `packages/plugin-sdk/v<version>`.

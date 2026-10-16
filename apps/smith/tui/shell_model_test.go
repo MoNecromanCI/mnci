@@ -4,12 +4,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/clicontract"
-	"github.com/MoNecromanCI/mnci/apps/mnci/configedit"
-	"github.com/MoNecromanCI/mnci/apps/mnci/doctor"
-	"github.com/MoNecromanCI/mnci/apps/mnci/release"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/monosmith-app/monosmith/apps/smith/clicontract"
+	"github.com/monosmith-app/monosmith/apps/smith/configedit"
+	"github.com/monosmith-app/monosmith/apps/smith/doctor"
+	"github.com/monosmith-app/monosmith/apps/smith/release"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 var commands = []clicontract.CommandDescription{
@@ -77,7 +77,7 @@ func TestThePaletteFindsAndRunsACommand(t *testing.T) {
 		t.Fatalf("release should lead the matches:\n%s", view)
 	}
 	sh = press(sh, "enter")
-	if view := sh.View(); !strings.Contains(view, "mnci release") || !strings.Contains(view, "[--dry-run]") {
+	if view := sh.View(); !strings.Contains(view, "smith release") || !strings.Contains(view, "[--dry-run]") {
 		t.Fatalf("picked:\n%s", view)
 	}
 	sh = press(sh, "-", "-", "d", "r", "y", "-", "r", "u", "n", "enter")
@@ -89,7 +89,7 @@ func TestThePaletteFindsAndRunsACommand(t *testing.T) {
 func TestTheDoctorViewOpensARemedy(t *testing.T) {
 	report := doctor.Report{Passed: 1, Failed: 1, Findings: []doctor.Finding{
 		{Finding: protocol.Finding{Check: "go.work lists every module", Detail: "libs/x is missing", Remedy: "go work use ./libs/x"}, Source: "go"},
-		{Finding: protocol.Finding{Check: "git is installed", OK: true}, Source: "mnci"},
+		{Finding: protocol.Finding{Check: "git is installed", OK: true}, Source: "smith"},
 	}}
 	sh := press(NewShell(menu(), commands, sources(report, releaseLoaded{})), "tab", "tab")
 	view := sh.View()
@@ -124,7 +124,7 @@ func TestTheReleaseViewShowsThePlanAndHandsOver(t *testing.T) {
 	}
 }
 
-func TestTheSettingsViewEditsThroughMnciConfig(t *testing.T) {
+func TestTheSettingsViewEditsThroughSmithConfig(t *testing.T) {
 	sh := press(NewShell(menu(), commands, sources(doctor.Report{}, releaseLoaded{})), "shift+tab")
 	view := sh.View()
 	if !strings.Contains(view, "ci.devcontainer") || !strings.Contains(view, `["github"]`) || !strings.Contains(view, "(default)") {

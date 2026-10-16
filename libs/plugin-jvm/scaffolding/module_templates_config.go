@@ -10,7 +10,7 @@ const (
 // rootTemplates are written once, by the first module. The root pom is the
 // aggregator (its <modules> list every module) and every module's parent.
 var rootTemplates = map[string]string{
-	// mnci runs Maven tasks in parallel; file locks keep processes that
+	// smith runs Maven tasks in parallel; file locks keep processes that
 	// download into the same local repository from corrupting it.
 	".mvn/maven.config": `-Daether.syncContext.named.factory=file-lock
 -Daether.syncContext.named.nameMapper=file-gav
@@ -47,7 +47,7 @@ var rootTemplates = map[string]string{
   </dependencyManagement>
 
   <build>
-    <!-- Every build goes to the workspace's dist/ (mnci), never target/ in
+    <!-- Every build goes to the workspace's dist/ (smith), never target/ in
          a source tree. -->
     <directory>${maven.multiModuleProjectDirectory}/dist/maven/${project.artifactId}</directory>
     <plugins>
@@ -112,9 +112,9 @@ var moduleTemplate = map[string]string{
   <name>[[.Name]]</name>
 
   <properties>
-    <mnci.kind>[[.Kind]]</mnci.kind>
+    <smith.kind>[[.Kind]]</smith.kind>
 [[- if .Stack]]
-    <mnci.stack>[[.Stack]]</mnci.stack>
+    <smith.stack>[[.Stack]]</smith.stack>
 [[- end]]
 [[- if eq .Kind "app"]]
     <exec.skip>false</exec.skip>

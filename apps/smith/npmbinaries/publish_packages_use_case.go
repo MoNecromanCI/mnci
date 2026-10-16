@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 )
 
 // Archive is one platform's release archive, holding the binary at its root.

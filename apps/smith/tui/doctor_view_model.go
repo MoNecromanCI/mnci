@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/doctor"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/monosmith-app/monosmith/apps/smith/doctor"
 )
 
 // doctorView lists doctor's findings, problems first; enter opens the
@@ -65,6 +65,6 @@ func (v doctorView) view() string {
 			}
 		}
 	}
-	b.WriteString(hintStyle.Render("\n↑/↓ move · enter details and remedy · r re-check · f fix (mnci doctor --fix)") + "\n")
+	b.WriteString(hintStyle.Render("\n↑/↓ move · enter details and remedy · r re-check · f fix (smith doctor --fix)") + "\n")
 	return b.String()
 }

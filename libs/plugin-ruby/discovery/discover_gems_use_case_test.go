@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 const cliGemspec = `# frozen_string_literal: true
@@ -14,8 +14,8 @@ Gem::Specification.new do |spec|
   spec.name = 'acme_cli'
   spec.version = '1.2.0'
   spec.executables = ['acme_cli']
-  spec.metadata['mnci_kind'] = 'app'
-  spec.metadata["mnci_stack"] = "ruby"
+  spec.metadata['smith_kind'] = 'app'
+  spec.metadata["smith_stack"] = "ruby"
 
   spec.add_dependency 'acme_core', '~> 0.0'
   spec.add_development_dependency("webmock")

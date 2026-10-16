@@ -49,8 +49,8 @@ Thumbs.db
 .nx/self-healing
 .nx/migrate-runs
 
-# Added by MoNecromanCI: `npm run format`/`lint` run `eslint --cache`.
+# Added by monosmith-app: `npm run format`/`lint` run `eslint --cache`.
 .eslintcache
 
-# mnci
-.mnci/
+# smith
+.smith/

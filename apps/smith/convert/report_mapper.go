@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/convertplan"
+	"github.com/monosmith-app/monosmith/apps/smith/convertplan"
 )
 
 var sections = []struct {
@@ -14,7 +14,7 @@ var sections = []struct {
 }{
 	{convertplan.Blocker, "Blocking the conversion"},
 	{convertplan.Manual, "Needs you"},
-	{convertplan.Unsupported, "Not supported by mnci yet"},
+	{convertplan.Unsupported, "Not supported by smith yet"},
 	{convertplan.Changed, "Behaves differently"},
 	{convertplan.Mapped, "Converted"},
 	{convertplan.Dropped, "Dropped (Nx-only)"},

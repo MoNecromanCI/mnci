@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/gitclient"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/monosmith-app/monosmith/apps/smith/gitclient"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 )
 
 // NodesAt discovers the project graph as it was at a revision: the revision
@@ -18,7 +18,7 @@ func NodesAt(git *gitclient.Git, rev, relDir, version string, log io.Writer) ([]
 	if err != nil {
 		return nil, fmt.Errorf("%s is not a revision: %w", rev, err)
 	}
-	tmp, err := os.MkdirTemp("", "mnci-graph-")
+	tmp, err := os.MkdirTemp("", "smith-graph-")
 	if err != nil {
 		return nil, err
 	}

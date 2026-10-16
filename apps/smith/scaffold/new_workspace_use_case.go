@@ -9,28 +9,28 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
-	"github.com/MoNecromanCI/mnci/apps/mnci/gitclient"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/cipipeline"
+	"github.com/monosmith-app/monosmith/apps/smith/gitclient"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
 // NewOptions configure a new workspace.
 type NewOptions struct {
 	Name string
 	// Dir is where to create it; default ./<name>. It may already exist and
-	// hold files mnci does not write (a fresh clone with a LICENSE).
+	// hold files smith does not write (a fresh clone with a LICENSE).
 	Dir          string
 	Scope        string
 	ModulePrefix string
 	Providers    []string
 	Version      string
 	Out          io.Writer
-	// NoCommit leaves the files uncommitted (mnci adopt commits once, after
+	// NoCommit leaves the files uncommitted (smith adopt commits once, after
 	// generating the pipelines for the projects it found).
 	NoCommit bool
 }
 
-// NewWorkspace creates a workspace: mnci.toml, the root files, a git
+// NewWorkspace creates a workspace: smith.toml, the root files, a git
 // repository, the pipelines, and a first commit when git has an identity.
 func NewWorkspace(opts NewOptions) (string, error) {
 	if err := ValidateName("workspace", opts.Name); err != nil {
@@ -45,7 +45,7 @@ func NewWorkspace(opts NewOptions) (string, error) {
 		return "", err
 	}
 	if _, err := os.Stat(filepath.Join(dir, workspace.FileName)); err == nil {
-		return "", fmt.Errorf("%s already holds an mnci workspace", dir)
+		return "", fmt.Errorf("%s already holds a smith workspace", dir)
 	}
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", err
@@ -111,7 +111,7 @@ func NewWorkspace(opts NewOptions) (string, error) {
 	if opts.NoCommit {
 		return dir, nil
 	}
-	if err := git.CommitAll("chore: create the " + opts.Name + " workspace with mnci"); err != nil {
+	if err := git.CommitAll("chore: create the " + opts.Name + " workspace with smith"); err != nil {
 		fmt.Fprintf(opts.Out, "  not committed (%v); commit when ready\n", firstLine(err.Error()))
 	} else {
 		fmt.Fprintln(opts.Out, "  committed")
@@ -119,7 +119,7 @@ func NewWorkspace(opts NewOptions) (string, error) {
 	return dir, nil
 }
 
-// ignoreCache adds .mnci/ (the task cache) to a .gitignore mnci kept, unless
+// ignoreCache adds .smith/ (the task cache) to a .gitignore smith kept, unless
 // it already ignores it.
 func ignoreCache(path string, out io.Writer) error {
 	raw, err := os.ReadFile(path)
@@ -127,7 +127,7 @@ func ignoreCache(path string, out io.Writer) error {
 		return err
 	}
 	for _, line := range strings.Split(string(raw), "\n") {
-		if l := strings.TrimSpace(line); l == ".mnci/" || l == ".mnci" || l == "/.mnci/" || l == "/.mnci" {
+		if l := strings.TrimSpace(line); l == ".smith/" || l == ".smith" || l == "/.smith/" || l == "/.smith" {
 			return nil
 		}
 	}
@@ -135,10 +135,10 @@ func ignoreCache(path string, out io.Writer) error {
 	if text != "" && !strings.HasSuffix(text, "\n") {
 		text += "\n"
 	}
-	if err := os.WriteFile(path, []byte(text+"\n# mnci\n.mnci/\n"), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte(text+"\n# smith\n.smith/\n"), 0o644); err != nil {
 		return err
 	}
-	fmt.Fprintln(out, "  added .mnci/ to your .gitignore")
+	fmt.Fprintln(out, "  added .smith/ to your .gitignore")
 	return nil
 }
 

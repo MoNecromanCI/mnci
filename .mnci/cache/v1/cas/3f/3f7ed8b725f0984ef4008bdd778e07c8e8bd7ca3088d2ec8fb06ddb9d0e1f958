@@ -1,0 +1,8 @@
+?   	github.com/MoNecromanCI/mnci/packages/plugin-sdk	[no test files]
+ok  	github.com/MoNecromanCI/mnci/packages/plugin-sdk/host	0.593s
+ok  	github.com/MoNecromanCI/mnci/packages/plugin-sdk/projectkind	(cached)
+?   	github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol	[no test files]
+?   	github.com/MoNecromanCI/mnci/packages/plugin-sdk/serve	[no test files]
+ok  	github.com/MoNecromanCI/mnci/packages/plugin-sdk/templating	(cached)
+?   	github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun	[no test files]
+ok  	github.com/MoNecromanCI/mnci/packages/plugin-sdk/transport	(cached)

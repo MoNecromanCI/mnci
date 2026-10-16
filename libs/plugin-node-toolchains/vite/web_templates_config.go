@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/typescript"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/typescript"
 )
 
 // devDependencies every web app's tooling needs, at the workspace root.
@@ -74,7 +74,7 @@ func (a webApp) manifest() string {
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "mnci": { "kind": "app"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
+  "smith": { "kind": "app"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
   "scripts": {
     "build": "vite build",
     "typecheck": "` + a.Typecheck + `",
@@ -95,7 +95,7 @@ func (a webApp) viteConfig() string {
 	}
 	return imports + `import { defineConfig } from 'vite'
 
-// The build goes to the workspace's dist/ (mnci), never dist/ in the app.
+// The build goes to the workspace's dist/ (smith), never dist/ in the app.
 export default defineConfig({
 ` + plugins + `  ` + build + `
     outDir:      '[[.Build]]',

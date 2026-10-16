@@ -5,12 +5,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/configedit"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/monosmith-app/monosmith/apps/smith/configedit"
 )
 
-// setting is one row of the settings view: a field of mnci.toml and its value
+// setting is one row of the settings view: a field of smith.toml and its value
 // as written (set is false when it has its default).
 type setting struct {
 	field configedit.Field
@@ -23,9 +23,9 @@ type settingsLoaded struct {
 	err      error
 }
 
-// settingsView lists mnci.toml's settings. Enter edits one (a boolean
-// toggles), checked against the schema before it leaves the shell as `mnci
-// config set`; u returns one to its default with `mnci config unset`.
+// settingsView lists smith.toml's settings. Enter edits one (a boolean
+// toggles), checked against the schema before it leaves the shell as `smith
+// config set`; u returns one to its default with `smith config unset`.
 type settingsView struct {
 	loaded   bool
 	settings []setting
@@ -38,7 +38,7 @@ type settingsView struct {
 
 var quoted = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)
 
-// args are a value as written, as the arguments `mnci config set` takes.
+// args are a value as written, as the arguments `smith config set` takes.
 func args(f configedit.Field, value string) []string {
 	switch f.Type {
 	case "array":
@@ -116,7 +116,7 @@ func (v settingsView) view() string {
 		return errorStyle.Render(v.err.Error()) + "\n"
 	}
 	if !v.loaded {
-		return hintStyle.Render("Reading mnci.toml…") + "\n"
+		return hintStyle.Render("Reading smith.toml…") + "\n"
 	}
 	var b strings.Builder
 	for i, s := range v.settings {
@@ -137,7 +137,7 @@ func (v settingsView) view() string {
 			}
 		}
 		b.WriteString("\n" + titleStyle.Render(s.field.Path+" = ") + v.input.View() + "\n")
-		b.WriteString(hintStyle.Render(hint+" · enter save (mnci config set) · esc cancel") + "\n")
+		b.WriteString(hintStyle.Render(hint+" · enter save (smith config set) · esc cancel") + "\n")
 	} else {
 		b.WriteString(hintStyle.Render("\n↑/↓ move · enter edit (a yes/no setting flips) · u back to the default") + "\n")
 	}

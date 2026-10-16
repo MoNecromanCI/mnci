@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // module writes a module's manifest under ws and returns the project.

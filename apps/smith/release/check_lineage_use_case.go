@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
-	"github.com/MoNecromanCI/mnci/apps/mnci/releaselineage"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/releaselineage"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // CheckLineage checks every releasable project's tags against the names it

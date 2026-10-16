@@ -19,7 +19,7 @@ type Outcome struct {
 type Server struct {
 	Tools   []Tool
 	Version string
-	// Run runs mnci with the arguments.
+	// Run runs smith with the arguments.
 	Run func(args []string) Outcome
 }
 
@@ -67,8 +67,8 @@ func (s Server) Handle(raw []byte) []byte {
 		return reply(map[string]any{
 			"protocolVersion": version,
 			"capabilities":    map[string]any{"tools": map[string]any{}},
-			"serverInfo":      map[string]any{"name": "mnci", "version": s.Version},
-			"instructions":    "mnci runs this monorepo: projects in several languages, their tasks from a cache, CI and releases. Start with mnci_projects and mnci_doctor; mnci_kinds and mnci_stacks list what mnci_add_project can create.",
+			"serverInfo":      map[string]any{"name": "smith", "version": s.Version},
+			"instructions":    "smith runs this monorepo: projects in several languages, their tasks from a cache, CI and releases. Start with smith_projects and smith_doctor; smith_kinds and smith_stacks list what smith_add_project can create.",
 		})
 	case "ping":
 		return reply(map[string]any{})
@@ -77,7 +77,7 @@ func (s Server) Handle(raw []byte) []byte {
 		for _, t := range s.Tools {
 			tools = append(tools, map[string]any{
 				"name": t.Name, "description": t.Description, "inputSchema": t.InputSchema,
-				"annotations": map[string]any{"readOnlyHint": t.ReadOnly, "destructiveHint": !t.ReadOnly && t.Name == "mnci_remove_project", "openWorldHint": false},
+				"annotations": map[string]any{"readOnlyHint": t.ReadOnly, "destructiveHint": !t.ReadOnly && t.Name == "smith_remove_project", "openWorldHint": false},
 			})
 		}
 		return reply(map[string]any{"tools": tools})

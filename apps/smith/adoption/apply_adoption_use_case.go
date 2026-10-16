@@ -9,10 +9,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
-	"github.com/MoNecromanCI/mnci/apps/mnci/gitclient"
-	"github.com/MoNecromanCI/mnci/apps/mnci/scaffold"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/monosmith-app/monosmith/apps/smith/cipipeline"
+	"github.com/monosmith-app/monosmith/apps/smith/gitclient"
+	"github.com/monosmith-app/monosmith/apps/smith/scaffold"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 )
 
 // ErrDirty is a step asked for with uncommitted changes.
@@ -41,12 +41,12 @@ func CreateBaselines(r Report, out io.Writer) (int, error) {
 }
 
 // Init makes the repository a workspace: a pipeline file of the user's at a
-// path mnci owns is kept beside it as .pre-mnci, mnci.toml and the root files
-// mnci needs are written (theirs kept), the pipelines are generated for the
+// path smith owns is kept beside it as .pre-smith, smith.toml and the root files
+// smith needs are written (theirs kept), the pipelines are generated for the
 // projects found, and it all becomes one commit.
 func Init(r Report, version string, out io.Writer) error {
 	if !r.Adoptable() {
-		return errors.New("something blocks adoption; see mnci adopt")
+		return errors.New("something blocks adoption; see smith adopt")
 	}
 	if !r.Clean {
 		return ErrDirty
@@ -58,10 +58,10 @@ func Init(r Report, version string, out io.Writer) error {
 		if err != nil || strings.Contains(string(body), GeneratedMarker) {
 			continue
 		}
-		if _, err := git.Run("mv", path, path+".pre-mnci"); err != nil {
+		if _, err := git.Run("mv", path, path+".pre-smith"); err != nil {
 			return fmt.Errorf("keep %s: %w", path, err)
 		}
-		fmt.Fprintf(out, "  kept your %s as %s.pre-mnci\n", path, path)
+		fmt.Fprintf(out, "  kept your %s as %s.pre-smith\n", path, path)
 	}
 	if _, err := scaffold.NewWorkspace(scaffold.NewOptions{Name: r.Name, Dir: r.Root, Scope: r.Scope, Providers: r.Providers, Version: version, Out: out, NoCommit: true}); err != nil {
 		return err
@@ -78,10 +78,10 @@ func Init(r Report, version string, out io.Writer) error {
 	if _, _, err := cipipeline.Write(s.Root, s.Config, cipipeline.NewModel(contributions, version, s.Config.Release.Branch)); err != nil {
 		return err
 	}
-	if err := git.CommitAll("chore: adopt mnci"); err != nil {
+	if err := git.CommitAll("chore: adopt smith"); err != nil {
 		fmt.Fprintf(out, "  not committed (%v); commit when ready\n", strings.SplitN(err.Error(), "\n", 2)[0])
 		return nil
 	}
-	fmt.Fprintln(out, "  committed: chore: adopt mnci")
+	fmt.Fprintln(out, "  committed: chore: adopt smith")
 	return nil
 }

@@ -6,22 +6,22 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/clicontract"
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/monosmith-app/monosmith/apps/smith/clicontract"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 	"golang.org/x/term"
 )
 
-// Interactive reports whether a bare `mnci` should open the TUI.
+// Interactive reports whether a bare `smith` should open the TUI.
 func Interactive() bool {
 	return term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stdout.Fd())) && os.Getenv("CI") == ""
 }
 
-// Choose shows the shell and returns the mnci arguments the user built, or
+// Choose shows the shell and returns the smith arguments the user built, or
 // nil when they quit. commands feed the palette.
 func Choose(version string, out io.Writer, commands []clicontract.CommandDescription) ([]string, error) {
-	header := "mnci " + version
+	header := "smith " + version
 	inside := false
 	enabled := pluginhost.BuiltinNames()
 	if root, err := workspace.FindRoot("."); err == nil {
@@ -51,7 +51,7 @@ func Choose(version string, out io.Writer, commands []clicontract.CommandDescrip
 	}
 	argv := final.(Shell).Argv
 	if len(argv) > 0 {
-		fmt.Fprintf(out, "→ mnci %s\n\n", strings.Join(argv, " "))
+		fmt.Fprintf(out, "→ smith %s\n\n", strings.Join(argv, " "))
 	}
 	return argv, nil
 }

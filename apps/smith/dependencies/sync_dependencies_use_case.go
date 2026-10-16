@@ -6,15 +6,15 @@ import (
 	"io"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/host"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // ErrDrift is sync --check finding declarations that disagree.
-var ErrDrift = errors.New("projects declare shared dependencies at different versions; run mnci sync")
+var ErrDrift = errors.New("projects declare shared dependencies at different versions; run smith sync")
 
-// SyncReport is `mnci sync --json`.
+// SyncReport is `smith sync --json`.
 type SyncReport struct {
 	Drift []Drift `json:"drift"`
 	// Files are the manifests sync rewrote.
@@ -114,7 +114,7 @@ func PrintSync(w io.Writer, r SyncReport, check bool) {
 			fmt.Fprintf(w, "  %-12s %s %s (%s)\n", where(site), site.Spec, verb, site.File)
 		}
 		for _, site := range d.Blocked {
-			fmt.Fprintf(w, "  %-12s %s left alone: mnci does not rewrite this kind of spec (%s)\n", where(site), site.Spec, site.File)
+			fmt.Fprintf(w, "  %-12s %s left alone: smith does not rewrite this kind of spec (%s)\n", where(site), site.Spec, site.File)
 		}
 	}
 	if len(r.Drift) == 0 {

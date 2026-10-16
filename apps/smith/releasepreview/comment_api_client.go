@@ -14,7 +14,7 @@ import (
 // httpClient sends the requests; tests point it at a local server.
 var httpClient = &http.Client{Timeout: 30 * time.Second}
 
-// Upsert creates mnci's comment on the pull request, or replaces the one an
+// Upsert creates smith's comment on the pull request, or replaces the one an
 // earlier run left (found by its Marker).
 func Upsert(pr PullRequest, body string) (string, error) {
 	switch pr.Provider {

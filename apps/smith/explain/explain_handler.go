@@ -4,17 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/spf13/cobra"
 )
 
-// Command is `mnci explain`.
+// Command is `smith explain`.
 func Command(version string) *cobra.Command {
 	var asJSON bool
 	cmd := &cobra.Command{
 		Use:     "explain <project>[:<task>]",
 		Short:   "Show how a project's tasks resolved, and where each setting came from",
-		Example: "  mnci explain web\n  mnci explain web:build",
+		Example: "  smith explain web\n  smith explain web:build",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})

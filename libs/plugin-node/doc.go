@@ -1,3 +1,3 @@
-// Package pluginnode is the Node.js/TypeScript language plugin for mnci. Its
+// Package pluginnode is the Node.js/TypeScript language plugin for smith. Its
 // code lives in the slice packages below; plugin is the entry point.
 package pluginnode

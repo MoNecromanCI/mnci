@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-dart/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-dart/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestInstall(t *testing.T) {

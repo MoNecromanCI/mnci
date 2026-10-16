@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/nxworkspace"
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/venv"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/nxworkspace"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/venv"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // TestedNxMajor is the Nx major version the conversion is tested against.
@@ -56,7 +56,7 @@ func MakePlan(w *nxworkspace.Workspace, in Input) *Plan {
 	for _, p := range w.Projects {
 		name := path.Base(p.Root)
 		if other, dup := byName[name]; dup {
-			plan.Add(Blocker, name, p.Root, fmt.Sprintf("%s and %s would both be called %q: mnci names projects after their directory, so rename one directory first", other, p.Root, name))
+			plan.Add(Blocker, name, p.Root, fmt.Sprintf("%s and %s would both be called %q: smith names projects after their directory, so rename one directory first", other, p.Root, name))
 		}
 		byName[name] = p.Root
 		names[p.Name] = name
@@ -81,7 +81,7 @@ func MakePlan(w *nxworkspace.Workspace, in Input) *Plan {
 		for _, f := range legacyTools {
 			if has[f] {
 				plan.DeletePath(f)
-				plan.Add(Dropped, "", f, "the old mnci's Nx release hook; mnci release replaces it")
+				plan.Add(Dropped, "", f, "the old mnci's Nx release hook; smith release replaces it")
 			}
 		}
 	}
@@ -89,7 +89,7 @@ func MakePlan(w *nxworkspace.Workspace, in Input) *Plan {
 	planPythonTools(plan, in)
 	for _, ci := range []string{".github/workflows/ci.yml", "azure-pipelines.yml"} {
 		if has[ci] && !strings.Contains(in.Read(ci), "mnci:slot") {
-			plan.Add(Changed, "", ci, "replaced by the pipeline mnci generates; the old one stays in git history, so move any custom steps into its mnci:slot sections")
+			plan.Add(Changed, "", ci, "replaced by the pipeline smith generates; the old one stays in git history, so move any custom steps into its smith:slot sections")
 		}
 	}
 	if plan.Legacy {
@@ -104,7 +104,7 @@ func planProject(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, n
 	pp := &ProjectPlan{Nx: p.Name, Name: name, Root: p.Root, Language: lang, Supported: lang != ""}
 	plan.Projects = append(plan.Projects, pp)
 	if !pp.Supported {
-		plan.Add(Unsupported, name, p.Root, label+" project: mnci v1 has no plugin for it, so nothing builds, tests or releases it after converting; its project.json is kept for reference")
+		plan.Add(Unsupported, name, p.Root, label+" project: smith v1 has no plugin for it, so nothing builds, tests or releases it after converting; its project.json is kept for reference")
 		return
 	}
 	kind := Kind(p, released)
@@ -134,7 +134,7 @@ func planProject(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, n
 			def = p.Root + "/v"
 		}
 		prefix := def
-		// The old mnci tagged Go libraries <dir>/vX.Y.Z, which is mnci's
+		// The old mnci tagged Go libraries <dir>/vX.Y.Z, which is smith's
 		// default too; anything else continues the Nx pattern's tags.
 		legacyGoLib := plan.Legacy && lang == "go" && kind == protocol.ProjectPackage
 		if !legacyGoLib {
@@ -174,7 +174,7 @@ func planRoot(plan *Plan, w *nxworkspace.Workspace, names map[string]string) {
 		}
 		line, cwd, _, err := commandOf(t)
 		if err != nil || cwd != "." {
-			plan.Add(Manual, "", "root target "+name, "the workspace root's target is not converted; mnci runs projects only")
+			plan.Add(Manual, "", "root target "+name, "the workspace root's target is not converted; smith runs projects only")
 			continue
 		}
 		script := name
@@ -182,7 +182,7 @@ func planRoot(plan *Plan, w *nxworkspace.Workspace, names map[string]string) {
 			script += ":workspace"
 		}
 		plan.RootScripts[script] = line
-		plan.Add(Changed, "", "root target "+name, fmt.Sprintf("becomes the root script %q (mnci runs projects, not the workspace root): %s", script, line))
+		plan.Add(Changed, "", "root target "+name, fmt.Sprintf("becomes the root script %q (smith runs projects, not the workspace root): %s", script, line))
 	}
 	removedProjectScripts := 0
 	keys := make([]string, 0, len(scripts))
@@ -211,11 +211,11 @@ func planRoot(plan *Plan, w *nxworkspace.Workspace, names map[string]string) {
 			plan.RootScripts[k] = rewritten
 			plan.Add(Mapped, "", "script "+k, rewritten)
 		} else {
-			plan.Add(Manual, "", "script "+k, "runs Nx in a way mnci cannot translate: "+cmd)
+			plan.Add(Manual, "", "script "+k, "runs Nx in a way smith cannot translate: "+cmd)
 		}
 	}
 	if removedProjectScripts > 0 {
-		plan.Add(Dropped, "", "scripts", fmt.Sprintf("%d per-project scripts (<project>:test and the like); use mnci run <task> -p <project>", removedProjectScripts))
+		plan.Add(Dropped, "", "scripts", fmt.Sprintf("%d per-project scripts (<project>:test and the like); use smith run <task> -p <project>", removedProjectScripts))
 	}
 }
 

@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/projectkind"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/projectkind"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Discover describes a project for each project file that is not a tests

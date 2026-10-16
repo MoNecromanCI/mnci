@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/convertplan"
+	"github.com/monosmith-app/monosmith/apps/smith/convertplan"
 )
 
 func TestPruneLockfileDropsNxAtEveryDepth(t *testing.T) {

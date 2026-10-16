@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestDiscover(t *testing.T) {
@@ -29,7 +29,7 @@ module registry 'br:contoso.azurecr.io/bicep/storage:1.0.0' = {
 }
 `)
 	write("apps/infra/main.bicepparam", "using './main.bicep'\n")
-	write("libs/network/main.bicep", "metadata mnciStack = 'azure'\n")
+	write("libs/network/main.bicep", "metadata smithStack = 'azure'\n")
 	res, err := Discover(ws, []string{"main.bicep", "apps/infra/main.bicep", "libs/network/main.bicep"})
 	if err != nil || len(res.Projects) != 2 {
 		t.Fatal(err, res.Projects)

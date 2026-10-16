@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/jsondoc"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/jsondoc"
 )
 
 // PruneLockfile drops the packages drop selects from package-lock.json, at

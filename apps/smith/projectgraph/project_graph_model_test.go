@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func proj(name, root string, exports, imports []string) *Project {
@@ -81,7 +81,7 @@ func TestApplyOverridesRecordsSources(t *testing.T) {
 	if p.Tasks["test"].Cache || p.Tasks["test"].Inputs[0] != "src/**" || p.Tasks["e2e"].Command[0] != "playwright" {
 		t.Fatalf("tasks %+v", p.Tasks)
 	}
-	want := map[string]string{"test.cache": "mnci.toml [tasks.test]", "test.inputs": "mnci.toml [projects.web.tasks.test]", "test.command": "plugin test"}
+	want := map[string]string{"test.cache": "smith.toml [tasks.test]", "test.inputs": "smith.toml [projects.web.tasks.test]", "test.command": "plugin test"}
 	for k, v := range want {
 		if p.Sources[k] != v {
 			t.Errorf("%s: %q want %q", k, p.Sources[k], v)

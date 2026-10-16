@@ -5,8 +5,8 @@ import (
 	"maps"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name in a stack.
@@ -49,7 +49,7 @@ func (p *VSCode) Describe(params protocol.InitializeParams) (protocol.Initialize
 // its name.
 func (p *VSCode) Generate(params protocol.GenerateParams) (protocol.GenerateResult, error) {
 	if params.Kind == protocol.ProjectLib {
-		return protocol.GenerateResult{}, fmt.Errorf("an extension is a package (published to the Marketplace) or an app: mnci add package %s --stack %s", params.Name, Stack)
+		return protocol.GenerateResult{}, fmt.Errorf("an extension is a package (published to the Marketplace) or an app: smith add package %s --stack %s", params.Name, Stack)
 	}
 	publisher := strings.TrimPrefix(params.Workspace.Scope, "@")
 	if publisher == "" {

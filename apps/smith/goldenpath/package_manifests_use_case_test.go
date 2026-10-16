@@ -43,12 +43,12 @@ func TestReleaseAttachesPackageManifests(t *testing.T) {
 	defer srv.Close()
 
 	base := t.TempDir()
-	w := &workspace{t: t, bin: buildMnci(t, base), dir: base, env: append(identity(), "GITHUB_TOKEN=tok", "GITHUB_API_URL="+srv.URL, "GITHUB_REPOSITORY=acme/tools")}
-	w.mnci(true, "new", "acme", "--ci", "github")
+	w := &workspace{t: t, bin: buildSmith(t, base), dir: base, env: append(identity(), "GITHUB_TOKEN=tok", "GITHUB_API_URL="+srv.URL, "GITHUB_REPOSITORY=acme/tools")}
+	w.smith(true, "new", "acme", "--ci", "github")
 	w.dir = filepath.Join(base, "acme")
-	w.mnci(true, "add", "app", "tool", "--lang", "go")
-	cfg := w.read("mnci.toml")
-	w.write("mnci.toml", strings.Replace(cfg, "[ci]", "[release]\ngithub_releases = true\n\n[ci]", 1)+
+	w.smith(true, "add", "app", "tool", "--lang", "go")
+	cfg := w.read("smith.toml")
+	w.write("smith.toml", strings.Replace(cfg, "[ci]", "[release]\ngithub_releases = true\n\n[ci]", 1)+
 		"\n[projects.tool.release]\nplatforms = [\"darwin/arm64\", \"linux/amd64\", \"windows/amd64\"]\npackage_managers = [\"homebrew\", \"scoop\", \"winget\"]\ndescription = \"A tool\"\nlicense = \"MIT\"\n")
 	remote := filepath.Join(base, "remote.git")
 	run(t, base, "git", "init", "-q", "--bare", remote)
@@ -57,7 +57,7 @@ func TestReleaseAttachesPackageManifests(t *testing.T) {
 	w.git("commit", "-qm", "feat: the tool")
 	w.git("push", "-q", "origin", "main")
 
-	out := w.mnci(true, "release", "--yes")
+	out := w.smith(true, "release", "--yes")
 	mu.Lock()
 	defer mu.Unlock()
 	for _, want := range []string{"tool_0.1.0_windows_amd64.zip", "checksums.txt", "tool.rb", "tool.json", "acme.tool.yaml", "acme.tool.installer.yaml", "acme.tool.locale.en-US.yaml"} {

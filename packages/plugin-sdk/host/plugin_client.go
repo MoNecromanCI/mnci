@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/transport"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/transport"
 )
 
 // DefaultTimeout bounds one call. Generate and publish run real toolchains,
@@ -80,7 +80,7 @@ func Connect(r io.Reader, w io.WriteCloser, opts Options) (*Client, error) {
 func (c *Client) initialize(opts Options) error {
 	host := opts.Host
 	if host.Name == "" {
-		host = protocol.Peer{Name: "mnci", Version: "dev"}
+		host = protocol.Peer{Name: "smith", Version: "dev"}
 	}
 	params := protocol.InitializeParams{ProtocolVersions: []int{protocol.Version}, Host: host, WorkspaceRoot: opts.WorkspaceRoot}
 	timeout := opts.Timeout

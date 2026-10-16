@@ -1,4 +1,4 @@
-// Command kiwiplugin is an external mnci plugin for "kiwi", a language mnci
+// Command kiwiplugin is an external smith plugin for "kiwi", a language smith
 // knows nothing about, used by the end-to-end tests to prove a language can
 // be added by a plugin alone. A kiwi project is a directory with a kiwi.toml:
 //
@@ -19,8 +19,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/serve"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/serve"
 )
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 func tool(args []string) int {
 	switch args[0] {
 	case "build":
-		// Into the directory mnci gives it: the workspace's dist/<project dir>.
+		// Into the directory smith gives it: the workspace's dist/<project dir>.
 		out := args[1]
 		if err := os.MkdirAll(out, 0o755); err != nil {
 			return 1

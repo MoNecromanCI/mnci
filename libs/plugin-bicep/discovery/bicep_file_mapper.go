@@ -9,17 +9,17 @@ import (
 // Manifest is the file that makes a directory a Bicep project.
 const Manifest = "main.bicep"
 
-// BicepFile is what mnci reads from a main.bicep.
+// BicepFile is what smith reads from a main.bicep.
 type BicepFile struct {
-	// Version, Kind and Stack are the metadata version, mnciKind and
-	// mnciStack statements.
+	// Version, Kind and Stack are the metadata version, smithKind and
+	// smithStack statements.
 	Version, Kind, Stack string
 	// Modules are the local files its modules reference, relative to it.
 	Modules []string
 }
 
 var (
-	metadata = regexp.MustCompile(`(?m)^metadata\s+(version|mnciKind|mnciStack)\s*=\s*'([^']*)'`)
+	metadata = regexp.MustCompile(`(?m)^metadata\s+(version|smithKind|smithStack)\s*=\s*'([^']*)'`)
 	module   = regexp.MustCompile(`(?m)^\s*module\s+\w+\s+'([^']+)'`)
 )
 
@@ -31,9 +31,9 @@ func ParseBicep(src string) BicepFile {
 		switch m[1] {
 		case "version":
 			f.Version = m[2]
-		case "mnciKind":
+		case "smithKind":
 			f.Kind = m[2]
-		case "mnciStack":
+		case "smithStack":
 			f.Stack = m[2]
 		}
 	}

@@ -14,7 +14,7 @@ func TestUnifiedDiff(t *testing.T) {
 	if UnifiedDiff("x", "same\n", "same\n") != "" {
 		t.Fatal("no change, no diff")
 	}
-	if got := UnifiedDiff(".gitignore", "", ".mnci/\n"); got != "--- a/.gitignore\n+++ b/.gitignore\n@@ -1,0 +1,1 @@\n+.mnci/\n" {
+	if got := UnifiedDiff(".gitignore", "", ".smith/\n"); got != "--- a/.gitignore\n+++ b/.gitignore\n@@ -1,0 +1,1 @@\n+.smith/\n" {
 		t.Fatalf("a new file:\n%s", got)
 	}
 }

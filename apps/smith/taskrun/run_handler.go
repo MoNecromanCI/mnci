@@ -7,21 +7,21 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/affected"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/monosmith-app/monosmith/apps/smith/affected"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/spf13/cobra"
 )
 
-// ErrTasksFailed makes mnci exit non-zero after printing the summary.
+// ErrTasksFailed makes smith exit non-zero after printing the summary.
 var ErrTasksFailed = errors.New("some tasks did not succeed")
 
-// Commands returns `mnci run` and its shortcuts build, test, lint, typecheck.
+// Commands returns `smith run` and its shortcuts build, test, lint, typecheck.
 func Commands(version string) []*cobra.Command {
 	run := command(version, "run <task>...", "Run tasks on projects, in dependency order, from cache when nothing changed", nil)
 	run.Args = cobra.MinimumNArgs(1)
 	cmds := []*cobra.Command{run}
 	for _, task := range []string{"build", "test", "lint", "typecheck"} {
-		cmds = append(cmds, command(version, task, "Run the "+task+" task (same as `mnci run "+task+"`)", []string{task}))
+		cmds = append(cmds, command(version, task, "Run the "+task+" task (same as `smith run "+task+"`)", []string{task}))
 	}
 	return cmds
 }
@@ -34,10 +34,10 @@ func command(version, use, short string, fixed []string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   use,
 		Short: short,
-		Example: `  mnci build                       every project
-  mnci test -p web,ui              two projects (and what they depend on)
-  mnci run lint test --affected    only what changed since main (or the PR target)
-  mnci build -p kind:package       every publishable package`,
+		Example: `  smith build                       every project
+  smith test -p web,ui              two projects (and what they depend on)
+  smith run lint test --affected    only what changed since main (or the PR target)
+  smith build -p kind:package       every publishable package`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			req.Tasks = fixed
 			if fixed == nil {

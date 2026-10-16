@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
-// Set changes one setting of the mnci.toml at root to args, checked against
+// Set changes one setting of the smith.toml at root to args, checked against
 // the schema; the whole file must still load before it is written.
 func Set(root, path string, args []string) error {
 	f, err := Find(path)
@@ -39,7 +39,7 @@ func Unset(root, path string) error {
 	})
 }
 
-// Get returns a setting's value as written in mnci.toml; set is false when
+// Get returns a setting's value as written in smith.toml; set is false when
 // it has its default.
 func Get(root, path string) (value string, set bool, err error) {
 	f, err := Find(path)

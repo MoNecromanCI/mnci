@@ -1,0 +1,321 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "smith"
+    }
+  ],
+  "settings": {
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "json",
+      "jsonc",
+      "yaml",
+      "markdown",
+      "css",
+      "html",
+      "toml"
+    ],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": true,
+    "[javascript]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[javascriptreact]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[yaml]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[markdown]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[css]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[html]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[toml]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "nrwl.angular-console",
+      "firsttris.vscode-jest-runner"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": []
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: build",
+        "command": "npm run build",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith",
+          "order": 1
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: test",
+        "command": "npm run test",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith",
+          "order": 2
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: lint",
+        "command": "npm run lint",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith",
+          "order": 3
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: typecheck",
+        "command": "npm run typecheck",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith",
+          "order": 4
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: smith qa",
+        "command": "npm run smith:qa",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: smith build",
+        "command": "npm run smith:build",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: smith test",
+        "command": "npm run smith:test",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: smith lint",
+        "command": "npm run smith:lint",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: smith start",
+        "command": "npm run smith:start",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: smith build:dev",
+        "command": "npm run smith:build:dev",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: smith dev",
+        "command": "npm run smith:dev",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "go",
+        "request": "launch",
+        "mode": "debug",
+        "name": "smith: smith debug",
+        "program": "${workspaceFolder:smith}/apps/smith",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-sdk qa",
+        "command": "npm run plugin-sdk:qa",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-sdk test",
+        "command": "npm run plugin-sdk:test",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-sdk lint",
+        "command": "npm run plugin-sdk:lint",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-node qa",
+        "command": "npm run plugin-node:qa",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-node test",
+        "command": "npm run plugin-node:test",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-node lint",
+        "command": "npm run plugin-node:lint",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-go qa",
+        "command": "npm run plugin-go:qa",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-go test",
+        "command": "npm run plugin-go:test",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-go lint",
+        "command": "npm run plugin-go:lint",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-python qa",
+        "command": "npm run plugin-python:qa",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-python test",
+        "command": "npm run plugin-python:test",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "smith: plugin-python lint",
+        "command": "npm run plugin-python:lint",
+        "cwd": "${workspaceFolder:smith}",
+        "presentation": {
+          "group": "smith projects"
+        }
+      }
+    ]
+  }
+}

@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// Lists is what mnci reads from a CMakeLists.txt: the plain project() call,
-// the MNCI_KIND and MNCI_STACK settings, and the add_subdirectory calls.
+// Lists is what smith reads from a CMakeLists.txt: the plain project() call,
+// the SMITH_KIND and SMITH_STACK settings, and the add_subdirectory calls.
 type Lists struct {
 	// Project is false for a CMakeLists.txt with no project() call: a
 	// subdirectory of a project, not a project.
@@ -23,7 +23,7 @@ type Lists struct {
 var (
 	projectCall = regexp.MustCompile(`(?is)\bproject\s*\(\s*([A-Za-z0-9_.+-]+)([^)]*)\)`)
 	versionArg  = regexp.MustCompile(`(?i)\bVERSION\s+([0-9][0-9.]*)`)
-	setting     = regexp.MustCompile(`(?i)\bset\s*\(\s*(MNCI_KIND|MNCI_STACK)\s+"?([A-Za-z0-9_-]+)"?\s*\)`)
+	setting     = regexp.MustCompile(`(?i)\bset\s*\(\s*(SMITH_KIND|SMITH_STACK)\s+"?([A-Za-z0-9_-]+)"?\s*\)`)
 	executable  = regexp.MustCompile(`(?i)\badd_executable\s*\(\s*([A-Za-z0-9_.+-]+)`)
 	subdir      = regexp.MustCompile(`(?i)\badd_subdirectory\s*\(\s*"?([^"\s)]+)"?`)
 	comment     = regexp.MustCompile(`(?m)#[^\n]*`)
@@ -40,7 +40,7 @@ func ParseLists(src string) Lists {
 		}
 	}
 	for _, m := range setting.FindAllStringSubmatch(src, -1) {
-		if strings.EqualFold(m[1], "MNCI_KIND") {
+		if strings.EqualFold(m[1], "SMITH_KIND") {
 			l.Kind = m[2]
 		} else {
 			l.Stack = m[2]
@@ -57,7 +57,7 @@ func ParseLists(src string) Lists {
 
 // SubdirectoryRoot resolves an add_subdirectory source written in the
 // project at root to a workspace-relative directory, or "" when it leaves
-// the workspace or names a variable mnci cannot resolve.
+// the workspace or names a variable smith cannot resolve.
 func SubdirectoryRoot(root, source string) string {
 	for _, prefix := range []string{"${CMAKE_CURRENT_SOURCE_DIR}/", "${CMAKE_CURRENT_LIST_DIR}/", "${PROJECT_SOURCE_DIR}/"} {
 		source = strings.TrimPrefix(source, prefix)

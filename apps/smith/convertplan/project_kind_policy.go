@@ -6,13 +6,13 @@ import (
 	"path"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/nxworkspace"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/projectkind"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/nxworkspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/projectkind"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// otherEcosystems name the manifests of languages mnci v1 has no plugin for.
+// otherEcosystems name the manifests of languages smith v1 has no plugin for.
 var otherEcosystems = []struct{ suffix, label string }{
 	{"pubspec.yaml", "Flutter/Dart"}, {".csproj", ".NET"}, {".fsproj", ".NET"}, {"Cargo.toml", "Rust"},
 	{"pom.xml", "Java (Maven)"}, {"build.gradle.kts", "JVM (Gradle)"}, {"build.gradle", "JVM (Gradle)"},
@@ -20,7 +20,7 @@ var otherEcosystems = []struct{ suffix, label string }{
 	{"Dockerfile", "a container image"}, {"requirements.txt", "Python without a pyproject.toml"},
 }
 
-// Language decides which mnci plugin owns a project, from the manifest at its
+// Language decides which smith plugin owns a project, from the manifest at its
 // root. label names the ecosystem when no plugin does.
 func Language(p *nxworkspace.Project) (lang, label string) {
 	switch {
@@ -42,7 +42,7 @@ func Language(p *nxworkspace.Project) (lang, label string) {
 	return "", "an Nx project with no manifest"
 }
 
-// Kind decides a project's mnci kind: an application is an app, a project
+// Kind decides a project's smith kind: an application is an app, a project
 // Nx releases is a package, anything else is an internal lib.
 func Kind(p *nxworkspace.Project, released bool) protocol.ProjectKind {
 	if p.Type == "app" || p.ProjectType == "application" {
@@ -55,7 +55,7 @@ func Kind(p *nxworkspace.Project, released bool) protocol.ProjectKind {
 }
 
 // NeedsKindMarker reports whether the directory alone would give the
-// project another kind in mnci, so the manifest must declare it.
+// project another kind in smith, so the manifest must declare it.
 func NeedsKindMarker(p *nxworkspace.Project, lang string, kind protocol.ProjectKind) bool {
 	fallback := protocol.ProjectLib
 	if lang == "node" && (p.Package == nil || !p.Package.Private) {
@@ -65,19 +65,19 @@ func NeedsKindMarker(p *nxworkspace.Project, lang string, kind protocol.ProjectK
 }
 
 // TagPrefix is the release tag prefix that continues a project's existing
-// tags: the Nx pattern's when tags were made with it, mnci's default
+// tags: the Nx pattern's when tags were made with it, smith's default
 // otherwise. An error means the pattern cannot become a prefix.
-func TagPrefix(pattern string, p *nxworkspace.Project, mnciDefault string, tags []string) (string, error) {
+func TagPrefix(pattern string, p *nxworkspace.Project, smithDefault string, tags []string) (string, error) {
 	prefix, ok := strings.CutSuffix(strings.ReplaceAll(pattern, "{projectName}", p.Name), "{version}")
 	if !ok || strings.Contains(prefix, "{") {
-		return mnciDefault, fmt.Errorf("the release tag pattern %q cannot be continued (mnci tags are <prefix><version>)", pattern)
+		return smithDefault, fmt.Errorf("the release tag pattern %q cannot be continued (smith tags are <prefix><version>)", pattern)
 	}
-	if prefix == mnciDefault {
-		return mnciDefault, nil
+	if prefix == smithDefault {
+		return smithDefault, nil
 	}
 	for _, t := range tags {
-		if strings.HasPrefix(t, mnciDefault) {
-			return mnciDefault, nil
+		if strings.HasPrefix(t, smithDefault) {
+			return smithDefault, nil
 		}
 	}
 	for _, t := range tags {
@@ -85,7 +85,7 @@ func TagPrefix(pattern string, p *nxworkspace.Project, mnciDefault string, tags 
 			return prefix, nil
 		}
 	}
-	return mnciDefault, nil
+	return smithDefault, nil
 }
 
 // AppRelease reads the old mnci's release.asset of a releasable Go app.

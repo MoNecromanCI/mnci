@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/conformance"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/conformance"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/host"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 	"github.com/spf13/cobra"
 )
 
-// checkCommand is `mnci plugin check`: the conformance suite.
+// checkCommand is `smith plugin check`: the conformance suite.
 func checkCommand(version string) *cobra.Command {
 	var generate, asJSON bool
 	cmd := &cobra.Command{
@@ -25,9 +25,9 @@ advertises answers. With --generate, a plugin that generates projects makes
 an app, a lib and a package in a temporary directory, which a language plugin
 must then discover as generated (this may install dependencies).
 
-A name is looked up the way the workspace would start it: mnci.toml, then the
+A name is looked up the way the workspace would start it: smith.toml, then the
 built-in plugins, then the plugin search path. A path runs that executable.`,
-		Example: "  mnci plugin check kiwi --generate\n  mnci plugin check ./bin/mnci-plugin-kiwi",
+		Example: "  smith plugin check kiwi --generate\n  smith plugin check ./bin/smith-plugin-kiwi",
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			argv := args
@@ -43,14 +43,14 @@ built-in plugins, then the plugin search path. A path runs that executable.`,
 					return err
 				}
 			}
-			ws, err := os.MkdirTemp("", "mnci-plugin-check-")
+			ws, err := os.MkdirTemp("", "smith-plugin-check-")
 			if err != nil {
 				return err
 			}
 			defer func() { _ = os.RemoveAll(ws) }()
 			c, err := host.Start(host.Options{
-				Command: argv, Env: append(os.Environ(), "MNCI_PLUGIN=1"), WorkspaceRoot: ws,
-				Stderr: cmd.ErrOrStderr(), Host: protocol.Peer{Name: "mnci", Version: version},
+				Command: argv, Env: append(os.Environ(), "SMITH_PLUGIN=1"), WorkspaceRoot: ws,
+				Stderr: cmd.ErrOrStderr(), Host: protocol.Peer{Name: "smith", Version: version},
 			})
 			if err != nil {
 				return fmt.Errorf("the plugin did not start and initialize: %w", err)

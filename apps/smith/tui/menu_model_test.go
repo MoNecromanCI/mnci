@@ -33,7 +33,7 @@ func keyMsg(k string) tea.KeyMsg {
 }
 
 func menu() Model {
-	return NewModel("mnci test", Actions([]string{"go", "node"}, []string{"go", "node", "python"}, []string{"go", "node"})[1:])
+	return NewModel("smith test", Actions([]string{"go", "node"}, []string{"go", "node", "python"}, []string{"go", "node"})[1:])
 }
 
 func TestAddAProject(t *testing.T) {

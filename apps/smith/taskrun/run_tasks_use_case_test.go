@@ -10,16 +10,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskcache"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskgraph"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/taskcache"
+	"github.com/monosmith-app/monosmith/apps/smith/taskgraph"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// TestMain lets the test binary act as the task command: with MNCI_HELPER set
+// TestMain lets the test binary act as the task command: with SMITH_HELPER set
 // it writes out/<file> containing its argument, or fails when asked to.
 func TestMain(m *testing.M) {
-	if mode := os.Getenv("MNCI_HELPER"); mode != "" {
+	if mode := os.Getenv("SMITH_HELPER"); mode != "" {
 		arg := os.Args[len(os.Args)-1]
 		fmt.Println("helper ran with", arg)
 		if arg == "fail" {
@@ -52,7 +52,7 @@ func newFixture(t *testing.T, libArg string) *fixture {
 	}
 	self, _ := os.Executable()
 	task := func(arg string, deps ...string) protocol.Task {
-		return protocol.Task{Command: []string{self, "-test.run=^$", arg}, Env: map[string]string{"MNCI_HELPER": "1"}, Outputs: []string{"out"}, Cache: true, DependsOn: deps}
+		return protocol.Task{Command: []string{self, "-test.run=^$", arg}, Env: map[string]string{"SMITH_HELPER": "1"}, Outputs: []string{"out"}, Cache: true, DependsOn: deps}
 	}
 	core := &projectgraph.Project{Project: protocol.Project{Name: "core", Root: "libs/core", Tasks: map[string]protocol.Task{"build": task(libArg)}}, Plugin: "test"}
 	web := &projectgraph.Project{Project: protocol.Project{Name: "web", Root: "apps/web", Tasks: map[string]protocol.Task{"build": task("web", "^build")}}, Plugin: "test", Deps: []string{"core"}}

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/templating"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/templating"
 )
 
 type templateData struct {
@@ -40,7 +40,7 @@ func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.Ge
 		return protocol.GenerateResult{}, err
 	}
 	out := protocol.ProjectBuildDir(params.Directory)
-	note := "After mnci build, deploy it with az deployment group create --template-file " + out + "/template/main.json --parameters " + out + "/parameters/main.parameters.json."
+	note := "After smith build, deploy it with az deployment group create --template-file " + out + "/template/main.json --parameters " + out + "/parameters/main.parameters.json."
 	if params.Kind == protocol.ProjectLib {
 		note = "Use it from a deployment: module " + params.Name + " '<relative path>/" + params.Directory + "/main.bicep' = { ... }."
 	}

@@ -40,13 +40,13 @@ func TestRemoteCache(t *testing.T) {
 	defer srv.Close()
 
 	base := t.TempDir()
-	w := &workspace{t: t, bin: buildMnci(t, base), dir: base, env: append(identity(), "MNCI_CACHE_KEY=team-secret")}
-	w.mnci(true, "new", "acme", "--ci", "github")
+	w := &workspace{t: t, bin: buildSmith(t, base), dir: base, env: append(identity(), "SMITH_CACHE_KEY=team-secret")}
+	w.smith(true, "new", "acme", "--ci", "github")
 	w.dir = filepath.Join(base, "acme")
-	w.mnci(true, "add", "lib", "core", "--lang", "go")
-	w.mnci(true, "config", "set", "cache.remote", srv.URL+"/cache")
+	w.smith(true, "add", "lib", "core", "--lang", "go")
+	w.smith(true, "config", "set", "cache.remote", srv.URL+"/cache")
 
-	if out := w.mnci(true, "build"); !strings.Contains(out, "(0 from cache)") {
+	if out := w.smith(true, "build"); !strings.Contains(out, "(0 from cache)") {
 		t.Fatalf("first build:\n%s", out)
 	}
 	mu.Lock()
@@ -57,15 +57,15 @@ func TestRemoteCache(t *testing.T) {
 	}
 
 	// Another machine: nothing cached locally, everything from the remote.
-	_ = os.RemoveAll(filepath.Join(w.dir, ".mnci", "cache"))
-	if out := w.mnci(true, "build"); !strings.Contains(out, "from cache") || strings.Contains(out, "(0 from cache)") {
+	_ = os.RemoveAll(filepath.Join(w.dir, ".smith", "cache"))
+	if out := w.smith(true, "build"); !strings.Contains(out, "from cache") || strings.Contains(out, "(0 from cache)") {
 		t.Fatalf("a build on an empty local cache must replay from the remote:\n%s", out)
 	}
 
 	// A machine with another key trusts nothing it finds there.
-	_ = os.RemoveAll(filepath.Join(w.dir, ".mnci", "cache"))
-	w.env = append(identity(), "MNCI_CACHE_KEY=someone-else", "MNCI_CACHE_READ_ONLY=1")
-	if out := w.mnci(true, "build"); !strings.Contains(out, "(0 from cache)") || !strings.Contains(out, "was refused") {
+	_ = os.RemoveAll(filepath.Join(w.dir, ".smith", "cache"))
+	w.env = append(identity(), "SMITH_CACHE_KEY=someone-else", "SMITH_CACHE_READ_ONLY=1")
+	if out := w.smith(true, "build"); !strings.Contains(out, "(0 from cache)") || !strings.Contains(out, "was refused") {
 		t.Fatalf("objects signed with another key must be refused:\n%s", out)
 	}
 }

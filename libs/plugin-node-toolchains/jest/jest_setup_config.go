@@ -1,8 +1,8 @@
 package jest
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/tooling"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/tooling"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name in a stack's toolchain list.

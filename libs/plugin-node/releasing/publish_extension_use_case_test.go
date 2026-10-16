@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 const extensionJSON = `{"name": "tools", "publisher": "acme", "version": "0.1.0", "engines": {"vscode": "^1.96.0"}, "main": "../../dist/packages/tools/main.js", "scripts": {"build": "esbuild"}}`

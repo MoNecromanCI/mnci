@@ -1,8 +1,8 @@
 package plugin
 
-import "github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+import "github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 
-// Name is the convention's name in mnci.toml ([conventions.vertical-slices]).
+// Name is the convention's name in smith.toml ([conventions.vertical-slices]).
 const Name = "vertical-slices"
 
 // VerticalSlices is the vertical-slices convention plugin.

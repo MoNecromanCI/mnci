@@ -14,7 +14,7 @@ var (
 	nextTable     = regexp.MustCompile(`(?m)^\[`)
 )
 
-// SetEnabledPlugins writes `enabled = [...]` under [plugins] in mnci.toml,
+// SetEnabledPlugins writes `enabled = [...]` under [plugins] in smith.toml,
 // changing only that line (or adding it, or the table), so comments and every
 // other setting survive.
 func SetEnabledPlugins(root string, names []string) error {

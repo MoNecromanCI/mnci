@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/projectkind"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/projectkind"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Discover describes the project behind each package.json. The workspace's
@@ -47,9 +47,9 @@ func describe(workspaceRoot, root, manifest string) (protocol.Project, error) {
 		Name:     path.Base(root),
 		Root:     root,
 		Language: "node",
-		Kind:     projectkind.Resolve(pkg.Mnci.Kind, root, fallback),
+		Kind:     projectkind.Resolve(pkg.Smith.Kind, root, fallback),
 		Version:  pkg.Version,
-		Stack:    pkg.Mnci.Stack,
+		Stack:    pkg.Smith.Stack,
 		Tasks:    map[string]protocol.Task{},
 	}
 	if pkg.Name != "" {
@@ -64,7 +64,7 @@ func describe(workspaceRoot, root, manifest string) (protocol.Project, error) {
 		project.Tasks[script] = TaskFor(script, root, pkg.Scripts)
 	}
 	// An app, or a VS Code extension, is packed into dist/drop: the
-	// deliverable mnci ci pack keeps (a .vsix for an extension).
+	// deliverable smith ci pack keeps (a .vsix for an extension).
 	if _, own := pkg.Scripts["package"]; !own && (project.Kind == protocol.ProjectApp || pkg.Engines.VSCode != "") {
 		project.Tasks["package"] = PackageTask(root, pkg.Scripts)
 	}

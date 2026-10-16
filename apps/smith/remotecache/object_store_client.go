@@ -94,7 +94,7 @@ func (s httpStore) Put(name string, data []byte) error {
 // Open returns the store a remote URL names:
 //
 //	https://host/path   a server taking PUT, GET and HEAD under the path;
-//	                    MNCI_CACHE_TOKEN, when set, is sent as a bearer token
+//	                    SMITH_CACHE_TOKEN, when set, is sent as a bearer token
 //	s3://bucket/prefix  S3 (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
 //	                    AWS_SESSION_TOKEN, AWS_REGION; AWS_ENDPOINT_URL_S3 for
 //	                    an S3-compatible store, addressed path-style)
@@ -115,7 +115,7 @@ func Open(remote string) (ObjectStore, error) {
 	}
 	switch u.Scheme {
 	case "http", "https":
-		token := os.Getenv("MNCI_CACHE_TOKEN")
+		token := os.Getenv("SMITH_CACHE_TOKEN")
 		base := u.Scheme + "://" + u.Host
 		return httpStore{describe: remote, client: client, objectURL: func(n string) string { return join(base, n) }, authorise: func(req *http.Request, _ string) {
 			if token != "" {

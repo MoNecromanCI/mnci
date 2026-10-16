@@ -7,19 +7,19 @@ import (
 
 var (
 	modulePattern = regexp.MustCompile(`(?m)^module\s+"?([^\s"]+)"?\s*$`)
-	kindPattern   = regexp.MustCompile(`(?m)^//\s*mnci:kind\s+(\w+)\s*$`)
-	nativePattern = regexp.MustCompile(`(?m)^//\s*mnci:native\s*$`)
-	stackPattern  = regexp.MustCompile(`(?m)^//\s*mnci:stack\s+([\w.@/-]+)\s*$`)
+	kindPattern   = regexp.MustCompile(`(?m)^//\s*smith:kind\s+(\w+)\s*$`)
+	nativePattern = regexp.MustCompile(`(?m)^//\s*smith:native\s*$`)
+	stackPattern  = regexp.MustCompile(`(?m)^//\s*smith:stack\s+([\w.@/-]+)\s*$`)
 )
 
 // Module is what the plugin reads from a go.mod.
 type Module struct {
 	Path string
-	// Kind is the value of a "// mnci:kind <kind>" comment, if present.
+	// Kind is the value of a "// smith:kind <kind>" comment, if present.
 	Kind string
-	// Stack is the value of a "// mnci:stack <stack>" comment, if present.
+	// Stack is the value of a "// smith:stack <stack>" comment, if present.
 	Stack string
-	// Native is set by a "// mnci:native" comment: the module uses cgo, so
+	// Native is set by a "// smith:native" comment: the module uses cgo, so
 	// it is built on each OS rather than cross-compiled.
 	Native bool
 }

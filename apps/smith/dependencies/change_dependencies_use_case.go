@@ -7,15 +7,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 const timeout = 20 * time.Minute
 
 // ErrNoTarget is adding packages without saying to which project.
-var ErrNoTarget = errors.New("adding a package needs a target project: mnci install -w <project> <package>. A bare mnci install (no package) installs the whole workspace")
+var ErrNoTarget = errors.New("adding a package needs a target project: smith install -w <project> <package>. A bare smith install (no package) installs the whole workspace")
 
 // Install adds packages to each target project, or, with no target and no
 // package, installs every project of every plugin that can.
@@ -48,7 +48,7 @@ func Install(s *session.Session, targets, packages []string, dev bool, log io.Wr
 // Uninstall removes packages from each target project.
 func Uninstall(s *session.Session, targets, packages []string, log io.Writer) error {
 	if len(targets) == 0 {
-		return errors.New("a dependency belongs to the project that uses it: mnci uninstall -w <project> <package>")
+		return errors.New("a dependency belongs to the project that uses it: smith uninstall -w <project> <package>")
 	}
 	projects, err := resolve(s.Graph, targets)
 	if err != nil {

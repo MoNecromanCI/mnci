@@ -7,7 +7,7 @@ import (
 )
 
 // Satisfies reports whether a plugin version meets a constraint from
-// mnci.toml: empty or "*" (any), "1.2.3" (exactly), "^1.2" (same major, at
+// smith.toml: empty or "*" (any), "1.2.3" (exactly), "^1.2" (same major, at
 // least 1.2), "~1.2" (same major and minor, at least 1.2), or ">=1.2".
 func Satisfies(version, constraint string) (bool, error) {
 	constraint = strings.TrimSpace(constraint)

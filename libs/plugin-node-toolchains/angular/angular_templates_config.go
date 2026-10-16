@@ -3,7 +3,7 @@ package angular
 import (
 	"maps"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/typescript"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/typescript"
 )
 
 // Versions the starter pins; bump them deliberately, Angular's packages
@@ -25,7 +25,7 @@ var templates = withGreetingSlice(map[string]string{
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "mnci": { "kind": "app"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
+  "smith": { "kind": "app"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
   "scripts": {
     "build": "ng build",
     "typecheck": "ngc -p tsconfig.app.json",

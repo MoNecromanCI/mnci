@@ -4,15 +4,15 @@ import "testing"
 
 func TestParseRepository(t *testing.T) {
 	for _, in := range []string{
-		"https://github.com/MoNecromanCI/mnci.git",
-		"https://github.com/MoNecromanCI/mnci",
-		"https://x-access-token:abc@github.com/MoNecromanCI/mnci.git",
-		"git@github.com:MoNecromanCI/mnci.git",
-		"ssh://git@github.com/MoNecromanCI/mnci.git",
-		"MoNecromanCI/mnci",
+		"https://github.com/monosmith-app/monosmith.git",
+		"https://github.com/monosmith-app/monosmith",
+		"https://x-access-token:abc@github.com/monosmith-app/monosmith.git",
+		"git@github.com:monosmith-app/monosmith.git",
+		"ssh://git@github.com/monosmith-app/monosmith.git",
+		"monosmith-app/monosmith",
 	} {
 		r, err := ParseRepository(in)
-		if err != nil || r.String() != "MoNecromanCI/mnci" {
+		if err != nil || r.String() != "monosmith-app/monosmith" {
 			t.Errorf("%s: %v %v", in, r, err)
 		}
 	}

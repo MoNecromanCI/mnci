@@ -4,14 +4,14 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/releasing"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/releasing"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 	"github.com/spf13/cobra"
 )
 
-// Command is `mnci npm-pack <project dir>`.
+// Command is `smith npm-pack <project dir>`.
 func Command() *cobra.Command {
 	return &cobra.Command{
 		Use:    "npm-pack <project-dir>",

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Result is one check.

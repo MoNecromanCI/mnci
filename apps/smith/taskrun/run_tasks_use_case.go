@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskcache"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/taskcache"
+	"github.com/monosmith-app/monosmith/apps/smith/taskgraph"
 )
 
 // Options configure a run.
@@ -179,7 +179,7 @@ func (r *runner) key(t *taskgraph.Task) (string, taskcache.KeyInputs) {
 
 func (r *runner) expand(t *taskgraph.Task, argv []string) []string {
 	root := filepath.ToSlash(r.opts.Root)
-	repl := strings.NewReplacer("{mnci}", Self(), "{workspaceRoot}", root, "{projectRoot}", root+"/"+t.Project.Root)
+	repl := strings.NewReplacer("{smith}", Self(), "{workspaceRoot}", root, "{projectRoot}", root+"/"+t.Project.Root)
 	out := make([]string, len(argv))
 	for i, a := range argv {
 		out[i] = repl.Replace(a)
@@ -187,12 +187,12 @@ func (r *runner) expand(t *taskgraph.Task, argv []string) []string {
 	return out
 }
 
-// Self is the path of the running mnci, which {mnci} in a command stands
-// for: a convention's task runs the same mnci that runs it, on PATH or not.
+// Self is the path of the running smith, which {smith} in a command stands
+// for: a convention's task runs the same smith that runs it, on PATH or not.
 func Self() string {
 	exe, err := os.Executable()
 	if err != nil {
-		return "mnci"
+		return "smith"
 	}
 	return filepath.ToSlash(exe)
 }
@@ -206,7 +206,7 @@ func (r *runner) cwd(t *taskgraph.Task) string {
 }
 
 func (r *runner) env(t *taskgraph.Task, key string) []string {
-	extra := map[string]string{"MNCI_TASK": t.ID, "MNCI_TASK_KEY": key, "MNCI_WORKSPACE_ROOT": r.opts.Root}
+	extra := map[string]string{"SMITH_TASK": t.ID, "SMITH_TASK_KEY": key, "SMITH_WORKSPACE_ROOT": r.opts.Root}
 	// The workspace's Python environment comes first on PATH, as
 	// node_modules/.bin does for npm scripts, so `python` is the venv's.
 	if bin := VenvBin(r.opts.Root); bin != "" {

@@ -20,7 +20,7 @@ type Option struct {
 type Action struct {
 	Title, Hint string
 	Steps       []Step
-	// Argv turns the answers into mnci's arguments.
+	// Argv turns the answers into smith's arguments.
 	Argv func(answers map[string][]string) []string
 	// NeedsWorkspace hides the action outside a workspace.
 	NeedsWorkspace bool
@@ -55,7 +55,7 @@ func Actions(languages, plugins, enabled []string) []Action {
 	}
 	return []Action{
 		{
-			Title: "Create a workspace", Hint: "mnci new", OutsideOnly: true,
+			Title: "Create a workspace", Hint: "smith new", OutsideOnly: true,
 			Steps: []Step{{Key: "name", Prompt: "Workspace name (kebab-case)", Placeholder: "acme"}},
 			Argv:  func(a map[string][]string) []string { return []string{"new", first(a, "name")} },
 		},
@@ -99,9 +99,9 @@ func Actions(languages, plugins, enabled []string) []Action {
 				return append([]string{"plugin", "set"}, a["plugins"]...)
 			},
 		},
-		{Title: "Show the project graph", Hint: "mnci graph", NeedsWorkspace: true, Argv: func(map[string][]string) []string { return []string{"graph"} }},
-		{Title: "Check the workspace", Hint: "mnci doctor", NeedsWorkspace: true, Argv: func(map[string][]string) []string { return []string{"doctor"} }},
-		{Title: "Preview the next release", Hint: "mnci release --dry-run", NeedsWorkspace: true, Argv: func(map[string][]string) []string { return []string{"release", "--dry-run"} }},
-		{Title: "Regenerate CI pipelines", Hint: "mnci ci generate", NeedsWorkspace: true, Argv: func(map[string][]string) []string { return []string{"ci", "generate"} }},
+		{Title: "Show the project graph", Hint: "smith graph", NeedsWorkspace: true, Argv: func(map[string][]string) []string { return []string{"graph"} }},
+		{Title: "Check the workspace", Hint: "smith doctor", NeedsWorkspace: true, Argv: func(map[string][]string) []string { return []string{"doctor"} }},
+		{Title: "Preview the next release", Hint: "smith release --dry-run", NeedsWorkspace: true, Argv: func(map[string][]string) []string { return []string{"release", "--dry-run"} }},
+		{Title: "Regenerate CI pipelines", Hint: "smith ci generate", NeedsWorkspace: true, Argv: func(map[string][]string) []string { return []string{"ci", "generate"} }},
 	}
 }

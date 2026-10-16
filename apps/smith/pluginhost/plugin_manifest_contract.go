@@ -11,7 +11,7 @@ const ManifestFile = "plugin.json"
 //	  "name": "kiwi",
 //	  "version": "1.2.0",
 //	  "description": "the kiwi language",
-//	  "command": ["./bin/mnci-plugin-kiwi-{os}-{arch}{exe}"]
+//	  "command": ["./bin/smith-plugin-kiwi-{os}-{arch}{exe}"]
 //	}
 //
 // A command path starting with ./ or ../ is relative to the plugin's

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 )
 
 // CargoRunner runs cargo; tests replace it.
@@ -51,7 +51,7 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 	if len(params.Project.Exports) > 0 {
 		crate = params.Project.Exports[0]
 	}
-	// The manifests carry the release's versions while mnci releases, and
+	// The manifests carry the release's versions while smith releases, and
 	// are restored after: cargo would refuse the dirty tree.
 	argv := []string{"cargo", "publish", "-p", crate, "--allow-dirty"}
 	if params.DryRun {
@@ -74,7 +74,7 @@ func Published(params protocol.PublishedParams) (protocol.PublishedResult, error
 	result := protocol.PublishedResult{Registry: "crates.io"}
 	req, _ := http.NewRequest(http.MethodGet, CratesAPI+"/crates/"+params.Project.Exports[0], nil)
 	// crates.io refuses requests without a User-Agent that says who asks.
-	req.Header.Set("User-Agent", "mnci (https://github.com/MoNecromanCI/mnci)")
+	req.Header.Set("User-Agent", "smith (https://github.com/monosmith-app/monosmith)")
 	resp, err := (&http.Client{Timeout: 15 * time.Second}).Do(req)
 	if err != nil {
 		result.Unreachable, result.Detail = true, err.Error()

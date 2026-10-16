@@ -8,12 +8,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
 
-// RemoveCommand is `mnci remove`.
+// RemoveCommand is `smith remove`.
 func RemoveCommand(version string) *cobra.Command {
 	var opts RemoveOptions
 	var yes, asJSON bool
@@ -22,9 +22,9 @@ func RemoveCommand(version string) *cobra.Command {
 		Short: "Remove a project: its directory, its traces in the workspace, its CI",
 		Long: `Remove a project: delete its directory, let its plugin clean what it owns
 outside it (the go.work entry, the npm lockfile, the Python venv), drop its
-tables from mnci.toml and regenerate the pipelines. A project that others
+tables from smith.toml and regenerate the pipelines. A project that others
 import is refused unless --force. Its release tags are kept.`,
-		Example: "  mnci remove web --dry-run\n  mnci remove web",
+		Example: "  smith remove web --dry-run\n  smith remove web",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Name = args[0]

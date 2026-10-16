@@ -16,7 +16,7 @@ const rootManifest = "composer.json"
 var rootTemplates = map[string]string{
 	rootManifest: `{
     "name": "[[.Vendor]]/workspace",
-    "description": "The workspace's PHP packages, resolved together (mnci lists them).",
+    "description": "The workspace's PHP packages, resolved together (smith lists them).",
     "type": "project",
     "license": "MIT",
     "require": {
@@ -51,7 +51,7 @@ var manifestTemplate = map[string]string{
     "bin": ["bin/[[.Name]]"],
 [[- end]]
     "extra": {
-        "mnci": {
+        "smith": {
             "kind": "[[.Kind]]"[[if .Stack]],
             "stack": "[[.Stack]]"[[end]]
         }

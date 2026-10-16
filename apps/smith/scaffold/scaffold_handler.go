@@ -5,18 +5,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/spf13/cobra"
 )
 
-// NewCommand is `mnci new`.
+// NewCommand is `smith new`.
 func NewCommand(version string) *cobra.Command {
 	var opts NewOptions
 	cmd := &cobra.Command{
 		Use:   "new <name>",
 		Short: "Create a monorepo: configuration, git, CI pipelines and a first commit",
-		Example: `  mnci new acme
-  mnci new acme --dir . --ci github,azure   # in an existing clone`,
+		Example: `  smith new acme
+  smith new acme --dir . --ci github,azure   # in an existing clone`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Name, opts.Version, opts.Out = args[0], version, cmd.OutOrStdout()
@@ -29,7 +29,7 @@ func NewCommand(version string) *cobra.Command {
 			if err != nil {
 				rel = dir
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "\nCreated %s. Next:\n  cd %s\n  mnci add app web --lang node\n", opts.Name, rel)
+			fmt.Fprintf(cmd.OutOrStdout(), "\nCreated %s. Next:\n  cd %s\n  smith add app web --lang node\n", opts.Name, rel)
 			return nil
 		},
 	}
@@ -40,7 +40,7 @@ func NewCommand(version string) *cobra.Command {
 	return cmd
 }
 
-// AddCommand is `mnci add`.
+// AddCommand is `smith add`.
 func AddCommand(version string) *cobra.Command {
 	var lang, stack string
 	cmd := &cobra.Command{
@@ -52,15 +52,15 @@ func AddCommand(version string) *cobra.Command {
   lib      imported internally, never published → libs/<name>
   package  published to its registry on release → packages/<name>
 
-A combined kind from ` + "`mnci kinds`" + ` names the language too: node-app is
+A combined kind from ` + "`smith kinds`" + ` names the language too: node-app is
 app --lang node.
 
 The project lints, type-checks, tests and builds immediately, and the CI
 pipelines are regenerated to install its toolchain.`,
-		Example: `  mnci add app web --lang node
-  mnci add app api --stack node-vitest
-  mnci add lib core --lang go
-  mnci add package sdk --lang python`,
+		Example: `  smith add app web --lang node
+  smith add app api --stack node-vitest
+  smith add lib core --lang go
+  smith add package sdk --lang python`,
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})
@@ -69,7 +69,7 @@ pipelines are regenerated to install its toolchain.`,
 			}
 			defer s.Close()
 			kind := args[0]
-			// "node-app" is "app --lang node": the form `mnci kinds` lists.
+			// "node-app" is "app --lang node": the form `smith kinds` lists.
 			if k, l, ok := SplitKind(kind); ok && lang == "" {
 				kind, lang = k, l
 			}
@@ -82,11 +82,11 @@ pipelines are regenerated to install its toolchain.`,
 			for _, n := range res.Notes {
 				fmt.Fprintln(out, n)
 			}
-			fmt.Fprintf(out, "Try: mnci test -p %s\n", args[1])
+			fmt.Fprintf(out, "Try: smith test -p %s\n", args[1])
 			return nil
 		},
 	}
 	cmd.Flags().StringVarP(&lang, "lang", "l", "", "language: node, go, python, rust, dotnet, ruby, php, cpp, dart, jvm, bicep (default: the stack's, or the workspace's only language)")
-	cmd.Flags().StringVarP(&stack, "stack", "s", "", "stack the project is built with (default: [default_stacks] in mnci.toml; mnci stacks lists them; none: the language plugin alone)")
+	cmd.Flags().StringVarP(&stack, "stack", "s", "", "stack the project is built with (default: [default_stacks] in smith.toml; smith stacks lists them; none: the language plugin alone)")
 	return cmd
 }

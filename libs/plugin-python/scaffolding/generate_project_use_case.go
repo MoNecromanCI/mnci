@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/discovery"
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/venv"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/templating"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/discovery"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/venv"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/templating"
 )
 
 type templateData struct {

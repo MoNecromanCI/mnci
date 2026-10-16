@@ -3,7 +3,7 @@ package discovery
 import (
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // workspaceInputs are root files every Node task depends on.
@@ -53,17 +53,17 @@ func TaskFor(script, root string, scripts map[string]string) protocol.Task {
 }
 
 // PackageTask packs an app with npm pack into dist/drop, the deliverable
-// mnci ci pack keeps. An app that builds is packed from its build directory,
-// staged with its package.json (mnci npm-pack); one that does not, from its
+// smith ci pack keeps. An app that builds is packed from its build directory,
+// staged with its package.json (smith npm-pack); one that does not, from its
 // own directory.
 func PackageTask(root string, scripts map[string]string) protocol.Task {
 	t := protocol.Task{
 		Command:     []string{"npm", "pack", "--pack-destination", "{workspaceRoot}/dist/drop"},
-		Description: "Pack the app into dist/drop (mnci ci pack)",
+		Description: "Pack the app into dist/drop (smith ci pack)",
 	}
 	if _, ok := scripts["build"]; ok {
-		t.Command = []string{"{mnci}", "npm-pack", root}
-		t.Description = "Pack the app's build (" + protocol.ProjectBuildDir(root) + ") into dist/drop (mnci ci pack)"
+		t.Command = []string{"{smith}", "npm-pack", root}
+		t.Description = "Pack the app's build (" + protocol.ProjectBuildDir(root) + ") into dist/drop (smith ci pack)"
 		t.DependsOn = []string{"build"}
 	}
 	return t

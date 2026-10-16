@@ -1,0 +1,62 @@
+{
+  "dryRun": true,
+  "started": "2026-10-16T20:53:50.3163304Z",
+  "finished": "2026-10-16T20:53:50.3686576Z",
+  "results": [
+    {
+      "project": "mnci",
+      "plugin": "go",
+      "current": "0.43.0",
+      "next": "5.0.0",
+      "level": "forced",
+      "tag": "mnci@5.0.0",
+      "reason": "forced by version(mnci)[5.0.0]",
+      "commits": [
+        "feat(mnci): publish an app's binaries to npm and pypi"
+      ],
+      "forced": true,
+      "changes": [
+        {
+          "type": "feat",
+          "scopes": [
+            "mnci"
+          ],
+          "description": "publish an app's binaries to npm and pypi",
+          "hash": "cd553fdfadf4fcbd089ae8d2630c910912f17870",
+          "author": "Eduardo Russo"
+        }
+      ],
+      "status": "planned",
+      "published": false,
+      "pushed": false,
+      "assets": [
+        "dist/release/mnci/mnci_5.0.0_linux_amd64.zip",
+        "dist/release/mnci/mnci_5.0.0_linux_arm64.zip",
+        "dist/release/mnci/mnci_5.0.0_darwin_amd64.zip",
+        "dist/release/mnci/mnci_5.0.0_darwin_arm64.zip",
+        "dist/release/mnci/mnci_5.0.0_windows_amd64.zip",
+        "dist/release/mnci/mnci_5.0.0_windows_arm64.zip",
+        "dist/release/mnci/checksums.txt"
+      ],
+      "packages": [
+        "@mnci/cli-darwin-x64@5.0.0",
+        "@mnci/cli-darwin-arm64@5.0.0",
+        "@mnci/cli-linux-x64@5.0.0",
+        "@mnci/cli-linux-arm64@5.0.0",
+        "@mnci/cli-win32-x64@5.0.0",
+        "@mnci/cli-win32-arm64@5.0.0",
+        "@mnci/cli@5.0.0",
+        "mnci@5.0.0",
+        "mnci-5.0.0-py3-none-macosx_12_0_x86_64.whl",
+        "mnci-5.0.0-py3-none-macosx_12_0_arm64.whl",
+        "mnci-5.0.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.musllinux_1_1_x86_64.whl",
+        "mnci-5.0.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.musllinux_1_1_aarch64.whl",
+        "mnci-5.0.0-py3-none-win_amd64.whl",
+        "mnci-5.0.0-py3-none-win_arm64.whl"
+      ]
+    }
+  ],
+  "unchanged": [
+    "plugin-sdk"
+  ]
+}

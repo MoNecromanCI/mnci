@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/projectkind"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/projectkind"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Discover describes the module behind each pom.xml and each Gradle build

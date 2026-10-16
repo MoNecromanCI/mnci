@@ -1,4 +1,4 @@
-module github.com/MoNecromanCI/mnci/apps/mnci
+module github.com/monosmith-app/monosmith/apps/smith
 
 go 1.26.0
 

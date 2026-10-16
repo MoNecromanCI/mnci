@@ -110,7 +110,12 @@ func readme(r Release) string {
 	if r.Description != "" {
 		b.WriteString(r.Description + "\n\n")
 	}
-	fmt.Fprintf(&b, "```sh\npipx install %s     # or: uv tool install %s, pip install %s\nuvx %s --version   # run it without installing\n```\n\n", r.Name, r.Name, r.Name, r.Binary)
+	run := r.Binary
+	if r.Name != r.Binary {
+		// uvx runs the command named like the package unless told otherwise.
+		run = "--from " + r.Name + " " + r.Binary
+	}
+	fmt.Fprintf(&b, "```sh\npipx install %s     # or: uv tool install %s, pip install %s\nuvx %s --version   # run it without installing\n```\n\n", r.Name, r.Name, r.Name, run)
 	fmt.Fprintf(&b, "Each wheel holds the prebuilt %s binary for one platform and installs it as a command; it needs no Python at run time.\n", r.Binary)
 	if r.Homepage != "" {
 		fmt.Fprintf(&b, "\nMore: %s\n", r.Homepage)
@@ -133,7 +138,7 @@ func buildOne(archive, file, binary, goos string, tags []string, meta Metadata) 
 	prefix := Distribution(meta.Name) + "-" + meta.Version
 	info := prefix + ".dist-info/"
 	var wheel strings.Builder
-	wheel.WriteString("Wheel-Version: 1.0\nGenerator: mnci\nRoot-Is-Purelib: false\n")
+	wheel.WriteString("Wheel-Version: 1.0\nGenerator: smith\nRoot-Is-Purelib: false\n")
 	for _, t := range tags {
 		fmt.Fprintf(&wheel, "Tag: %s\n", t)
 	}

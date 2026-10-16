@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
-var phaseCommand = regexp.MustCompile(`mnci ci [a-z]+`)
+var phaseCommand = regexp.MustCompile(`smith ci [a-z]+`)
 
 func phasesOf(s string) []string { return phaseCommand.FindAllString(s, -1) }
 
@@ -20,8 +20,8 @@ func TestGitLabCarriesTheSamePhases(t *testing.T) {
 	for _, want := range []string{
 		"image: debian:bookworm", "GIT_DEPTH: \"0\"", `$CI_COMMIT_BRANCH == "main"`,
 		"    # zig 0.14\n    - 'curl -fsSL https://example.com/zig.sh | sh'\n    - 'zig version'\n",
-		"    # mnci: no plugin says how to install node 24",
-		"mnci release --dry-run --comment", "GITLAB_TOKEN", "#   PYPI_TOKEN",
+		"    # smith: no plugin says how to install node 24",
+		"smith release --dry-run --comment", "GITLAB_TOKEN", "#   PYPI_TOKEN",
 	} {
 		if !strings.Contains(gl, want) {
 			t.Errorf("GitLab pipeline lacks %q", want)
@@ -43,7 +43,7 @@ func TestGitLabSlotsSurviveRegeneration(t *testing.T) {
 	}
 	path := filepath.Join(root, GitLabPath)
 	body, _ := os.ReadFile(path)
-	own := strings.Replace(string(body), "    # mnci:slot after-verify\n", "    # mnci:slot after-verify\n    - echo our own step\n", 1)
+	own := strings.Replace(string(body), "    # smith:slot after-verify\n", "    # smith:slot after-verify\n    - echo our own step\n", 1)
 	if own == string(body) {
 		t.Fatalf("no after-verify slot:\n%s", body)
 	}

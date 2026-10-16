@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/gitclient"
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/gitclient"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
 )
 
 // Result names the affected projects and why.
@@ -27,7 +27,7 @@ var neutralFiles = []string{"*.md", "docs/**", "LICENSE", ".github/ISSUE_TEMPLAT
 // BaseFromEnv returns the pull request's target branch from the CI provider,
 // or "" when not running for a pull request.
 func BaseFromEnv() string {
-	for _, name := range []string{"MNCI_BASE", "GITHUB_BASE_REF", "SYSTEM_PULLREQUEST_TARGETBRANCH", "CI_MERGE_REQUEST_TARGET_BRANCH_NAME"} {
+	for _, name := range []string{"SMITH_BASE", "GITHUB_BASE_REF", "SYSTEM_PULLREQUEST_TARGETBRANCH", "CI_MERGE_REQUEST_TARGET_BRANCH_NAME"} {
 		if v := strings.TrimSpace(os.Getenv(name)); v != "" {
 			return strings.TrimPrefix(v, "refs/heads/")
 		}

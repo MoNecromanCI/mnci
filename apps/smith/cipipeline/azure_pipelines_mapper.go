@@ -46,18 +46,18 @@ func azureSteps(m Model) string {
 		b.WriteString(azureSetup(t))
 	}
 	fmt.Fprintf(&b, `  - bash: curl -fsSL %s | sh -s -- "%s"
-    displayName: Install mnci
-`, InstallScriptURL, m.MnciVersion)
+    displayName: Install smith
+`, InstallScriptURL, m.SmithVersion)
 	b.WriteString(slot("  ", "before-setup"))
-	b.WriteString(`  - bash: mnci ci setup
+	b.WriteString(`  - bash: smith ci setup
     displayName: Setup
-  - bash: mnci ci audit
+  - bash: smith ci audit
     displayName: Audit
-  - bash: mnci ci verify
+  - bash: smith ci verify
     displayName: Verify
 `)
 	b.WriteString(slot("  ", "after-verify"))
-	b.WriteString(`  - bash: mnci release --dry-run --comment
+	b.WriteString(`  - bash: smith release --dry-run --comment
     displayName: Release preview
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
     env:
@@ -65,7 +65,7 @@ func azureSteps(m Model) string {
 `)
 	onPush := fmt.Sprintf("and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'), eq(variables['Build.SourceBranch'], 'refs/heads/%s'))", m.ReleaseBranch)
 	if m.Pack {
-		fmt.Fprintf(&b, `  - bash: mnci ci pack
+		fmt.Fprintf(&b, `  - bash: smith ci pack
     displayName: Pack
     condition: %[1]s
   - publish: dist/drop
@@ -74,7 +74,7 @@ func azureSteps(m Model) string {
     condition: %[1]s
 `, onPush)
 	}
-	fmt.Fprintf(&b, `  - bash: mnci ci release
+	fmt.Fprintf(&b, `  - bash: smith ci release
     displayName: Release
     condition: %s
 `, onPush)
@@ -102,15 +102,15 @@ func azureNativeJob(m Model) string {
 	}
 	b.WriteString(indent(tools.String(), "    "))
 	fmt.Fprintf(&b, `      - bash: curl -fsSL %s | sh -s -- "%s"
-        displayName: Install mnci
-      - bash: mnci ci setup
+        displayName: Install smith
+      - bash: smith ci setup
         displayName: Setup
-      - bash: mnci ci native
+      - bash: smith ci native
         displayName: Native
       - publish: dist/drop
         artifact: native-$(image)
         displayName: Keep the native builds
-`, InstallScriptURL, m.MnciVersion)
+`, InstallScriptURL, m.SmithVersion)
 	return b.String()
 }
 

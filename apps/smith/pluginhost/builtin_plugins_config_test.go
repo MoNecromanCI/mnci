@@ -3,7 +3,7 @@ package pluginhost
 import (
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/conformance"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/conformance"
 )
 
 // Every built-in plugin passes the same conformance suite an external one

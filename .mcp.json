@@ -1,9 +1,9 @@
 {
   "mcpServers": {
-    "mnci": {
+    "smith": {
       "command": "npx",
       "args": [
-        "mnci",
+        "smith",
         "mcp"
       ]
     }

@@ -6,10 +6,10 @@ import (
 	"strings"
 )
 
-// Manifest is what mnci reads from a composer.json.
+// Manifest is what smith reads from a composer.json.
 type Manifest struct {
 	Name, Version, Type string
-	// Kind and Stack are extra.mnci's.
+	// Kind and Stack are extra.smith's.
 	Kind, Stack string
 	// Bin are the package's executables.
 	Bin []string
@@ -26,10 +26,10 @@ type manifestJSON struct {
 	Require    map[string]string `json:"require"`
 	RequireDev map[string]string `json:"require-dev"`
 	Extra      struct {
-		Mnci struct {
+		Smith struct {
 			Kind  string `json:"kind"`
 			Stack string `json:"stack"`
-		} `json:"mnci"`
+		} `json:"smith"`
 	} `json:"extra"`
 }
 
@@ -44,7 +44,7 @@ func ParseManifest(src []byte) (Manifest, error) {
 	if err := json.Unmarshal(src, &j); err != nil {
 		return Manifest{}, err
 	}
-	m := Manifest{Name: j.Name, Version: j.Version, Type: j.Type, Bin: j.Bin, Kind: j.Extra.Mnci.Kind, Stack: j.Extra.Mnci.Stack}
+	m := Manifest{Name: j.Name, Version: j.Version, Type: j.Type, Bin: j.Bin, Kind: j.Extra.Smith.Kind, Stack: j.Extra.Smith.Stack}
 	for _, reqs := range []map[string]string{j.Require, j.RequireDev} {
 		for name := range reqs {
 			if !platform(name) {

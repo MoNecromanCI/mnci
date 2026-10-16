@@ -4,9 +4,9 @@ import (
 	"io"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/serve"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/host"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/serve"
 )
 
 func connect(t *testing.T, p serve.Plugin) *host.Client {

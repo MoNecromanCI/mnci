@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/affected"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/affected"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/taskgraph"
 )
 
 // Request is what to run in an open workspace.

@@ -5,9 +5,9 @@ import (
 	"strings"
 )
 
-var slotPattern = regexp.MustCompile(`(?ms)^([ \t]*)# mnci:slot ([\w-]+)[ \t]*\r?\n(.*?)^[ \t]*# mnci:slot-end ([\w-]+)[ \t]*\r?$`)
+var slotPattern = regexp.MustCompile(`(?ms)^([ \t]*)# smith:slot ([\w-]+)[ \t]*\r?\n(.*?)^[ \t]*# smith:slot-end ([\w-]+)[ \t]*\r?$`)
 
-// KeepSlots copies the content between each mnci:slot marker pair of the old
+// KeepSlots copies the content between each smith:slot marker pair of the old
 // file into the same slot of the newly rendered one, re-indented when the
 // slot moved (an Azure pipeline gaining a native job nests its steps under
 // jobs). A slot the new file no longer has is reported, so a team step is
@@ -31,7 +31,7 @@ func KeepSlots(old, rendered string) (string, []string) {
 		if from := indents[m[2]]; from != m[1] {
 			body = reindent(body, from, m[1])
 		}
-		return m[1] + "# mnci:slot " + m[2] + "\n" + body + m[1] + "# mnci:slot-end " + m[2]
+		return m[1] + "# smith:slot " + m[2] + "\n" + body + m[1] + "# smith:slot-end " + m[2]
 	})
 	var lost []string
 	for name := range bodies {

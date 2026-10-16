@@ -7,14 +7,14 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskrun"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/taskrun"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
 
-// Command is `mnci dev`.
+// Command is `smith dev`.
 func Command(version string) *cobra.Command {
 	var all, dryRun bool
 	cmd := &cobra.Command{
@@ -23,11 +23,11 @@ func Command(version string) *cobra.Command {
 		Long: `Start several projects together: what they depend on is built first, then
 every start task runs at once, its output prefixed with the project's name, and
 Ctrl+C stops them all. Name the projects, pass --all for every project with a
-start task, or pick from a list. It is mnci run start -p <projects> with room
+start task, or pick from a list. It is smith run start -p <projects> with room
 for every one to run at once; --dry-run prints that command.`,
-		Example: `  mnci dev web api
-  mnci dev --all
-  mnci dev            # pick in the terminal`,
+		Example: `  smith dev web api
+  smith dev --all
+  smith dev            # pick in the terminal`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})
 			if err != nil {
@@ -66,7 +66,7 @@ for every one to run at once; --dry-run prints that command.`,
 			}
 			// Room for every start task at once, plus the builds before them.
 			parallel := len(chosen) + 4
-			fmt.Fprintf(cmd.ErrOrStderr(), "→ mnci run start -p %s --parallel %d\n", strings.Join(chosen, ","), parallel)
+			fmt.Fprintf(cmd.ErrOrStderr(), "→ smith run start -p %s --parallel %d\n", strings.Join(chosen, ","), parallel)
 			if dryRun {
 				return nil
 			}
@@ -84,7 +84,7 @@ for every one to run at once; --dry-run prints that command.`,
 		},
 	}
 	cmd.Flags().BoolVar(&all, "all", false, "start every project that has a start task")
-	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "print the equivalent mnci run command and start nothing")
+	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "print the equivalent smith run command and start nothing")
 	return cmd
 }
 

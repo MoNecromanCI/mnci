@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// The schema describes exactly the keys mnci.toml accepts, at every level.
+// The schema describes exactly the keys smith.toml accepts, at every level.
 func TestSchemaMatchesTheConfig(t *testing.T) {
 	var schema map[string]any
 	if err := json.Unmarshal(Schema, &schema); err != nil {
@@ -58,5 +58,5 @@ func TestSchemaMatchesTheConfig(t *testing.T) {
 			walk(typ.Elem(), sub, at+".*")
 		}
 	}
-	walk(reflect.TypeOf(Config{}), schema, "mnci.toml")
+	walk(reflect.TypeOf(Config{}), schema, "smith.toml")
 }

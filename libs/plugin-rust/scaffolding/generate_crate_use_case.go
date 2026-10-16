@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-rust/discovery"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/templating"
+	"github.com/monosmith-app/monosmith/libs/plugin-rust/discovery"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/templating"
 )
 
 type templateData struct {
@@ -82,7 +82,7 @@ func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.Ge
 const cargoConfig = ".cargo/config.toml"
 
 // targetDir is where every Cargo build goes: the workspace's dist/, like
-// every other build (mnci), never target/ beside the sources.
+// every other build (smith), never target/ beside the sources.
 var targetDir = protocol.BuildDir + "/cargo"
 
 // buildIntoDist writes .cargo/config.toml with the target directory the
@@ -95,7 +95,7 @@ func buildIntoDist(workspaceRoot string) (bool, error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return false, err
 	}
-	body := "# Every build goes to the workspace's dist/ (mnci).\n[build]\ntarget-dir = \"" + targetDir + "\"\n"
+	body := "# Every build goes to the workspace's dist/ (smith).\n[build]\ntarget-dir = \"" + targetDir + "\"\n"
 	return true, os.WriteFile(path, []byte(body), 0o644)
 }
 

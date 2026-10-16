@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/nxworkspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/nxworkspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func target(t *testing.T, raw string) nxworkspace.Target {
@@ -123,7 +123,7 @@ func TestPlanLegacyWorkspace(t *testing.T) {
 		t.Fatalf("kit keeps its tags: %+v", plan.Config.Projects["kit"])
 	}
 	if plan.Config.Projects["gokit"].TagPrefix != "" {
-		t.Fatal("Go libraries keep mnci's <dir>/v tags")
+		t.Fatal("Go libraries keep smith's <dir>/v tags")
 	}
 
 	kit := plan.Project("kit")
@@ -143,7 +143,7 @@ func TestPlanLegacyWorkspace(t *testing.T) {
 		t.Fatalf("python3 becomes the venv's python: %v", start.Command)
 	}
 
-	if plan.RootScripts["build"] != "mnci run build" || plan.RootScripts["tool:qa"] != "" || plan.RootScripts["python:install"] != "" {
+	if plan.RootScripts["build"] != "smith run build" || plan.RootScripts["tool:qa"] != "" || plan.RootScripts["python:install"] != "" {
 		t.Fatalf("root scripts %v", plan.RootScripts)
 	}
 	if _, ok := plan.RootScripts["deploy"]; ok {

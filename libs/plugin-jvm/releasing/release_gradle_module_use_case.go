@@ -7,9 +7,9 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-jvm/discovery"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/libs/plugin-jvm/discovery"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 )
 
 // GradleRunner runs gradle; tests replace it.
@@ -63,10 +63,10 @@ func writeGradleVersion(workspaceRoot, script string, params protocol.VersionPar
 }
 
 // publishGradle publishes the module's publications to the repository its
-// script declares as mnci (from MAVEN_REPOSITORY_URL, MAVEN_USERNAME and
+// script declares as smith (from MAVEN_REPOSITORY_URL, MAVEN_USERNAME and
 // MAVEN_PASSWORD).
 func publishGradle(workspaceRoot string, project protocol.Project, result protocol.PublishResult) (protocol.PublishResult, error) {
-	argv := []string{"gradle", "--console=plain", "-q", discovery.ProjectPath(project.Root) + ":publishAllPublicationsToMnciRepository"}
+	argv := []string{"gradle", "--console=plain", "-q", discovery.ProjectPath(project.Root) + ":publishAllPublicationsToSmithRepository"}
 	if err := GradleRunner(workspaceRoot, argv); err != nil {
 		return result, err
 	}

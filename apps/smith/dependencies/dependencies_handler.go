@@ -6,13 +6,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
 
-// Commands are `mnci install`, `mnci uninstall`, `mnci sync` and `mnci up`.
+// Commands are `smith install`, `smith uninstall`, `smith sync` and `smith up`.
 func Commands(version string) []*cobra.Command {
 	var targets []string
 	var dev bool
@@ -22,13 +22,13 @@ func Commands(version string) []*cobra.Command {
 		Short:   "Add packages to a project with its own toolchain, or install the whole workspace",
 		Long: `Add packages to one project with its own toolchain: npm install --workspace,
 the project's pyproject.toml and the workspace venv, go get. Each project owns
-its dependencies, so a package needs a target: mnci install -w <project>
-<package>. With no package, mnci install installs everything a fresh clone
+its dependencies, so a package needs a target: smith install -w <project>
+<package>. With no package, smith install installs everything a fresh clone
 needs, for every language in the workspace.`,
-		Example: `  mnci install                       # a fresh clone: npm install, the venv, go mod download
-  mnci install -w web zod
-  mnci install -w apps/api -D pytest-cov
-  mnci install -w api github.com/pkg/errors@v0.9.1`,
+		Example: `  smith install                       # a fresh clone: npm install, the venv, go mod download
+  smith install -w web zod
+  smith install -w apps/api -D pytest-cov
+  smith install -w api github.com/pkg/errors@v0.9.1`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})
 			if err != nil {
@@ -46,10 +46,10 @@ needs, for every language in the workspace.`,
 		Use:     "uninstall <packages...>",
 		Aliases: []string{"un"},
 		Short:   "Remove packages from a project with its own toolchain",
-		Long: `Remove packages from one project, the counterpart of mnci install. A
-dependency belongs to the project that uses it, so it needs a target: mnci
+		Long: `Remove packages from one project, the counterpart of smith install. A
+dependency belongs to the project that uses it, so it needs a target: smith
 uninstall -w <project> <package>.`,
-		Example: `  mnci uninstall -w web zod`,
+		Example: `  smith uninstall -w web zod`,
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})
@@ -74,12 +74,12 @@ major, with the projects declaring it, then update the ones you pick: each
 declaration keeps its operator and moves to the latest version, and the
 workspace is installed again so lockfiles and the venv follow. Named packages
 are updated without a prompt; --yes takes every update. Without a terminal
-(or with --check) up only reports. A last section compares the tools mnci
+(or with --check) up only reports. A last section compares the tools smith
 pins (Node.js, Python, Go, golangci-lint) with their newest releases.`,
-		Example: `  mnci up              # pick in the terminal
-  mnci up zod jest     # exactly these
-  mnci up --yes        # everything
-  mnci up --json`,
+		Example: `  smith up              # pick in the terminal
+  smith up zod jest     # exactly these
+  smith up --yes        # everything
+  smith up --json`,
 		RunE: func(cmd *cobra.Command, names []string) error {
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})
 			if err != nil {
@@ -109,7 +109,7 @@ pins (Node.js, Python, Go, golangci-lint) with their newest releases.`,
 				}
 			case yes:
 			case check || !interactive():
-				fmt.Fprintln(out, "\nReport only: pick with mnci up in a terminal, name packages, or pass --yes.")
+				fmt.Fprintln(out, "\nReport only: pick with smith up in a terminal, name packages, or pass --yes.")
 				return nil
 			default:
 				final, err := tea.NewProgram(newPicker(report.Updates), tea.WithOutput(out)).Run()
@@ -150,11 +150,11 @@ func syncCommand(version string) *cobra.Command {
 language. The target is the version installed, with the operator most
 declarations use; when nothing says what is installed, the highest version
 declared. Peer dependencies and the workspace's own packages are left alone,
-and so is a spec mnci does not understand well enough to rewrite (a URL, a git
+and so is a spec smith does not understand well enough to rewrite (a URL, a git
 ref, a compound range): sync reports those. After rewriting it installs, so
 lockfiles and the venv follow.`,
-		Example: `  mnci sync --check   # in CI: fail when declarations disagree
-  mnci sync`,
+		Example: `  smith sync --check   # in CI: fail when declarations disagree
+  smith sync`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})

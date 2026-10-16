@@ -7,11 +7,11 @@ import (
 	"os/signal"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/spf13/cobra"
 )
 
-// Command is `mnci ci`.
+// Command is `smith ci`.
 func Command(version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ci",
@@ -61,7 +61,7 @@ func Command(version string) *cobra.Command {
 					return err
 				}
 				if drift := Drift(s.Root, s.Config, NewModel(contributions, s.Version, s.Config.Release.Branch)); len(drift) > 0 {
-					return errors.New("pipelines are out of date: " + strings.Join(drift, "; ") + " — run `mnci ci generate`")
+					return errors.New("pipelines are out of date: " + strings.Join(drift, "; ") + " — run `smith ci generate`")
 				}
 				fmt.Fprintln(c.OutOrStdout(), "pipelines are up to date")
 				return nil

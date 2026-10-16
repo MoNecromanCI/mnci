@@ -5,9 +5,9 @@ import (
 	"strings"
 )
 
-// GitHubSetup is how every job mnci writes starts, as GitHub Actions steps
+// GitHubSetup is how every job smith writes starts, as GitHub Actions steps
 // (at a job's steps indentation): checkout with full history, the
-// toolchains, mnci at the version that wrote it, and mnci ci setup.
+// toolchains, smith at the version that wrote it, and smith ci setup.
 func GitHubSetup(m Model) string {
 	var b strings.Builder
 	b.WriteString(`      - uses: actions/checkout@v4
@@ -17,14 +17,14 @@ func GitHubSetup(m Model) string {
 	for _, t := range m.Toolchains {
 		b.WriteString(githubSetup(t))
 	}
-	fmt.Fprintf(&b, `      - name: Install mnci
-        run: curl -fsSL %s | sh -s -- "$MNCI_VERSION"
+	fmt.Fprintf(&b, `      - name: Install smith
+        run: curl -fsSL %s | sh -s -- "$SMITH_VERSION"
         env:
-          MNCI_VERSION: %s
+          SMITH_VERSION: %s
           GITHUB_TOKEN: ${{ github.token }}
       - name: Setup
-        run: mnci ci setup
-`, InstallScriptURL, m.MnciVersion)
+        run: smith ci setup
+`, InstallScriptURL, m.SmithVersion)
 	return b.String()
 }
 
@@ -39,9 +39,9 @@ func AzureSetup(m Model) string {
 		b.WriteString(azureSetup(t))
 	}
 	fmt.Fprintf(&b, `  - bash: curl -fsSL %s | sh -s -- "%s"
-    displayName: Install mnci
-  - bash: mnci ci setup
+    displayName: Install smith
+  - bash: smith ci setup
     displayName: Setup
-`, InstallScriptURL, m.MnciVersion)
+`, InstallScriptURL, m.SmithVersion)
 	return b.String()
 }

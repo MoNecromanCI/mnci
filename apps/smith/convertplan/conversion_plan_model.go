@@ -3,8 +3,8 @@ package convertplan
 import (
 	"sort"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Severity orders findings from harmless to blocking.
@@ -15,13 +15,13 @@ type Severity string
 const (
 	// Mapped records what moved where.
 	Mapped Severity = "mapped"
-	// Dropped records Nx plumbing mnci does not need.
+	// Dropped records Nx plumbing smith does not need.
 	Dropped Severity = "dropped"
 	// Changed records a behaviour change the user should know about.
 	Changed Severity = "changed"
 	// Manual is something the conversion could not do; the user must.
 	Manual Severity = "manual"
-	// Unsupported is a project or setting mnci v1 has no plugin for.
+	// Unsupported is a project or setting smith v1 has no plugin for.
 	Unsupported Severity = "unsupported"
 	// Blocker prevents the conversion.
 	Blocker Severity = "blocker"
@@ -30,16 +30,16 @@ const (
 // Finding is one line of the conversion report.
 type Finding struct {
 	Severity Severity `json:"severity"`
-	// Project is the mnci project name, or "" for the workspace.
+	// Project is the smith project name, or "" for the workspace.
 	Project string `json:"project,omitempty"`
 	// Subject is the target, file or setting the finding is about.
 	Subject string `json:"subject"`
 	Message string `json:"message"`
 }
 
-// ProjectPlan is how one Nx project becomes an mnci project.
+// ProjectPlan is how one Nx project becomes a smith project.
 type ProjectPlan struct {
-	// Nx is the Nx project name; Name is the mnci name (the directory name).
+	// Nx is the Nx project name; Name is the smith name (the directory name).
 	Nx       string               `json:"nx"`
 	Name     string               `json:"name"`
 	Root     string               `json:"root"`
@@ -50,7 +50,7 @@ type ProjectPlan struct {
 	KindMarker bool `json:"kindMarker,omitempty"`
 	// Scripts are package.json scripts to set (Node projects).
 	Scripts map[string]string `json:"scripts,omitempty"`
-	// Supported is false for a language mnci has no plugin for.
+	// Supported is false for a language smith has no plugin for.
 	Supported bool `json:"supported"`
 }
 
@@ -58,7 +58,7 @@ type ProjectPlan struct {
 type Plan struct {
 	Root   string `json:"root"`
 	Legacy bool   `json:"legacy"`
-	// Config is the mnci.toml to write.
+	// Config is the smith.toml to write.
 	Config   workspace.Config `json:"-"`
 	Projects []*ProjectPlan   `json:"projects"`
 	Findings []Finding        `json:"findings"`
@@ -104,7 +104,7 @@ func (p *Plan) Blocked(strict bool) bool {
 	return strict && (p.Count(Manual) > 0 || p.Count(Unsupported) > 0)
 }
 
-// Project returns a planned project by mnci name.
+// Project returns a planned project by smith name.
 func (p *Plan) Project(name string) *ProjectPlan {
 	for _, pp := range p.Projects {
 		if pp.Name == name {
@@ -124,7 +124,7 @@ func (p *Plan) ProjectAt(root string) *ProjectPlan {
 	return nil
 }
 
-// Override returns the mnci.toml project section, creating it.
+// Override returns the smith.toml project section, creating it.
 func (p *Plan) Override(project string) workspace.ProjectOverride {
 	if p.Config.Projects == nil {
 		p.Config.Projects = map[string]workspace.ProjectOverride{}

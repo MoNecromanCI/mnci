@@ -10,9 +10,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/releasing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-python/venv"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/releasing"
+	"github.com/monosmith-app/monosmith/libs/plugin-python/venv"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Newest asks a simple index for a distribution's newest release; tests
@@ -42,7 +42,7 @@ func index() string {
 }
 
 // Latest asks the index pip uses for each distribution's newest release, a
-// few at a time, and compares the Python mnci pins with the newest release
+// few at a time, and compares the Python smith pins with the newest release
 // series.
 func Latest(_ string, params protocol.LatestParams) (protocol.LatestResult, error) {
 	res := protocol.LatestResult{Latest: map[string]string{}, Unreachable: map[string]string{}}

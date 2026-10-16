@@ -9,7 +9,7 @@ import (
 
 func TestLookPathPrefersTheChildPath(t *testing.T) {
 	dir := t.TempDir()
-	name := "mnci-probe-tool"
+	name := "smith-probe-tool"
 	file := filepath.Join(dir, name)
 	if isWindows {
 		file += ".cmd"

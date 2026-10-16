@@ -38,7 +38,7 @@ license = "MIT"
 publish = false
 [[- end]]
 
-[package.metadata.mnci]
+[package.metadata.smith]
 kind = "[[.Kind]]"
 [[- if .Stack]]
 stack = "[[.Stack]]"

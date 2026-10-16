@@ -38,13 +38,13 @@ func TestServer(t *testing.T) {
 		t.Fatalf("%d tools listed", len(listed))
 	}
 	for _, c := range []struct{ msg, want string }{
-		{`{"name":"mnci_projects"}`, "projects --json"},
-		{`{"name":"mnci_install","arguments":{"package":"zod@^3","projects":["web","apps/api"],"dev":true}}`, "install -w web -w apps/api -D zod@^3"},
-		{`{"name":"mnci_run","arguments":{"tasks":["test","lint"],"projects":["web"],"affected":true}}`, "run test lint -p web --affected"},
-		{`{"name":"mnci_add_project","arguments":{"kind":"app","name":"api","lang":"go"}}`, "add app api --lang go"},
-		{`{"name":"mnci_remove_project","arguments":{"name":"old","dry_run":true}}`, "remove old --dry-run"},
-		{`{"name":"mnci_pipeline","arguments":{"template":"deploy-pages","project":"web"}}`, "pipeline deploy-pages --project web"},
-		{`{"name":"mnci_graph","arguments":{"focus":["web","api"]}}`, "graph --format json --focus web,api"},
+		{`{"name":"smith_projects"}`, "projects --json"},
+		{`{"name":"smith_install","arguments":{"package":"zod@^3","projects":["web","apps/api"],"dev":true}}`, "install -w web -w apps/api -D zod@^3"},
+		{`{"name":"smith_run","arguments":{"tasks":["test","lint"],"projects":["web"],"affected":true}}`, "run test lint -p web --affected"},
+		{`{"name":"smith_add_project","arguments":{"kind":"app","name":"api","lang":"go"}}`, "add app api --lang go"},
+		{`{"name":"smith_remove_project","arguments":{"name":"old","dry_run":true}}`, "remove old --dry-run"},
+		{`{"name":"smith_pipeline","arguments":{"template":"deploy-pages","project":"web"}}`, "pipeline deploy-pages --project web"},
+		{`{"name":"smith_graph","arguments":{"focus":["web","api"]}}`, "graph --format json --focus web,api"},
 	} {
 		ran = nil
 		res := call(t, s, `{"jsonrpc":"2.0","id":3,"method":"tools/call","params":`+c.msg+`}`)["result"].(map[string]any)
@@ -53,7 +53,7 @@ func TestServer(t *testing.T) {
 		}
 	}
 	ran = nil
-	res := call(t, s, `{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"mnci_install","arguments":{"package":"--registry=evil","projects":["web"]}}}`)["result"].(map[string]any)
+	res := call(t, s, `{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"smith_install","arguments":{"package":"--registry=evil","projects":["web"]}}}`)["result"].(map[string]any)
 	if res["isError"] != true || len(ran) != 0 {
 		t.Fatalf("an option smuggled in as a value must be refused: %v %v", res, ran)
 	}

@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/nxworkspace"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/nxworkspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
-// WorkspaceSettings derives mnci.toml's [workspace], [ci] and [release]
+// WorkspaceSettings derives smith.toml's [workspace], [ci] and [release]
 // sections. hasFile reports whether a workspace-relative file exists;
 // modules maps Go project roots to their module paths.
 func WorkspaceSettings(w *nxworkspace.Workspace, dirName string, hasFile func(string) bool, modules map[string]string) workspace.Config {

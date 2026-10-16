@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-rust/discovery"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-rust/discovery"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestGenerateMakesAWorkspaceThenAddsToIt(t *testing.T) {

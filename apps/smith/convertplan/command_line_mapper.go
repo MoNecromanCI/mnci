@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// CommandLine is a shell command line split into what an mnci task runs: an
+// CommandLine is a shell command line split into what a smith task runs: an
 // argv (never passed through a shell) and leading VAR=value assignments.
 type CommandLine struct {
 	Argv []string

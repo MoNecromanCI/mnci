@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
 )
 
 // Field is one resolved value and where it came from.

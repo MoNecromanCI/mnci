@@ -7,7 +7,7 @@ import (
 )
 
 // Report is the machine-readable record of a release run, written to
-// .mnci/release-report.json and printed by --json.
+// .smith/release-report.json and printed by --json.
 type Report struct {
 	DryRun   bool           `json:"dryRun"`
 	Started  time.Time      `json:"started"`

@@ -7,14 +7,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
-	"github.com/MoNecromanCI/mnci/apps/mnci/release"
-	"github.com/MoNecromanCI/mnci/apps/mnci/releaselineage"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/cipipeline"
+	"github.com/monosmith-app/monosmith/apps/smith/release"
+	"github.com/monosmith-app/monosmith/apps/smith/releaselineage"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// Report is `mnci doctor --json`.
+// Report is `smith doctor --json`.
 type Report struct {
 	Findings []Finding `json:"findings"`
 	Passed   int       `json:"passed"`
@@ -22,7 +22,7 @@ type Report struct {
 	Warnings int       `json:"warnings"`
 }
 
-// Finding is one check; Source is "mnci" or the plugin's name.
+// Finding is one check; Source is "smith" or the plugin's name.
 type Finding struct {
 	protocol.Finding
 	Source string `json:"source"`
@@ -36,8 +36,8 @@ func Run(s *session.Session) Report {
 			findings = append(findings, Finding{Finding: f, Source: source})
 		}
 	}
-	add("mnci", CoreChecks(s)...)
-	add("mnci", lineageChecks(s)...)
+	add("smith", CoreChecks(s)...)
+	add("smith", lineageChecks(s)...)
 	for _, c := range s.Plugins.Clients {
 		if !c.Info.Capabilities.Doctor {
 			continue
@@ -77,7 +77,7 @@ func lineageChecks(s *session.Session) []protocol.Finding {
 	var out []protocol.Finding
 	for _, f := range release.CheckLineage(s, false) {
 		failed[f.Check] = true
-		out = append(out, protocol.Finding{Check: f.Check, Detail: f.Message, Warning: !f.Blocking, Remedy: "see the detail; mnci release refuses to run until it is fixed"})
+		out = append(out, protocol.Finding{Check: f.Check, Detail: f.Message, Warning: !f.Blocking, Remedy: "see the detail; smith release refuses to run until it is fixed"})
 	}
 	for _, check := range []string{releaselineage.CheckResolve, releaselineage.CheckRegistry} {
 		if !failed[check] {
@@ -87,13 +87,13 @@ func lineageChecks(s *session.Session) []protocol.Finding {
 	return out
 }
 
-// CoreChecks are mnci's own invariants.
+// CoreChecks are smith's own invariants.
 func CoreChecks(s *session.Session) []protocol.Finding {
 	var out []protocol.Finding
-	_, err := s.Git.Run("check-ignore", ".mnci/cache/x")
+	_, err := s.Git.Run("check-ignore", ".smith/cache/x")
 	ignoreCache := protocol.Finding{
 		Check: "the cache directory is ignored by git", OK: err == nil,
-		Detail: ".mnci/ is not in .gitignore, so cache files could be committed", Remedy: "add `.mnci/` to .gitignore",
+		Detail: ".smith/ is not in .gitignore, so cache files could be committed", Remedy: "add `.smith/` to .gitignore",
 	}
 	if err != nil {
 		ignoreCache.Fix = ignoreFix(s.Root)
@@ -107,7 +107,7 @@ func CoreChecks(s *session.Session) []protocol.Finding {
 	out = append(out, protocol.Finding{
 		Check: "every build writes to " + protocol.BuildDir + "/", OK: len(outside) == 0,
 		Detail: strings.Join(outside, "; "),
-		Remedy: "build each project into " + protocol.BuildDir + "/<project dir>/: point the tool there (tsconfig outDir, --outdir, -o) and the task's outputs (mnci.toml outputs = [...]); for a plugin's own task, update the plugin",
+		Remedy: "build each project into " + protocol.BuildDir + "/<project dir>/: point the tool there (tsconfig outDir, --outdir, -o) and the task's outputs (smith.toml outputs = [...]); for a plugin's own task, update the plugin",
 	})
 	cycles := s.Graph.Cycles()
 	var paths []string
@@ -132,13 +132,13 @@ func CoreChecks(s *session.Session) []protocol.Finding {
 		}
 		pipelines := protocol.Finding{
 			Check: "CI pipelines match the workspace", OK: len(drift) == 0,
-			Detail: detail, Remedy: "run `mnci ci generate` and commit the result",
+			Detail: detail, Remedy: "run `smith ci generate` and commit the result",
 		}
 		planned, lost := cipipeline.Planned(s.Root, s.Config, model)
 		stale := cipipeline.Stale(s.Root, cipipeline.Rendered(s.Config, model))
 		if len(planned)+len(stale) > 0 {
 			// Regenerating is safe when every slot's content survives it; a
-			// stale file carries mnci's header, so it is mnci's to delete.
+			// stale file carries smith's header, so it is smith's to delete.
 			pipelines.Fix = &protocol.Fix{Description: "regenerate the pipelines, keeping your slot contents", Safe: len(lost) == 0}
 			for _, path := range sortedKeys(planned) {
 				pipelines.Fix.Files = append(pipelines.Fix.Files, protocol.FileEdit{Path: path, Content: planned[path]})
@@ -159,21 +159,21 @@ func CoreChecks(s *session.Session) []protocol.Finding {
 		if len(missing) > 0 {
 			out = append(out, protocol.Finding{
 				Check: p.Name + " can be verified", Warning: true,
-				Detail: p.Name + " has no " + missing[0] + " task, so CI never checks it", Remedy: "add the task to the project (or in mnci.toml under [projects." + p.Name + ".tasks])",
+				Detail: p.Name + " has no " + missing[0] + " task, so CI never checks it", Remedy: "add the task to the project (or in smith.toml under [projects." + p.Name + ".tasks])",
 			})
 		}
 	}
 	return out
 }
 
-// ignoreFix adds .mnci/ to the workspace's .gitignore (creating it).
+// ignoreFix adds .smith/ to the workspace's .gitignore (creating it).
 func ignoreFix(root string) *protocol.Fix {
 	raw, _ := os.ReadFile(filepath.Join(root, ".gitignore"))
 	text := string(raw)
 	if text != "" && !strings.HasSuffix(text, "\n") {
 		text += "\n"
 	}
-	return &protocol.Fix{Description: "ignore the cache directory", Safe: true, Files: []protocol.FileEdit{{Path: ".gitignore", Content: text + "\n# mnci\n.mnci/\n"}}}
+	return &protocol.Fix{Description: "ignore the cache directory", Safe: true, Files: []protocol.FileEdit{{Path: ".gitignore", Content: text + "\n# smith\n.smith/\n"}}}
 }
 
 func sortedKeys(m map[string]string) []string {

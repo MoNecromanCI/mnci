@@ -17,10 +17,10 @@ func TestRenameSlots(t *testing.T) {
       # mnci:slot-end after-release
 `
 	got, orphans := RenameSlots(old)
-	if !strings.Contains(got, "      # mnci:slot before-setup\n      - run: echo team step\n      # mnci:slot-end before-setup\n") {
+	if !strings.Contains(got, "      # smith:slot before-setup\n      - run: echo team step\n      # smith:slot-end before-setup\n") {
 		t.Fatalf("after-install must become before-setup:\n%s", got)
 	}
-	if !strings.Contains(got, "# mnci:slot after-verify\n      # mnci:slot-end after-verify") {
+	if !strings.Contains(got, "# smith:slot after-verify\n      # smith:slot-end after-verify") {
 		t.Fatalf("before-release must become after-verify:\n%s", got)
 	}
 	if len(orphans) != 1 || orphans[0] != "after-release" {

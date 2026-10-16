@@ -14,22 +14,22 @@ import (
 // and the build into dist/, then a cache replay.
 func TestWebWorkspace(t *testing.T) {
 	base := t.TempDir()
-	w := &workspace{t: t, bin: buildMnci(t, base), dir: base, env: identity()}
-	w.mnci(true, "new", "mnci-e2e-web", "--ci", "github")
-	w.dir = filepath.Join(base, "mnci-e2e-web")
+	w := &workspace{t: t, bin: buildSmith(t, base), dir: base, env: identity()}
+	w.smith(true, "new", "smith-e2e-web", "--ci", "github")
+	w.dir = filepath.Join(base, "smith-e2e-web")
 	all := []string{"lint", "typecheck", "test", "build"}
 	stacks := map[string][]string{
 		"react": all, "react-p5": all, "vue": all, "svelte": all, "html": all, "angular": all,
 		"docs-site": {"lint", "build"},
 	}
 	for stack := range stacks {
-		w.mnci(true, "add", "app", stack, "--stack", stack)
+		w.smith(true, "add", "app", stack, "--stack", stack)
 	}
-	if out := w.mnci(false, "add", "lib", "ui", "--stack", "react"); !strings.Contains(out, "is an app") {
+	if out := w.smith(false, "add", "lib", "ui", "--stack", "react"); !strings.Contains(out, "is an app") {
 		t.Fatalf("a web stack scaffolds apps only:\n%s", out)
 	}
 
-	out := w.mnci(true, "run", "lint", "typecheck", "test", "build")
+	out := w.smith(true, "run", "lint", "typecheck", "test", "build")
 	for stack, tasks := range stacks {
 		for _, task := range tasks {
 			if want := stack + ":" + task + " ✔"; !strings.Contains(out, want) {
@@ -44,10 +44,10 @@ func TestWebWorkspace(t *testing.T) {
 			t.Errorf("apps/%s/dist exists: builds must go to the workspace's dist/", stack)
 		}
 	}
-	if out := w.mnci(true, "run", "lint", "typecheck", "test", "build"); !strings.Contains(out, "(26 from cache") {
+	if out := w.smith(true, "run", "lint", "typecheck", "test", "build"); !strings.Contains(out, "(26 from cache") {
 		t.Fatalf("a re-run replays from the cache:\n%s", out)
 	}
-	if out := w.mnci(true, "stacks"); !strings.Contains(out, "react-p5") || !strings.Contains(out, "docs-site") {
+	if out := w.smith(true, "stacks"); !strings.Contains(out, "react-p5") || !strings.Contains(out, "docs-site") {
 		t.Fatalf("the vite plugin's stacks are listed:\n%s", out)
 	}
 }

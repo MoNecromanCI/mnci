@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/releasing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/releasing"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Lookup asks the registry for a package's latest version; tests replace it.
@@ -38,7 +38,7 @@ var FetchJSON = func(url string, v any) error {
 }
 
 // Latest asks the registry (npm view, so .npmrc applies) for each package's
-// latest version, a few at a time, and compares the Node.js mnci pins with
+// latest version, a few at a time, and compares the Node.js smith pins with
 // the newest LTS.
 func Latest(workspaceRoot string, params protocol.LatestParams) (protocol.LatestResult, error) {
 	res := protocol.LatestResult{Latest: map[string]string{}, Unreachable: map[string]string{}}

@@ -1,6 +1,6 @@
 package discovery
 
-import "github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+import "github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 
 // inputs are what a project's results depend on: its sources (its tests
 // project's too) and the workspace's shared MSBuild and SDK settings.

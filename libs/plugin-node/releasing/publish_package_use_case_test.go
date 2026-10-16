@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func fakeNpm(t *testing.T, published string) *[]string {

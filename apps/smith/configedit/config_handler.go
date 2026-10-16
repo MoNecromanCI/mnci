@@ -5,24 +5,24 @@ import (
 	"fmt"
 	"text/tabwriter"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 	"github.com/spf13/cobra"
 )
 
-// Command is `mnci config`.
+// Command is `smith config`.
 func Command() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",
-		Short: "Read and change settings of mnci.toml",
-		Long: `Read and change the settings of mnci.toml's [workspace], [ci], [release],
-[cache] and [plugins] tables. Values are checked against mnci.toml's schema,
+		Short: "Read and change settings of smith.toml",
+		Long: `Read and change the settings of smith.toml's [workspace], [ci], [release],
+[cache] and [plugins] tables. Values are checked against smith.toml's schema,
 and only the setting's value changes in the file: comments and every other
 line stay as they are. Edit stacks, conventions, tasks and projects in the
 file itself.`,
-		Example: `  mnci config list
-  mnci config set ci.devcontainer false
-  mnci config set ci.providers github azure
-  mnci config unset release.branch`,
+		Example: `  smith config list
+  smith config set ci.devcontainer false
+  smith config set ci.providers github azure
+  smith config unset release.branch`,
 	}
 	root := func() (string, error) { return workspace.FindRoot(".") }
 
@@ -73,7 +73,7 @@ file itself.`,
 
 	get := &cobra.Command{
 		Use:   "get <setting>",
-		Short: "Print one setting's value as written in mnci.toml",
+		Short: "Print one setting's value as written in smith.toml",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dir, err := root()

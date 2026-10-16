@@ -1,14 +1,14 @@
 package plugin
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-docker/images"
-	"github.com/MoNecromanCI/mnci/libs/plugin-docker/pipeline"
-	"github.com/MoNecromanCI/mnci/libs/plugin-docker/publishing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-docker/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-docker/images"
+	"github.com/monosmith-app/monosmith/libs/plugin-docker/pipeline"
+	"github.com/monosmith-app/monosmith/libs/plugin-docker/publishing"
+	"github.com/monosmith-app/monosmith/libs/plugin-docker/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// Name is the convention's name in mnci.toml ([conventions.docker]).
+// Name is the convention's name in smith.toml ([conventions.docker]).
 const Name = "docker"
 
 // languages are the built-in languages: an image ships an app's build,

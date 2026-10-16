@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // GitLabPath is where the GitLab CI pipeline is written.
@@ -29,30 +29,30 @@ ci:
   image: %[2]s
   variables:
     GIT_DEPTH: "0"
-    MNCI_VERSION: %[3]s
+    SMITH_VERSION: %[3]s
   before_script:
     - apt-get update -qq && apt-get install -y -qq curl git ca-certificates xz-utils >/dev/null
-`, m.ReleaseBranch, GitLabImage, yamlValue(m.MnciVersion))
+`, m.ReleaseBranch, GitLabImage, yamlValue(m.SmithVersion))
 	for _, t := range m.Toolchains {
 		b.WriteString(gitlabSetup(t))
 	}
-	fmt.Fprintf(&b, "    - curl -fsSL %s | sh -s -- \"$MNCI_VERSION\"\n", InstallScriptURL)
+	fmt.Fprintf(&b, "    - curl -fsSL %s | sh -s -- \"$SMITH_VERSION\"\n", InstallScriptURL)
 	b.WriteString("    - export PATH=\"$HOME/.local/bin:$PATH\"\n")
 	b.WriteString(slot("    ", "before-setup"))
 	b.WriteString(`  script:
-    - mnci ci setup
-    - mnci ci audit
-    - mnci ci verify
+    - smith ci setup
+    - smith ci audit
+    - smith ci verify
 `)
 	b.WriteString(slot("    ", "after-verify"))
 	b.WriteString("    # The release preview comments on the merge request with GITLAB_TOKEN (api scope).\n")
-	b.WriteString("    - " + yamlValue(`if [ "$CI_PIPELINE_SOURCE" = "merge_request_event" ]; then mnci release --dry-run --comment; fi`) + "\n")
+	b.WriteString("    - " + yamlValue(`if [ "$CI_PIPELINE_SOURCE" = "merge_request_event" ]; then smith release --dry-run --comment; fi`) + "\n")
 	onPush := fmt.Sprintf(`[ "$CI_PIPELINE_SOURCE" = "push" ] && [ "$CI_COMMIT_BRANCH" = "%s" ]`, m.ReleaseBranch)
 	if m.Pack {
-		b.WriteString("    - " + yamlValue("if "+onPush+"; then mnci ci pack; fi") + "\n")
+		b.WriteString("    - " + yamlValue("if "+onPush+"; then smith ci pack; fi") + "\n")
 	}
 	b.WriteString("    # Releasing pushes tags: GITLAB_TOKEN needs write_repository.\n")
-	b.WriteString("    - " + yamlValue("if "+onPush+`; then git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"; mnci ci release; fi`) + "\n")
+	b.WriteString("    - " + yamlValue("if "+onPush+`; then git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"; smith ci release; fi`) + "\n")
 	if m.Pack {
 		b.WriteString(`  artifacts:
     name: drop
@@ -63,7 +63,7 @@ ci:
 `)
 	}
 	if m.Native {
-		b.WriteString("\n# Native projects build on every OS in the GitHub and Azure pipelines; on GitLab,\n# add a job per runner OS that runs `mnci ci native` (it builds only the host's).\n")
+		b.WriteString("\n# Native projects build on every OS in the GitHub and Azure pipelines; on GitLab,\n# add a job per runner OS that runs `smith ci native` (it builds only the host's).\n")
 	}
 	if len(m.Credentials) > 0 {
 		b.WriteString("\n# Secrets the release reads, as masked CI/CD variables:\n")

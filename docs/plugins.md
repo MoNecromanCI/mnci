@@ -1,7 +1,7 @@
 # Plugins
 
 Everything language-specific lives in a plugin: finding projects, their tasks,
-scaffolding, writing versions, publishing, CI needs and health checks. mnci's
+scaffolding, writing versions, publishing, CI needs and health checks. smith's
 core knows none of it. A plugin plays one or more roles (language, toolchain,
 structure, scaffold, deploy), and each project picks the plugins it is built
 with through its [stack](stacks.md).
@@ -32,20 +32,20 @@ with through its [stack](stacks.md).
 | `docker` | deploy, a convention for every language (`[conventions.docker]`) | an `image` task (`docker build`, the workspace as context, after `build`) for every app with a `Dockerfile`; writes one for a new Go app (built in Docker, shipped on distroless) or static web app (nginx serving `dist/<app dir>`) | the release builds the image tagged with the version and `latest` and pushes both to `CONTAINER_REGISTRY` (`CONTAINER_USERNAME`, `CONTAINER_PASSWORD`); an app with a `Dockerfile` releases without a `[release]` section |
 | `vertical-slices` | structure | a `slice-check` task for Go and Python projects, run before `lint` | — |
 
-Built-in plugins ship inside the `mnci` binary but still run as separate
-processes (`mnci plugin serve <name>`), speaking the same protocol an external
-plugin does. `mnci plugin list` shows each one's roles and capabilities, and
-`mnci stacks` the stacks they publish.
+Built-in plugins ship inside the `smith` binary but still run as separate
+processes (`smith plugin serve <name>`), speaking the same protocol an external
+plugin does. `smith plugin list` shows each one's roles and capabilities, and
+`smith stacks` the stacks they publish.
 
 ## Writing a plugin
 
 A plugin is any executable that speaks the protocol on stdin/stdout; anything
-it wants the user to see goes to stderr. Declare it in `mnci.toml`, with its
+it wants the user to see goes to stderr. Declare it in `smith.toml`, with its
 command, or by name alone when it is installed:
 
 ```toml
 [plugins.external.rust]
-command = ["mnci-plugin-rust"]   # any executable; on PATH, or a path
+command = ["smith-plugin-rust"]   # any executable; on PATH, or a path
 
 [plugins.external.kiwi]
 version = "^1.2"                 # installed on the search path; "1.2.3", "~1.2", ">=1.2" also work
@@ -56,7 +56,7 @@ An external plugin with the name of a built-in one replaces it.
 A plugin builds every project into `protocol.ProjectBuildDir(root)`
 (`dist/<project dir>`), and declares that directory as the task's outputs with
 `protocol.BuildDirFromProject(root)` (`../../dist/apps/web`, relative to the
-project). `mnci doctor` fails any output elsewhere.
+project). `smith doctor` fails any output elsewhere.
 
 ### Installing a plugin
 
@@ -67,20 +67,20 @@ An installed plugin is a directory holding a `plugin.json`:
   "name": "kiwi",
   "version": "1.2.0",
   "description": "the kiwi language",
-  "command": ["./bin/mnci-plugin-kiwi-{os}-{arch}{exe}"]
+  "command": ["./bin/smith-plugin-kiwi-{os}-{arch}{exe}"]
 }
 ```
 
 A command path starting with `./` or `../` is relative to that directory;
 `{os}`, `{arch}` and `{exe}` (`.exe` on Windows) are filled in, so one
-directory can carry a binary per platform. mnci looks for
+directory can carry a binary per platform. smith looks for
 `<dir>/<name>/plugin.json` in these directories, the first match winning:
 
-1. the workspace's `.mnci/plugins`
-2. each directory of `MNCI_PLUGIN_PATH`
-3. `$MNCI_HOME/plugins` (`MNCI_HOME` defaults to `~/.mnci`)
+1. the workspace's `.smith/plugins`
+2. each directory of `SMITH_PLUGIN_PATH`
+3. `$SMITH_HOME/plugins` (`SMITH_HOME` defaults to `~/.smith`)
 
-None of it depends on how mnci itself was installed. `mnci plugin list` shows
+None of it depends on how smith itself was installed. `smith plugin list` shows
 the built-in plugins, the search path and what is installed on it.
 Installing by name from a registry (Homebrew/Yeoman style) is planned (#164);
 it will put directories like these on the search path.
@@ -91,8 +91,8 @@ so upgrading a plugin re-runs its tasks.
 ### Checking a plugin
 
 ```sh
-mnci plugin check kiwi --generate
-mnci plugin check ./bin/mnci-plugin-kiwi
+smith plugin check kiwi --generate
+smith plugin check ./bin/smith-plugin-kiwi
 ```
 
 runs the conformance suite: the plugin names itself, its roles match what it
@@ -104,20 +104,20 @@ that have commands. In Go, run the same checks in your tests with
 `conformance.Check` (`packages/plugin-sdk/conformance`) over an in-process
 connection. Every built-in plugin passes it.
 
-The quickest start is a scaffold: `mnci add app my-plugin --stack
-go-mnci-plugin` writes a Go module that is a working plugin (a structure
+The quickest start is a scaffold: `smith add app my-plugin --stack
+go-smith-plugin` writes a Go module that is a working plugin (a structure
 plugin giving projects a `hello` task) on the SDK, with a conformance test,
 and its README says how to declare it.
 
-In Go, the SDK (`github.com/MoNecromanCI/mnci/packages/plugin-sdk`) does the
+In Go, the SDK (`github.com/monosmith-app/monosmith/packages/plugin-sdk`) does the
 protocol for you:
 
 ```go
 package main
 
 import (
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/serve"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/serve"
 )
 
 type rust struct{ root string }
@@ -191,7 +191,7 @@ A plugin declares its roles in `initialize` (`roles`; a language plugin that
 declares none is language, toolchain and scaffold, any other is structure):
 
 - A **language** plugin implements `discover`, and usually `generate`,
-  `version/write` and `publish`. It is what makes a new language work in mnci:
+  `version/write` and `publish`. It is what makes a new language work in smith:
   the graph, the cache, affected and releases need nothing else.
 - A **toolchain**, **structure** or **deploy** plugin implements
   `contribute` (`serve.Contributor` in the Go SDK) to add or replace tasks of

@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-// FileDigests memoises file content digests for one mnci invocation, so a file
+// FileDigests memoises file content digests for one smith invocation, so a file
 // read by many tasks is hashed once.
 type FileDigests struct {
 	root string

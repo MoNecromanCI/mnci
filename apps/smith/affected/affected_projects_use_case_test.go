@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/gitclient"
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/gitclient"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func setup(t *testing.T) (*gitclient.Git, *projectgraph.Graph) {
@@ -25,7 +25,7 @@ func setup(t *testing.T) (*gitclient.Git, *projectgraph.Graph) {
 		_ = os.MkdirAll(filepath.Dir(p), 0o755)
 		_ = os.WriteFile(p, []byte(rel+"x"), 0o644)
 	}
-	for _, f := range []string{"apps/web/a", "libs/ui/a", "libs/core/a", "apps/api/a", "README.md", "mnci.toml"} {
+	for _, f := range []string{"apps/web/a", "libs/ui/a", "libs/core/a", "apps/api/a", "README.md", "smith.toml"} {
 		write(f)
 	}
 	if err := g.CommitAll("init"); err != nil {
@@ -57,7 +57,7 @@ func TestAffectedFallsBackToEverything(t *testing.T) {
 	if r := Compute(g, pg, ""); !r.All {
 		t.Fatal("no base must verify everything")
 	}
-	_ = os.WriteFile(filepath.Join(g.Dir, "mnci.toml"), []byte("changed"), 0o644)
+	_ = os.WriteFile(filepath.Join(g.Dir, "smith.toml"), []byte("changed"), 0o644)
 	if r := Compute(g, pg, "base"); !r.All || len(r.Projects) != 4 {
 		t.Fatalf("a workspace file change must affect everything: %+v", r)
 	}

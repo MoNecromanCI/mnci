@@ -1,12 +1,12 @@
 package workspace
 
 // FileName is the workspace marker and configuration file.
-const FileName = "mnci.toml"
+const FileName = "smith.toml"
 
-// SchemaVersion is the mnci.toml schema this build reads and writes.
+// SchemaVersion is the smith.toml schema this build reads and writes.
 const SchemaVersion = 1
 
-// Config is mnci.toml. Every field is optional except workspace.name.
+// Config is smith.toml. Every field is optional except workspace.name.
 type Config struct {
 	Schema    int              `toml:"schema"`
 	Workspace WorkspaceSection `toml:"workspace"`
@@ -21,13 +21,13 @@ type Config struct {
 	// stack declared here wins over a published one of the same name.
 	Stacks map[string]StackConfig `toml:"stacks"`
 	// DefaultStacks is the stack of a project that records none, and of
-	// `mnci add` without --stack, by language.
+	// `smith add` without --stack, by language.
 	DefaultStacks map[string]string          `toml:"default_stacks"`
 	Tasks         map[string]TaskOverride    `toml:"tasks"`
 	Projects      map[string]ProjectOverride `toml:"projects"`
 }
 
-// StackConfig is a stack declared in mnci.toml: the plugins a project is
+// StackConfig is a stack declared in smith.toml: the plugins a project is
 // built with, by name.
 type StackConfig struct {
 	Description string   `toml:"description"`
@@ -47,12 +47,12 @@ type WorkspaceSection struct {
 	ModulePrefix string `toml:"module_prefix"`
 }
 
-// CISection chooses which pipelines mnci generates.
+// CISection chooses which pipelines smith generates.
 type CISection struct {
 	// Providers is any of "github", "azure", "gitlab". Default: ["github"].
 	Providers []string `toml:"providers"`
 	// Devcontainer writes .devcontainer/devcontainer.json with the
-	// toolchains CI installs, at the same versions. Default: false (mnci new
+	// toolchains CI installs, at the same versions. Default: false (smith new
 	// turns it on).
 	Devcontainer bool `toml:"devcontainer"`
 	// NativeRunners are the machines the native job runs on, one per OS,
@@ -64,7 +64,7 @@ type CISection struct {
 	NativeLinuxPackages []string `toml:"native_linux_packages"`
 }
 
-// ReleaseSection configures `mnci release`.
+// ReleaseSection configures `smith release`.
 type ReleaseSection struct {
 	// Branch is the only branch a real release runs from. Default: main.
 	Branch string `toml:"branch"`
@@ -78,12 +78,12 @@ type ReleaseSection struct {
 
 // CacheSection configures the local task cache.
 type CacheSection struct {
-	// Dir is workspace-relative. Default: .mnci/cache.
+	// Dir is workspace-relative. Default: .smith/cache.
 	Dir string `toml:"dir"`
 	// MaxSizeMB triggers pruning of the least recently used entries. Default: 2048.
 	MaxSizeMB int `toml:"max_size_mb"`
 	// Remote is a shared cache behind the local one: https://, s3:// or
-	// azblob://. Objects are signed with MNCI_CACHE_KEY. Default: none.
+	// azblob://. Objects are signed with SMITH_CACHE_KEY. Default: none.
 	Remote string `toml:"remote"`
 	// RemoteReadOnly reads the remote without writing to it (a developer's
 	// machine, while CI fills it). Default: false.
@@ -98,7 +98,7 @@ type PluginsSection struct {
 	External map[string]ExternalPlugin `toml:"external"`
 }
 
-// ExternalPlugin is a plugin outside the mnci binary. It replaces a built-in
+// ExternalPlugin is a plugin outside the smith binary. It replaces a built-in
 // plugin of the same name.
 type ExternalPlugin struct {
 	// Command runs the plugin. Empty means: find it installed on the plugin

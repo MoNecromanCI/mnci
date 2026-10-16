@@ -22,12 +22,12 @@ func install(t *testing.T, dir, name, version, command string) {
 
 func TestFindInstalledFollowsTheSearchPath(t *testing.T) {
 	ws, extra, home := t.TempDir(), t.TempDir(), t.TempDir()
-	t.Setenv("MNCI_PLUGIN_PATH", extra)
-	t.Setenv("MNCI_HOME", home)
-	local := filepath.Join(ws, ".mnci", "plugins")
+	t.Setenv("SMITH_PLUGIN_PATH", extra)
+	t.Setenv("SMITH_HOME", home)
+	local := filepath.Join(ws, ".smith", "plugins")
 	install(t, local, "kiwi", "2.0.0", "./bin/kiwi-{os}-{arch}{exe}")
 	install(t, extra, "kiwi", "1.0.0", "kiwi")
-	install(t, extra, "melon", "1.0.0", "mnci-plugin-melon")
+	install(t, extra, "melon", "1.0.0", "smith-plugin-melon")
 	install(t, filepath.Join(home, "plugins"), "plum", "0.1.0", "../shared/plum")
 	_ = os.MkdirAll(filepath.Join(local, "not-a-plugin"), 0o755)
 
@@ -47,7 +47,7 @@ func TestFindInstalledFollowsTheSearchPath(t *testing.T) {
 	if kiwi.Version != "2.0.0" || kiwi.Argv[0] != want || kiwi.Argv[1] != "--serve" {
 		t.Fatalf("the workspace's kiwi wins, its command resolved: %+v", kiwi)
 	}
-	if melon, _ := FindPlugin(ws, "melon"); melon.Argv[0] != "mnci-plugin-melon" {
+	if melon, _ := FindPlugin(ws, "melon"); melon.Argv[0] != "smith-plugin-melon" {
 		t.Fatalf("a bare command is looked up on PATH: %+v", melon)
 	}
 	if plum, _ := FindPlugin(ws, "plum"); plum.Argv[0] != filepath.Join(home, "plugins", "shared", "plum") {
@@ -60,9 +60,9 @@ func TestFindInstalledFollowsTheSearchPath(t *testing.T) {
 
 func TestFindInstalledRejectsABadManifest(t *testing.T) {
 	ws := t.TempDir()
-	t.Setenv("MNCI_PLUGIN_PATH", "")
-	t.Setenv("MNCI_HOME", t.TempDir())
-	dir := filepath.Join(ws, ".mnci", "plugins", "bad")
+	t.Setenv("SMITH_PLUGIN_PATH", "")
+	t.Setenv("SMITH_HOME", t.TempDir())
+	dir := filepath.Join(ws, ".smith", "plugins", "bad")
 	_ = os.MkdirAll(dir, 0o755)
 	_ = os.WriteFile(filepath.Join(dir, ManifestFile), []byte(`{"name": "bad"}`), 0o644)
 	if _, err := FindInstalled(ws); err == nil || !strings.Contains(err.Error(), "command are required") {

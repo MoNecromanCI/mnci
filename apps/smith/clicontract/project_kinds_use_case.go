@@ -4,8 +4,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 var kindText = map[protocol.ProjectKind]string{
@@ -17,7 +17,7 @@ var kindText = map[protocol.ProjectKind]string{
 // languages names a plugin's projects as the editor's icons know them.
 var languages = map[string]string{"node": "typescript"}
 
-// Kinds lists what `mnci add <kind>` accepts: <language>-<app|lib|package>
+// Kinds lists what `smith add <kind>` accepts: <language>-<app|lib|package>
 // for every language plugin that generates projects.
 func Kinds(set *pluginhost.PluginSet) []KindDescription {
 	var out []KindDescription

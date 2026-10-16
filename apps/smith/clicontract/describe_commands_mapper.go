@@ -15,7 +15,7 @@ import (
 var groups = map[string]string{"start": "workspace", "work": "projects", "ship": "pipeline", "inspect": "inspect"}
 
 // regrouped are commands whose editor group differs from their help group,
-// as the TypeScript mnci grouped them.
+// as the TypeScript smith grouped them.
 var regrouped = map[string]string{"doctor": "workspace", "add": "projects", "remove": "projects", "install": "dependencies", "uninstall": "dependencies", "sync": "dependencies", "up": "dependencies"}
 
 var argPattern = regexp.MustCompile(`<([^>]+)>|\[([^\]]+)\]`)

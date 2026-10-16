@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestDiscover(t *testing.T) {
@@ -21,7 +21,7 @@ func TestDiscover(t *testing.T) {
   <ItemGroup><ProjectReference Include="..\..\packages\core\Acme.Core.csproj" /></ItemGroup>
 </Project>`)
 	write("packages/core/Acme.Core.csproj", `<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><TargetFramework>net10.0</TargetFramework><PackageId>Acme.Core</PackageId><MnciStack>dotnet</MnciStack></PropertyGroup>
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><PackageId>Acme.Core</PackageId><SmithStack>dotnet</SmithStack></PropertyGroup>
 </Project>`)
 	write("packages/core/tests/Acme.Core.Tests.csproj", `<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup><PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" /></ItemGroup>

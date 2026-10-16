@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestLatest(t *testing.T) {

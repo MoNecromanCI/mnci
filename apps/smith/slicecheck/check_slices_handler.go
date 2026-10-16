@@ -3,11 +3,11 @@ package slicecheck
 import (
 	"fmt"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-vertical-slices/layout"
+	"github.com/monosmith-app/monosmith/libs/plugin-vertical-slices/layout"
 	"github.com/spf13/cobra"
 )
 
-// Command is `mnci slices`.
+// Command is `smith slices`.
 func Command() *cobra.Command {
 	cmd := &cobra.Command{Use: "slices", Short: "Check the vertical-slice layout of projects"}
 	var lang string
@@ -20,7 +20,7 @@ a module's or package's root holds only its entry files, and no folder is
 named util, helper, common, shared, manager, processor, data or misc. A slice
 with more than ` + fmt.Sprint(layout.SliceSize) + ` production files is reported for review.
 
-The vertical-slices convention ([conventions.vertical-slices] in mnci.toml)
+The vertical-slices convention ([conventions.vertical-slices] in smith.toml)
 runs this as each project's slice-check task.`,
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, dirs []string) error {

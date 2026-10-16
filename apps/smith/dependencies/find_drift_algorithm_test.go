@@ -3,7 +3,7 @@ package dependencies
 import (
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func decl(project, name, spec string, rewritable bool) protocol.Declaration {

@@ -1,3 +1,3 @@
-module github.com/MoNecromanCI/mnci/libs/plugin-jvm
+module github.com/monosmith-app/monosmith/libs/plugin-jvm
 
 go 1.26.0

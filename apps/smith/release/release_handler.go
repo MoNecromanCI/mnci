@@ -9,13 +9,13 @@ import (
 	"os/signal"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/releasepreview"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/monosmith-app/monosmith/apps/smith/releasepreview"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
 
-// Command is `mnci release`.
+// Command is `smith release`.
 func Command(version string) *cobra.Command {
 	var (
 		dryRun, yes, noPush, asJSON, comment, notes bool
@@ -108,7 +108,7 @@ after a failure resumes where it stopped.`,
 	cmd.Flags().BoolVar(&noPush, "no-push", false, "create tags locally only")
 	cmd.Flags().BoolVar(&notes, "notes", false, "also print each release's notes (what its GitHub Release says)")
 	cmd.Flags().BoolVar(&asJSON, "json", false, "print the release report as JSON")
-	cmd.Flags().BoolVar(&comment, "comment", false, "with --dry-run in a pull request build, post the preview on the pull request (GitHub, Azure Repos), updating mnci's earlier comment")
+	cmd.Flags().BoolVar(&comment, "comment", false, "with --dry-run in a pull request build, post the preview on the pull request (GitHub, Azure Repos), updating smith's earlier comment")
 	return cmd
 }
 

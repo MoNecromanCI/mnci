@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/gitclient"
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/gitclient"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
 )
 
 // Item is one package's planned release.

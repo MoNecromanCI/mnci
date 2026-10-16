@@ -5,8 +5,8 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name in a stack.
@@ -60,7 +60,7 @@ func (p *Vite) Generate(params protocol.GenerateParams) (protocol.GenerateResult
 		return protocol.GenerateResult{}, fmt.Errorf("the vite plugin scaffolds the %v stacks, not %q", slices.Sorted(maps.Keys(apps)), params.Stack)
 	}
 	if params.Kind != protocol.ProjectApp {
-		return protocol.GenerateResult{}, fmt.Errorf("a %s project is an app: mnci add app %s --stack %s", params.Stack, params.Name, params.Stack)
+		return protocol.GenerateResult{}, fmt.Errorf("a %s project is an app: smith add app %s --stack %s", params.Stack, params.Name, params.Stack)
 	}
 	dev := maps.Clone(devDependencies)
 	maps.Copy(dev, app.DevDependencies)

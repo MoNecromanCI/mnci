@@ -6,18 +6,18 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/serve"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/serve"
 	"github.com/spf13/cobra"
 )
 
-// Command is `mnci plugin`: list plugins, and serve a built-in one over stdio.
+// Command is `smith plugin`: list plugins, and serve a built-in one over stdio.
 func Command(version string) *cobra.Command {
 	cmd := &cobra.Command{Use: "plugin", Short: "Inspect plugins, or serve a built-in plugin"}
 	cmd.AddCommand(&cobra.Command{
 		Use:    "serve <name>",
-		Short:  "Serve a built-in plugin on stdin/stdout (mnci runs this itself)",
+		Short:  "Serve a built-in plugin on stdin/stdout (smith runs this itself)",
 		Args:   cobra.ExactArgs(1),
 		Hidden: true,
 		RunE: func(_ *cobra.Command, args []string) error {
@@ -91,7 +91,7 @@ func Command(version string) *cobra.Command {
 		verb := map[bool]string{true: "enable", false: "disable"}[enable]
 		cmd.AddCommand(&cobra.Command{
 			Use:   verb + " <name>...",
-			Short: strings.ToUpper(verb[:1]) + verb[1:] + " built-in plugins in mnci.toml",
+			Short: strings.ToUpper(verb[:1]) + verb[1:] + " built-in plugins in smith.toml",
 			Args:  cobra.MinimumNArgs(1),
 			RunE: func(c *cobra.Command, args []string) error {
 				root, err := workspace.FindRoot(".")
@@ -116,7 +116,7 @@ func Command(version string) *cobra.Command {
 	}
 	cmd.AddCommand(&cobra.Command{
 		Use:   "set <name>...",
-		Short: "Enable exactly these built-in plugins in mnci.toml",
+		Short: "Enable exactly these built-in plugins in smith.toml",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(c *cobra.Command, args []string) error {
 			root, err := workspace.FindRoot(".")

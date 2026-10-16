@@ -1,5 +1,5 @@
 {
-  "name": "mnci",
+  "name": "smith",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:24-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/python:1": {
@@ -34,7 +34,7 @@
   "remoteEnv": {
     "VCPKG_ROOT": "${containerEnv:HOME}/vcpkg"
   },
-  "postCreateCommand": "npm install -g npm@12 && npm ci && sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build cppcheck pkg-config zip unzip && ([ -d \"$HOME/vcpkg\" ] || (git clone --depth 1 --branch 2026.07.29 https://github.com/microsoft/vcpkg \"$HOME/vcpkg\" && \"$HOME/vcpkg/bootstrap-vcpkg.sh\" -disableMetrics)) && npx mnci ci setup",
+  "postCreateCommand": "npm install -g npm@12 && npm ci && sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build cppcheck pkg-config zip unzip && ([ -d \"$HOME/vcpkg\" ] || (git clone --depth 1 --branch 2026.07.29 https://github.com/microsoft/vcpkg \"$HOME/vcpkg\" && \"$HOME/vcpkg/bootstrap-vcpkg.sh\" -disableMetrics)) && npx smith ci setup",
   "customizations": {
     "vscode": {
       "extensions": [

@@ -16,7 +16,7 @@ var templates = map[string]string{
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "mnci": { "kind": "app"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
+  "smith": { "kind": "app"[[if .Stack]], "stack": "[[.Stack]]"[[end]] },
   "scripts": {
     "build": "astro check && astro build",
     "start": "astro dev"
@@ -41,7 +41,7 @@ export default [
 	"[[.Dir]]/astro.config.mjs": `import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
 
-// The site builds into the workspace's dist/ (mnci), never dist/ in the app.
+// The site builds into the workspace's dist/ (smith), never dist/ in the app.
 export default defineConfig({
   outDir:       '[[.Build]]',
   // Bundle js-yaml from Starlight's own copy: externalised, it resolves

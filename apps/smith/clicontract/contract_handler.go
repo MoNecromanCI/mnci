@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 	"github.com/spf13/cobra"
 )
 
-// Commands are `mnci commands`, `mnci kinds` and `mnci info`.
+// Commands are `smith commands`, `smith kinds` and `smith info`.
 func Commands(version string) []*cobra.Command {
 	var commandsJSON, kindsJSON, infoJSON bool
 	commands := &cobra.Command{
 		Use:   "commands",
-		Short: "List mnci's commands with their arguments and options (--json for editors)",
+		Short: "List smith's commands with their arguments and options (--json for editors)",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			described := DescribeCommands(cmd.Root())
@@ -33,7 +33,7 @@ func Commands(version string) []*cobra.Command {
 
 	kinds := &cobra.Command{
 		Use:   "kinds",
-		Short: "List the project kinds mnci add accepts (--json for editors)",
+		Short: "List the project kinds smith add accepts (--json for editors)",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			set, closeSet, err := plugins(version, cmd.ErrOrStderr())
@@ -55,7 +55,7 @@ func Commands(version string) []*cobra.Command {
 
 	info := &cobra.Command{
 		Use:   "info",
-		Short: "Show the installed mnci, the newest released one, and this workspace's settings",
+		Short: "Show the installed smith, the newest released one, and this workspace's settings",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			report := WorkspaceReport(version, ".")
@@ -63,7 +63,7 @@ func Commands(version string) []*cobra.Command {
 				return encode(cmd.OutOrStdout(), report)
 			}
 			out := cmd.OutOrStdout()
-			fmt.Fprintf(out, "mnci %s\n", report.CLI.Version)
+			fmt.Fprintf(out, "smith %s\n", report.CLI.Version)
 			if report.CLI.Latest != nil {
 				fmt.Fprintf(out, "latest release: %s", *report.CLI.Latest)
 				if report.CLI.UpdateAvailable {
@@ -72,7 +72,7 @@ func Commands(version string) []*cobra.Command {
 				fmt.Fprintln(out)
 			}
 			if report.Workspace == nil {
-				fmt.Fprintln(out, "not in an mnci workspace")
+				fmt.Fprintln(out, "not in a smith workspace")
 			} else {
 				fmt.Fprintf(out, "workspace: %s\n", report.Workspace.Root)
 			}
@@ -82,10 +82,10 @@ func Commands(version string) []*cobra.Command {
 	info.Flags().BoolVar(&infoJSON, "json", false, "print the report as one JSON document")
 	schema := &cobra.Command{
 		Use:   "schema",
-		Short: "Print the JSON Schema of mnci.toml, for editors",
-		Long: `Print the JSON Schema of mnci.toml. Editors that read TOML schemas (Even Better
-TOML in VS Code) pick it up from the #:schema line mnci new writes at the top
-of mnci.toml; it is served at ` + workspace.SchemaURL + `.`,
+		Short: "Print the JSON Schema of smith.toml, for editors",
+		Long: `Print the JSON Schema of smith.toml. Editors that read TOML schemas (Even Better
+TOML in VS Code) pick it up from the #:schema line smith new writes at the top
+of smith.toml; it is served at ` + workspace.SchemaURL + `.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			_, err := cmd.OutOrStdout().Write(workspace.Schema)

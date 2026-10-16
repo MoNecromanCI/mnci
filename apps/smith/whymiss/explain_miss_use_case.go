@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskcache"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskgraph"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskrun"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/taskcache"
+	"github.com/monosmith-app/monosmith/apps/smith/taskgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/taskrun"
 )
 
 // Status is the outcome of comparing a task with its last cached run.
@@ -25,7 +25,7 @@ const (
 	NotCached Status = "not-cached"
 	// NoEarlierRun: there is no cached run to compare with.
 	NoEarlierRun Status = "no-earlier-run"
-	// NoRecord: the last cached run predates input records (mnci 0.1).
+	// NoRecord: the last cached run predates input records (smith 0.1).
 	NoRecord Status = "no-record"
 )
 

@@ -6,11 +6,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// Project is a plugin's project plus what mnci adds to it.
+// Project is a plugin's project plus what smith adds to it.
 type Project struct {
 	protocol.Project
 	// Plugin is the name of the plugin that discovered the project.
@@ -18,9 +18,9 @@ type Project struct {
 	// Deps are names of projects this one imports, sorted.
 	Deps []string `json:"deps"`
 	// Sources maps "task.field" to where its value came from
-	// ("plugin node", "mnci.toml [tasks.test]", ...).
+	// ("plugin node", "smith.toml [tasks.test]", ...).
 	Sources map[string]string `json:"-"`
-	// Release is set for an app that releases (mnci.toml
+	// Release is set for an app that releases (smith.toml
 	// [projects.<name>.release]).
 	Release *workspace.ProjectRelease `json:"release,omitempty"`
 	// Conventions are the conventions that apply to the project, sorted.

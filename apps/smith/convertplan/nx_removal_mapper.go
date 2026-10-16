@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/nxworkspace"
+	"github.com/monosmith-app/monosmith/apps/smith/nxworkspace"
 )
 
 // NxPackage reports whether a package belongs to Nx, so a converted
@@ -29,7 +29,7 @@ func NxPackage(name string) bool {
 // Nx's preset values. Its resolver is replaced by the one thing a
 // workspace without Nx needs from it: an ESM-style "./x.js" import of a
 // TypeScript file resolves to "./x" (npm workspaces resolve the packages).
-const JestPreset = `// Written by mnci convert: the values @nx/jest/preset provided, without Nx.
+const JestPreset = `// Written by smith convert: the values @nx/jest/preset provided, without Nx.
 module.exports = {
   testMatch: ['**/?(*.)+(spec|test).?([mc])[jt]s?(x)'],
   moduleFileExtensions: ['ts', 'js', 'mts', 'mjs', 'cts', 'cjs', 'html'],
@@ -105,9 +105,9 @@ func planNxRemoval(plan *Plan, w *nxworkspace.Workspace, files []string, read fu
 	for _, f := range files {
 		switch f {
 		case "pnpm-lock.yaml", "pnpm-workspace.yaml":
-			plan.Add(Unsupported, "", f, "pnpm workspaces: the mnci Node plugin runs npm; switch to npm workspaces (npm install creates package-lock.json)")
+			plan.Add(Unsupported, "", f, "pnpm workspaces: the smith Node plugin runs npm; switch to npm workspaces (npm install creates package-lock.json)")
 		case "yarn.lock":
-			plan.Add(Unsupported, "", f, "yarn workspaces: the mnci Node plugin runs npm; switch to npm workspaces (npm install creates package-lock.json)")
+			plan.Add(Unsupported, "", f, "yarn workspaces: the smith Node plugin runs npm; switch to npm workspaces (npm install creates package-lock.json)")
 		}
 		if !configFile(f) {
 			continue
@@ -123,7 +123,7 @@ func planNxRemoval(plan *Plan, w *nxworkspace.Workspace, files []string, read fu
 			plan.Add(Changed, "", f, "rewritten without @nx/jest: the same preset values, written out")
 		case path.Dir(f) == "." && strings.HasPrefix(base, "jest.config.") && strings.Contains(text, "getJestProjects"):
 			plan.DeletePath(f)
-			plan.Add(Dropped, "", f, "listed every Jest project for Nx; mnci runs each project's tests itself")
+			plan.Add(Dropped, "", f, "listed every Jest project for Nx; smith runs each project's tests itself")
 		case strings.HasPrefix(base, "rollup.config.") && strings.Contains(text, "with-nx"):
 			if !replaceRollup(plan, w, f, text) {
 				plan.Add(Manual, "", f, "builds with @nx/rollup's withNx, which needs Nx; rewrite the build without it")
@@ -153,7 +153,7 @@ func planNxRemoval(plan *Plan, w *nxworkspace.Workspace, files []string, read fu
 		}
 	}
 	if w.Nx.NxCloudID != "" || w.Nx.NxCloudToken != "" {
-		plan.Add(Changed, "", "nx.json", "Nx Cloud is not used: mnci caches locally (.mnci/cache)")
+		plan.Add(Changed, "", "nx.json", "Nx Cloud is not used: smith caches locally (.smith/cache)")
 	}
 }
 

@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/jsondoc"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/jsondoc"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 )
 
 // Installer runs npm install at the workspace root; tests replace it.

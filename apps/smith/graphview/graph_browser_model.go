@@ -17,7 +17,7 @@ var (
 	panelStyle    = lipgloss.NewStyle().PaddingRight(4)
 )
 
-// Browser is `mnci graph --format tui`: the projects on the left; on the
+// Browser is `smith graph --format tui`: the projects on the left; on the
 // right the selected one, what it depends on and what depends on it. The
 // same nodes the other formats render.
 type Browser struct {
@@ -100,7 +100,7 @@ func (b Browser) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View implements tea.Model.
 func (b Browser) View() string {
 	if len(b.nodes) == 0 {
-		return "No projects yet. Add one: mnci add app web --lang node\n"
+		return "No projects yet. Add one: smith add app web --lang node\n"
 	}
 	var left strings.Builder
 	left.WriteString(headingStyle.Render("Projects") + "\n")

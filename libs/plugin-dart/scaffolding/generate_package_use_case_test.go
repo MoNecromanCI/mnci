@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-dart/discovery"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-dart/discovery"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestGenerate(t *testing.T) {
@@ -18,7 +18,7 @@ func TestGenerate(t *testing.T) {
 	Runner = func(dir string, argv []string) error {
 		ran = append(ran, strings.Join(argv, " "))
 		if argv[1] == "create" {
-			// What flutter create writes, as far as mnci cares.
+			// What flutter create writes, as far as smith cares.
 			app := filepath.Join(dir, filepath.FromSlash(argv[len(argv)-1]))
 			for _, f := range []string{"web/index.html", "pubspec.yaml", "pubspec.lock", "lib/main.dart", "acme_corp_web.iml", ".gitignore"} {
 				_ = os.MkdirAll(filepath.Dir(filepath.Join(app, f)), 0o755)

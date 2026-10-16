@@ -10,7 +10,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskcache"
+	"github.com/monosmith-app/monosmith/apps/smith/taskcache"
 )
 
 // objectServer is a plain HTTP object store: PUT, GET and HEAD by path, and
@@ -76,8 +76,8 @@ func read(t *testing.T, s taskcache.Storage, kind taskcache.Kind, key string) (s
 
 func TestTieredSharesSignedEntries(t *testing.T) {
 	srv, objects := objectServer(t)
-	t.Setenv("MNCI_CACHE_TOKEN", "team-token")
-	remote := srv.URL + "/mnci-cache"
+	t.Setenv("SMITH_CACHE_TOKEN", "team-token")
+	remote := srv.URL + "/smith-cache"
 	ci, _ := tiered(t, remote, "team-key", false)
 	blob := "compiled output"
 	if err := ci.Put(taskcache.CAS, digest(blob), strings.NewReader(blob)); err != nil {
@@ -89,10 +89,10 @@ func TestTieredSharesSignedEntries(t *testing.T) {
 	if err := ci.Put(taskcache.Last, "bbbb", strings.NewReader("aaaa")); err != nil {
 		t.Fatal(err)
 	}
-	if len(objects) != 2 || objects["/mnci-cache/last/bbbb"] != nil {
+	if len(objects) != 2 || objects["/smith-cache/last/bbbb"] != nil {
 		t.Fatalf("the remote holds the cas and ac objects, never last: %v", keys(objects))
 	}
-	if stored := objects["/mnci-cache/ac/aaaa"]; len(stored) != SignatureSize+len(`{"entry":1}`) {
+	if stored := objects["/smith-cache/ac/aaaa"]; len(stored) != SignatureSize+len(`{"entry":1}`) {
 		t.Fatalf("an object is its signature and its content: %d bytes", len(stored))
 	}
 
@@ -108,12 +108,12 @@ func TestTieredSharesSignedEntries(t *testing.T) {
 		t.Fatal("a verified remote entry is kept locally")
 	}
 	_ = dev.Put(taskcache.AC, "cccc", strings.NewReader("x"))
-	if objects["/mnci-cache/ac/cccc"] != nil || len(*warnings) != 0 {
+	if objects["/smith-cache/ac/cccc"] != nil || len(*warnings) != 0 {
 		t.Fatalf("a read-only cache does not write: %v", *warnings)
 	}
 
 	// Changed on the server, or signed with another key: a miss, said once.
-	objects["/mnci-cache/ac/aaaa"][SignatureSize] = '['
+	objects["/smith-cache/ac/aaaa"][SignatureSize] = '['
 	other, warnings := tiered(t, remote, "team-key", false)
 	if _, err := read(t, other, taskcache.AC, "aaaa"); err != taskcache.ErrMiss {
 		t.Fatalf("a tampered entry must miss: %v", err)
@@ -128,7 +128,7 @@ func TestTieredSharesSignedEntries(t *testing.T) {
 }
 
 func TestTieredSurvivesAnUnreachableRemote(t *testing.T) {
-	t.Setenv("MNCI_CACHE_TOKEN", "")
+	t.Setenv("SMITH_CACHE_TOKEN", "")
 	cache, warnings := tiered(t, "http://127.0.0.1:1/cache", "k", false)
 	if err := cache.Put(taskcache.AC, "aaaa", strings.NewReader("x")); err != nil {
 		t.Fatal("a remote that cannot be written must not fail the run")

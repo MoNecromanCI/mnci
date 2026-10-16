@@ -8,15 +8,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Discover asks every plugin to describe the manifests it claims among the
 // workspace's files (tracked, or untracked and not ignored), then resolves
 // edges, applies each project's stack, the configured conventions and then
-// mnci.toml overrides.
+// smith.toml overrides.
 func Discover(files []string, plugins *pluginhost.PluginSet, catalog *pluginhost.Catalog, cfg workspace.Config) (*Graph, error) {
 	var projects []*Project
 	for _, c := range plugins.Clients {
@@ -67,7 +67,7 @@ func Discover(files []string, plugins *pluginhost.PluginSet, catalog *pluginhost
 		if err := ApplyOverrides(p, cfg); err != nil {
 			return nil, err
 		}
-		// Again: conventions, stacks and mnci.toml may have set paths too.
+		// Again: conventions, stacks and smith.toml may have set paths too.
 		if err := normalisePaths(p); err != nil {
 			return nil, err
 		}

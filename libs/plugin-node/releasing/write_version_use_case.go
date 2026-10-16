@@ -5,7 +5,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // WriteVersion records params.Version in the project's package.json and

@@ -1,3 +1,3 @@
-module github.com/MoNecromanCI/mnci/libs/plugin-cpp
+module github.com/monosmith-app/monosmith/libs/plugin-cpp
 
 go 1.26.0

@@ -3,7 +3,7 @@ package discovery
 import (
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // inputs are what a module's results depend on: its sources and pom, and the
@@ -21,7 +21,7 @@ func BuildDir(artifactID string) string { return protocol.BuildDir + "/maven/" +
 // after the modules it depends on (^build), so the modules that use it
 // resolve it there; test, start and lint wait for the module's build (lint
 // is Checkstyle with the root pom's rules, which writes its configuration
-// into the build directory mnci empties before a build).
+// into the build directory smith empties before a build).
 func Tasks(root, coordinates, artifactID string, kind protocol.ProjectKind) map[string]protocol.Task {
 	mvn := func(args ...string) []string { return append([]string{"mvn", "-B", "-q", "-pl", coordinates}, args...) }
 	up := strings.Repeat("../", strings.Count(root, "/")+1)

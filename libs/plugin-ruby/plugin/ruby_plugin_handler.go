@@ -1,12 +1,12 @@
 package plugin
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-ruby/dependencies"
-	"github.com/MoNecromanCI/mnci/libs/plugin-ruby/discovery"
-	"github.com/MoNecromanCI/mnci/libs/plugin-ruby/pipeline"
-	"github.com/MoNecromanCI/mnci/libs/plugin-ruby/releasing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-ruby/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-ruby/dependencies"
+	"github.com/monosmith-app/monosmith/libs/plugin-ruby/discovery"
+	"github.com/monosmith-app/monosmith/libs/plugin-ruby/pipeline"
+	"github.com/monosmith-app/monosmith/libs/plugin-ruby/releasing"
+	"github.com/monosmith-app/monosmith/libs/plugin-ruby/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name.

@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/affected"
-	"github.com/MoNecromanCI/mnci/apps/mnci/nativebuild"
-	"github.com/MoNecromanCI/mnci/apps/mnci/release"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskrun"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/affected"
+	"github.com/monosmith-app/monosmith/apps/smith/nativebuild"
+	"github.com/monosmith-app/monosmith/apps/smith/release"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/taskrun"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // VerifyTasks are what a pull request must pass.
@@ -27,13 +27,13 @@ const PackTask = "package"
 // DropDir is where packed deliverables go, workspace-relative.
 const DropDir = "dist/drop"
 
-// Phases lists `mnci ci` phases in pipeline order.
+// Phases lists `smith ci` phases in pipeline order.
 var Phases = []string{"setup", "audit", "verify", "pack", "native", "release"}
 
 // RunPhase runs one CI phase.
 func RunPhase(ctx context.Context, s *session.Session, phase string, out io.Writer) error {
 	begin := time.Now()
-	group(out, "mnci ci "+phase)
+	group(out, "smith ci "+phase)
 	err := runPhase(ctx, s, phase, out)
 	endGroup(out)
 	status := "passed"
@@ -42,7 +42,7 @@ func RunPhase(ctx context.Context, s *session.Session, phase string, out io.Writ
 		annotate(out, phase, err)
 	}
 	took := time.Since(begin).Round(100 * time.Millisecond)
-	fmt.Fprintf(out, "mnci ci %s %s in %s\n", phase, status, took)
+	fmt.Fprintf(out, "smith ci %s %s in %s\n", phase, status, took)
 	summarise(phase, err, took)
 	return err
 }
@@ -141,7 +141,7 @@ func runSteps(ctx context.Context, root string, steps []protocol.Step, out io.Wr
 		fmt.Fprintf(out, "▶ %s\n", step.Name)
 		argv := make([]string, len(step.Command))
 		for i, a := range step.Command {
-			argv[i] = strings.NewReplacer("{mnci}", taskrun.Self(), "{workspaceRoot}", filepath.ToSlash(root)).Replace(a)
+			argv[i] = strings.NewReplacer("{smith}", taskrun.Self(), "{workspaceRoot}", filepath.ToSlash(root)).Replace(a)
 		}
 		dir := root
 		if step.Dir != "" {
@@ -170,10 +170,10 @@ func runSteps(ctx context.Context, root string, steps []protocol.Step, out io.Wr
 // ensureIdentity gives CI a committer identity for annotated release tags.
 func ensureIdentity(s *session.Session) {
 	if v, _ := s.Git.Run("config", "user.email"); v == "" {
-		_, _ = s.Git.Run("config", "user.email", "mnci-release@users.noreply.github.com")
+		_, _ = s.Git.Run("config", "user.email", "smith-release@users.noreply.github.com")
 	}
 	if v, _ := s.Git.Run("config", "user.name"); v == "" {
-		_, _ = s.Git.Run("config", "user.name", "mnci release")
+		_, _ = s.Git.Run("config", "user.name", "smith release")
 	}
 }
 
@@ -199,9 +199,9 @@ func annotate(out io.Writer, phase string, err error) {
 	msg := strings.ReplaceAll(err.Error(), "\n", " ")
 	switch {
 	case os.Getenv("GITHUB_ACTIONS") == "true":
-		fmt.Fprintf(out, "::error title=mnci ci %s::%s\n", phase, msg)
+		fmt.Fprintf(out, "::error title=smith ci %s::%s\n", phase, msg)
 	case os.Getenv("TF_BUILD") != "":
-		fmt.Fprintf(out, "##vso[task.logissue type=error]mnci ci %s: %s\n", phase, msg)
+		fmt.Fprintf(out, "##vso[task.logissue type=error]smith ci %s: %s\n", phase, msg)
 	}
 }
 

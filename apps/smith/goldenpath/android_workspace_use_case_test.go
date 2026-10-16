@@ -46,31 +46,31 @@ func TestAndroidWorkspace(t *testing.T) {
 	}
 	base := t.TempDir()
 	t.Cleanup(func() { _ = exec.Command("gradle", "--stop", "-q").Run() })
-	w := &workspace{t: t, bin: buildMnci(t, base), dir: base, env: append(identity(), "ANDROID_HOME="+sdk)}
-	w.mnci(true, "new", "mnci-e2e-android", "--ci", "github")
-	w.dir = filepath.Join(base, "mnci-e2e-android")
-	w.mnci(true, "add", "app", "mobile", "--stack", "android")
-	if out := w.mnci(false, "add", "lib", "ui", "--stack", "android"); !strings.Contains(out, "--stack kotlin") {
+	w := &workspace{t: t, bin: buildSmith(t, base), dir: base, env: append(identity(), "ANDROID_HOME="+sdk)}
+	w.smith(true, "new", "smith-e2e-android", "--ci", "github")
+	w.dir = filepath.Join(base, "smith-e2e-android")
+	w.smith(true, "add", "app", "mobile", "--stack", "android")
+	if out := w.smith(false, "add", "lib", "ui", "--stack", "android"); !strings.Contains(out, "--stack kotlin") {
 		t.Fatalf("an Android lib is refused with a hint:\n%s", out)
 	}
 
-	out := w.mnci(true, "run", "lint", "test", "build")
+	out := w.smith(true, "run", "lint", "test", "build")
 	for _, want := range []string{"mobile:lint ✔", "mobile:test ✔", "mobile:build ✔"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("%s did not pass:\n%s", want, out)
 		}
 	}
-	apk := filepath.Join(w.dir, "dist", "gradle", "mnci-e2e-android-mobile", "outputs", "apk", "debug", "mobile-debug.apk")
+	apk := filepath.Join(w.dir, "dist", "gradle", "smith-e2e-android-mobile", "outputs", "apk", "debug", "mobile-debug.apk")
 	if _, err := os.Stat(apk); err != nil {
 		t.Fatalf("the APK is built under dist/gradle: %v", err)
 	}
 	if _, err := os.Stat(filepath.Join(w.dir, "apps", "mobile", "build")); err == nil {
 		t.Error("apps/mobile/build exists: Gradle builds must go to dist/")
 	}
-	if out := w.mnci(true, "run", "lint", "test"); !strings.Contains(out, "(2 from cache") {
+	if out := w.smith(true, "run", "lint", "test"); !strings.Contains(out, "(2 from cache") {
 		t.Fatalf("a re-run replays from the cache:\n%s", out)
 	}
-	if out := w.mnci(true, "doctor"); !strings.Contains(out, "✔ the Android SDK is installed") {
+	if out := w.smith(true, "doctor"); !strings.Contains(out, "✔ the Android SDK is installed") {
 		t.Fatalf("doctor:\n%s", out)
 	}
 	if ci := w.read(".github/workflows/ci.yml"); !strings.Contains(ci, "commandlinetools-linux-") {

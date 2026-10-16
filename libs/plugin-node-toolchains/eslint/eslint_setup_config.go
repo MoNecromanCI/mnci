@@ -1,8 +1,8 @@
 package eslint
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/tooling"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/tooling"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name in a stack's toolchain list.
@@ -11,10 +11,10 @@ const Name = "eslint"
 const config = `// Lint AND formatting for every Node project: @mnci/eslint-config carries the
 // TypeScript rules, JavaScript Standard Style and the vertical-slice rules.
 // Add your own blocks after the spread; later blocks win.
-import mnci from '@mnci/eslint-config'
+import smith from '@mnci/eslint-config'
 
 export default [
-  ...mnci(),
+  ...smith(),
 ]
 `
 

@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
-// Field is one setting of a fixed table of mnci.toml, as the schema
+// Field is one setting of a fixed table of smith.toml, as the schema
 // describes it.
 type Field struct {
 	// Path is "table.key", e.g. "ci.devcontainer".
@@ -40,7 +40,7 @@ type schemaNode struct {
 	AdditionalProperties json.RawMessage       `json:"additionalProperties"`
 }
 
-// Fields are the settings of mnci.toml's fixed tables ([workspace], [ci],
+// Fields are the settings of smith.toml's fixed tables ([workspace], [ci],
 // [release], [cache], [plugins]), in schema order of tables and by name
 // within one. Tables of named entries (stacks, tasks, projects, ...) are
 // edited in the file.
@@ -87,7 +87,7 @@ func Find(path string) (Field, error) {
 	for _, f := range fields {
 		paths = append(paths, f.Path)
 	}
-	return Field{}, fmt.Errorf("%s is not a setting mnci config edits; it edits %s", path, strings.Join(paths, ", "))
+	return Field{}, fmt.Errorf("%s is not a setting smith config edits; it edits %s", path, strings.Join(paths, ", "))
 }
 
 // Encode checks args against the field and renders them as a TOML value: one
@@ -132,7 +132,7 @@ func (f Field) Encode(args []string) (string, error) {
 		}
 		return "[" + strings.Join(quoted, ", ") + "]", nil
 	}
-	return "", fmt.Errorf("%s has a type mnci config does not edit (%s)", f.Path, f.Type)
+	return "", fmt.Errorf("%s has a type smith config does not edit (%s)", f.Path, f.Type)
 }
 
 // Quote renders a TOML basic string.

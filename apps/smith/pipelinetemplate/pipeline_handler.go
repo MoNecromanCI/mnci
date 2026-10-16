@@ -5,11 +5,11 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/spf13/cobra"
 )
 
-// Command is `mnci pipeline`.
+// Command is `smith pipeline`.
 func Command(version string) *cobra.Command {
 	var opts Options
 	var ci string
@@ -17,13 +17,13 @@ func Command(version string) *cobra.Command {
 		Use:   "pipeline [template]",
 		Short: "Add a ready-made pipeline: e2e, package-zip, deploy-pages, deploy-azure-function",
 		Long: `Add a ready-made pipeline file to the workspace, beside the generated CI: it
-starts the way every generated job does (the toolchains, mnci, mnci ci setup),
-then does one thing. It is written once and yours from then on: mnci upgrade
+starts the way every generated job does (the toolchains, smith, smith ci setup),
+then does one thing. It is written once and yours from then on: smith upgrade
 never rewrites it, and an existing file is kept unless --force. With no
 template, lists them.`,
-		Example: `  mnci pipeline
-  mnci pipeline e2e
-  mnci pipeline deploy-pages --project web`,
+		Example: `  smith pipeline
+  smith pipeline e2e
+  smith pipeline deploy-pages --project web`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			out := cmd.OutOrStdout()

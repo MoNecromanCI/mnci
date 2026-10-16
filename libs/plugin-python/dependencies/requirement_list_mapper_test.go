@@ -9,7 +9,7 @@ const pyproject = `[project]
 name = "acme-api"
 dependencies = []  # runtime
 
-[tool.mnci]
+[tool.smith]
 kind = "app"
 `
 

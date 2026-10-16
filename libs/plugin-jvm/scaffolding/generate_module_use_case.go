@@ -11,9 +11,9 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-jvm/discovery"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/templating"
+	"github.com/monosmith-app/monosmith/libs/plugin-jvm/discovery"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/templating"
 )
 
 type templateData struct {

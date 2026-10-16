@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
-	"github.com/MoNecromanCI/mnci/apps/mnci/convertplan"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/jsondoc"
+	"github.com/monosmith-app/monosmith/apps/smith/cipipeline"
+	"github.com/monosmith-app/monosmith/apps/smith/convertplan"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/jsondoc"
 )
 
 // ApplyOptions configure Apply.
@@ -34,7 +34,7 @@ type Result struct {
 	LostSlots []string `json:"lostSlots,omitempty"`
 }
 
-// Apply carries out a plan: it writes mnci.toml and the manifests, removes
+// Apply carries out a plan: it writes smith.toml and the manifests, removes
 // Nx, regenerates the pipelines and refreshes the lockfile.
 func Apply(plan *convertplan.Plan, opts ApplyOptions) (Result, error) {
 	var res Result
@@ -69,7 +69,7 @@ func Apply(plan *convertplan.Plan, opts ApplyOptions) (Result, error) {
 		}
 		say("removed %s", rel)
 	}
-	if err := ignoreMnciFiles(root, plan); err != nil {
+	if err := ignoreSmithFiles(root, plan); err != nil {
 		return res, err
 	}
 
@@ -247,19 +247,19 @@ func editManifest(root string, p *convertplan.ProjectPlan) error {
 			}
 		}
 		if p.KindMarker {
-			doc.Object("mnci", true).SetString("kind", string(p.Kind))
+			doc.Object("smith", true).SetString("kind", string(p.Kind))
 		}
 		return os.WriteFile(path, doc.Bytes(), 0o644)
 	case "python":
 		if !p.KindMarker {
 			return nil
 		}
-		return appendIfMissing(filepath.Join(dir, "pyproject.toml"), "[tool.mnci]", "\n[tool.mnci]\nkind = \""+string(p.Kind)+"\"\n")
+		return appendIfMissing(filepath.Join(dir, "pyproject.toml"), "[tool.smith]", "\n[tool.smith]\nkind = \""+string(p.Kind)+"\"\n")
 	case "go":
 		if !p.KindMarker {
 			return nil
 		}
-		return appendIfMissing(filepath.Join(dir, "go.mod"), "mnci:kind", "\n// mnci:kind "+string(p.Kind)+"\n")
+		return appendIfMissing(filepath.Join(dir, "go.mod"), "smith:kind", "\n// smith:kind "+string(p.Kind)+"\n")
 	}
 	return nil
 }
@@ -275,8 +275,8 @@ func appendIfMissing(path, marker, text string) error {
 	return os.WriteFile(path, append([]byte(strings.TrimRight(string(raw), "\n")+"\n"), text...), 0o644)
 }
 
-// ignoreMnciFiles adds mnci's cache (and the Python venv) to .gitignore.
-func ignoreMnciFiles(root string, plan *convertplan.Plan) error {
+// ignoreSmithFiles adds smith's cache (and the Python venv) to .gitignore.
+func ignoreSmithFiles(root string, plan *convertplan.Plan) error {
 	path := filepath.Join(root, ".gitignore")
 	raw, err := os.ReadFile(path)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -287,7 +287,7 @@ func ignoreMnciFiles(root string, plan *convertplan.Plan) error {
 		lines[strings.TrimSpace(l)] = true
 	}
 	var add []string
-	want := []string{".mnci/"}
+	want := []string{".smith/"}
 	for _, p := range plan.Projects {
 		if p.Language == "python" {
 			want = append(want, ".venv/")
@@ -306,6 +306,6 @@ func ignoreMnciFiles(root string, plan *convertplan.Plan) error {
 	if text != "" {
 		text += "\n\n"
 	}
-	text += "# mnci\n" + strings.Join(add, "\n") + "\n"
+	text += "# smith\n" + strings.Join(add, "\n") + "\n"
 	return os.WriteFile(path, []byte(text), 0o644)
 }

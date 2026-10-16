@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
 )
 
 // Build creates the graph for running tasks on projects. A project that lacks

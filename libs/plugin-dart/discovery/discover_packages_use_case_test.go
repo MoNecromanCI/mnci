@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestDiscover(t *testing.T) {
@@ -26,13 +26,13 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-mnci:
+smith:
   kind: app
   stack: flutter
 `)
 	write("apps/web/test/widget_test.dart", "")
 	write("packages/core/pubspec.yaml", "name: acme_core\nversion: 0.0.0\ndev_dependencies:\n  test: ^1.25.0\n")
-	write("apps/tool/pubspec.yaml", "name: acme_tool\nversion: 0.0.0\nmnci:\n  kind: app\n")
+	write("apps/tool/pubspec.yaml", "name: acme_tool\nversion: 0.0.0\nsmith:\n  kind: app\n")
 	res, err := Discover(ws, []string{"pubspec.yaml", "apps/web/pubspec.yaml", "packages/core/pubspec.yaml", "apps/tool/pubspec.yaml"})
 	if err != nil || len(res.Projects) != 3 {
 		t.Fatalf("the workspace root is not a project: %v %+v", err, res.Projects)

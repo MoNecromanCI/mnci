@@ -63,7 +63,7 @@ func RunProcess(ctx context.Context, spec Spec) (int, error) {
 }
 
 // lookPath finds a program on the PATH of the child's environment (which
-// may put a tool directory first), falling back to mnci's own PATH.
+// may put a tool directory first), falling back to smith's own PATH.
 func lookPath(program string, env []string) (string, error) {
 	var path string
 	for _, kv := range env {

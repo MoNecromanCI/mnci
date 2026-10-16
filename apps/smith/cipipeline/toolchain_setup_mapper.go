@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // githubSetup renders the steps that install a toolchain on GitHub Actions:
@@ -60,5 +60,5 @@ func yamlValue(v string) string {
 }
 
 func missing(indent string, t protocol.Toolchain) string {
-	return fmt.Sprintf("%s# mnci: no plugin says how to install %s %s here; add a step in the before-setup slot\n", indent, t.Name, t.Version)
+	return fmt.Sprintf("%s# smith: no plugin says how to install %s %s here; add a step in the before-setup slot\n", indent, t.Name, t.Version)
 }

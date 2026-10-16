@@ -13,9 +13,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-go/discovery"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+	"github.com/monosmith-app/monosmith/libs/plugin-go/discovery"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/toolrun"
 )
 
 // ChecksumsFile is attached beside the archives; the installers verify
@@ -81,7 +81,7 @@ func BuildAssets(workspaceRoot string, params protocol.PublishParams) (protocol.
 		if native {
 			// cgo cannot cross-compile: a native app is built on each OS.
 			if goos != runtime.GOOS || goarch != runtime.GOARCH {
-				return protocol.PublishResult{}, fmt.Errorf("%s is native (cgo): build %s on a %s runner (mnci ci native)", p.Name, platform, platform)
+				return protocol.PublishResult{}, fmt.Errorf("%s is native (cgo): build %s on a %s runner (smith ci native)", p.Name, platform, platform)
 			}
 			cgo = "CGO_ENABLED=1"
 		}

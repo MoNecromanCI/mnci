@@ -23,33 +23,33 @@ func TestKotlinWorkspace(t *testing.T) {
 	// The Gradle daemon holds the workspace's files open; stop it before
 	// the directory is removed.
 	t.Cleanup(func() { _ = exec.Command("gradle", "--stop", "-q").Run() })
-	w := &workspace{t: t, bin: buildMnci(t, base), dir: base, env: identity()}
-	w.mnci(true, "new", "mnci-e2e-kotlin", "--ci", "github")
-	w.dir = filepath.Join(base, "mnci-e2e-kotlin")
-	w.mnci(true, "add", "app", "api", "--stack", "kotlin")
-	w.mnci(true, "add", "package", "core", "--stack", "kotlin")
+	w := &workspace{t: t, bin: buildSmith(t, base), dir: base, env: identity()}
+	w.smith(true, "new", "smith-e2e-kotlin", "--ci", "github")
+	w.dir = filepath.Join(base, "smith-e2e-kotlin")
+	w.smith(true, "add", "app", "api", "--stack", "kotlin")
+	w.smith(true, "add", "package", "core", "--stack", "kotlin")
 
 	// api uses core: a project dependency is a graph edge.
 	script := "apps/api/build.gradle.kts"
 	w.write(script, strings.Replace(w.read(script), "dependencies {\n", "dependencies {\n    implementation(project(\":packages:core\"))\n", 1))
-	main := "apps/api/src/main/kotlin/dev/mncie2ekotlin/api/Main.kt"
+	main := "apps/api/src/main/kotlin/dev/smithe2ekotlin/api/Main.kt"
 	w.write(main, strings.NewReplacer(
-		"import dev.mncie2ekotlin.api.greeting.GreetUseCase\n", "import dev.mncie2ekotlin.api.greeting.GreetUseCase\nimport dev.mncie2ekotlin.core.greeting.GreetUseCase as CoreGreetUseCase\n",
+		"import dev.smithe2ekotlin.api.greeting.GreetUseCase\n", "import dev.smithe2ekotlin.api.greeting.GreetUseCase\nimport dev.smithe2ekotlin.core.greeting.GreetUseCase as CoreGreetUseCase\n",
 		`    println(GreetUseCase.greet("world"))`, `    println("${GreetUseCase.greet("world")} ${CoreGreetUseCase.greet("core")}")`,
 	).Replace(w.read(main)))
-	if !hasEdge(w.mnci(true, "graph", "--format", "json"), "api", "core") {
+	if !hasEdge(w.smith(true, "graph", "--format", "json"), "api", "core") {
 		t.Fatal("a project dependency is a graph edge")
 	}
-	out := w.mnci(true, "run", "lint", "test", "build")
+	out := w.smith(true, "run", "lint", "test", "build")
 	for _, want := range []string{"api:build ✔", "core:test ✔", "api:test ✔", "api:lint ✔", "core:lint ✔"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("%s did not pass:\n%s", want, out)
 		}
 	}
-	if out := w.mnci(true, "run", "lint", "test"); !strings.Contains(out, "(4 from cache") {
+	if out := w.smith(true, "run", "lint", "test"); !strings.Contains(out, "(4 from cache") {
 		t.Fatalf("a re-run replays from the cache:\n%s", out)
 	}
-	if out := w.mnci(true, "run", "start", "-p", "api"); !strings.Contains(out, "Hello, world! Hello, core!") {
+	if out := w.smith(true, "run", "start", "-p", "api"); !strings.Contains(out, "Hello, world! Hello, core!") {
 		t.Fatalf("start:\n%s", out)
 	}
 	// Builds go to dist/, never build/ in a source tree.
@@ -58,10 +58,10 @@ func TestKotlinWorkspace(t *testing.T) {
 			t.Errorf("%s exists: Gradle builds must go to dist/", dir)
 		}
 	}
-	if _, err := os.Stat(filepath.Join(w.dir, "dist", "gradle", "mnci-e2e-kotlin-core", "libs")); err != nil {
+	if _, err := os.Stat(filepath.Join(w.dir, "dist", "gradle", "smith-e2e-kotlin-core", "libs")); err != nil {
 		t.Error("the builds are under dist/gradle")
 	}
-	if out := w.mnci(true, "doctor"); !strings.Contains(out, "✔ Gradle is installed") || !strings.Contains(out, "✔ every build writes to dist/") {
+	if out := w.smith(true, "doctor"); !strings.Contains(out, "✔ Gradle is installed") || !strings.Contains(out, "✔ every build writes to dist/") {
 		t.Fatalf("doctor:\n%s", out)
 	}
 	if ci := w.read(".github/workflows/ci.yml"); !strings.Contains(ci, "gradle-9.8.1-bin.zip") || !strings.Contains(ci, "MAVEN_REPOSITORY_URL") {
@@ -70,7 +70,7 @@ func TestKotlinWorkspace(t *testing.T) {
 
 	w.git("add", "-A")
 	w.git("commit", "-qm", "feat: an api and its core")
-	if plan := w.mnci(true, "release", "--dry-run"); !strings.Contains(plan, "core") || !strings.Contains(plan, "0.1.0") {
+	if plan := w.smith(true, "release", "--dry-run"); !strings.Contains(plan, "core") || !strings.Contains(plan, "0.1.0") {
 		t.Fatalf("release plan:\n%s", plan)
 	}
 }

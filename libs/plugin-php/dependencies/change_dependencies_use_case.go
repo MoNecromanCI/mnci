@@ -4,8 +4,8 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-php/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-php/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 var update = []string{"composer", "update", "--no-interaction", "--no-progress"}

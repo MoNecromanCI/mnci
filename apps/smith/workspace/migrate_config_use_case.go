@@ -8,29 +8,29 @@ import (
 	"strconv"
 )
 
-// Migration rewrites mnci.toml text from schema From to From+1. It edits the
+// Migration rewrites smith.toml text from schema From to From+1. It edits the
 // text, so comments and layout survive.
 type Migration struct {
 	From int
-	// Change says what it does, for mnci upgrade's report.
+	// Change says what it does, for smith upgrade's report.
 	Change string
 	Apply  func(text string) (string, error)
 }
 
 // Migrations are applied in order. Schema 1 is the first; a change to
-// mnci.toml that old files cannot be read with adds one here and raises
+// smith.toml that old files cannot be read with adds one here and raises
 // SchemaVersion.
 var Migrations []Migration
 
 var schemaLine = regexp.MustCompile(`(?m)^schema\s*=\s*(\d+)[ \t]*(#.*)?$`)
 
-// MigrateText brings mnci.toml text to SchemaVersion and lists what changed.
+// MigrateText brings smith.toml text to SchemaVersion and lists what changed.
 // The same text always gives the same result.
 func MigrateText(text string) (string, []string, error) {
 	return migrateTo(text, SchemaVersion, Migrations)
 }
 
-// MigrateFile migrates the workspace's mnci.toml in place, unless dryRun.
+// MigrateFile migrates the workspace's smith.toml in place, unless dryRun.
 func MigrateFile(root string, dryRun bool) ([]string, error) {
 	path := filepath.Join(root, FileName)
 	raw, err := os.ReadFile(path)
@@ -50,7 +50,7 @@ func migrateTo(text string, target int, migrations []Migration) (string, []strin
 		version, _ = strconv.Atoi(m[1])
 	}
 	if version > target {
-		return text, nil, fmt.Errorf("%s uses schema %d; this mnci reads up to %d, upgrade mnci", FileName, version, target)
+		return text, nil, fmt.Errorf("%s uses schema %d; this smith reads up to %d, upgrade smith", FileName, version, target)
 	}
 	var changes []string
 	for version < target {

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestWriteGradleVersion(t *testing.T) {
@@ -48,7 +48,7 @@ func TestPublishGradle(t *testing.T) {
 	GradleRunner = func(_ string, argv []string) error { ran = argv; return nil }
 	t.Setenv("MAVEN_REPOSITORY_URL", "https://maven.example/releases")
 	res, err := Publish(ws, protocol.PublishParams{Project: protocol.Project{Root: "libs/core", Kind: protocol.ProjectPackage}})
-	if err != nil || !res.Published || strings.Join(ran, " ") != "gradle --console=plain -q :libs:core:publishAllPublicationsToMnciRepository" {
+	if err != nil || !res.Published || strings.Join(ran, " ") != "gradle --console=plain -q :libs:core:publishAllPublicationsToSmithRepository" {
 		t.Fatalf("%+v %v %v", res, err, ran)
 	}
 }

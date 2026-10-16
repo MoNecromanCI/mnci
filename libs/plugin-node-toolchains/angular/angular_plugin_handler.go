@@ -3,8 +3,8 @@ package angular
 import (
 	"fmt"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Name is the plugin's name in a stack.
@@ -42,7 +42,7 @@ func (p *Angular) Describe(params protocol.InitializeParams) (protocol.Initializ
 // build is a static site released by its tag.
 func (p *Angular) Generate(params protocol.GenerateParams) (protocol.GenerateResult, error) {
 	if params.Kind != protocol.ProjectApp {
-		return protocol.GenerateResult{}, fmt.Errorf("an angular project is an app: mnci add app %s --stack %s", params.Name, Name)
+		return protocol.GenerateResult{}, fmt.Errorf("an angular project is an app: smith add app %s --stack %s", params.Name, Name)
 	}
 	return scaffolding.GenerateFrom(p.root, params, scaffolding.TemplateSet{Slice: templates, DevDependencies: devDependencies})
 }

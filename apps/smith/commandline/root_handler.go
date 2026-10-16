@@ -3,45 +3,45 @@ package commandline
 import (
 	"errors"
 	"fmt"
-	"github.com/MoNecromanCI/mnci/apps/mnci/adoption"
-	"github.com/MoNecromanCI/mnci/apps/mnci/devservers"
-	"github.com/MoNecromanCI/mnci/apps/mnci/mcpserver"
-	"github.com/MoNecromanCI/mnci/apps/mnci/npmpack"
-	"github.com/MoNecromanCI/mnci/apps/mnci/pipelinetemplate"
+	"github.com/monosmith-app/monosmith/apps/smith/adoption"
+	"github.com/monosmith-app/monosmith/apps/smith/devservers"
+	"github.com/monosmith-app/monosmith/apps/smith/mcpserver"
+	"github.com/monosmith-app/monosmith/apps/smith/npmpack"
+	"github.com/monosmith-app/monosmith/apps/smith/pipelinetemplate"
 	"os"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
-	"github.com/MoNecromanCI/mnci/apps/mnci/clicontract"
-	"github.com/MoNecromanCI/mnci/apps/mnci/configedit"
-	"github.com/MoNecromanCI/mnci/apps/mnci/convert"
-	"github.com/MoNecromanCI/mnci/apps/mnci/dependencies"
-	"github.com/MoNecromanCI/mnci/apps/mnci/doctor"
-	"github.com/MoNecromanCI/mnci/apps/mnci/explain"
-	"github.com/MoNecromanCI/mnci/apps/mnci/graphview"
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/apps/mnci/release"
-	"github.com/MoNecromanCI/mnci/apps/mnci/scaffold"
-	"github.com/MoNecromanCI/mnci/apps/mnci/slicecheck"
-	"github.com/MoNecromanCI/mnci/apps/mnci/stackview"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskrun"
-	"github.com/MoNecromanCI/mnci/apps/mnci/tui"
-	"github.com/MoNecromanCI/mnci/apps/mnci/upgrade"
-	"github.com/MoNecromanCI/mnci/apps/mnci/whymiss"
+	"github.com/monosmith-app/monosmith/apps/smith/cipipeline"
+	"github.com/monosmith-app/monosmith/apps/smith/clicontract"
+	"github.com/monosmith-app/monosmith/apps/smith/configedit"
+	"github.com/monosmith-app/monosmith/apps/smith/convert"
+	"github.com/monosmith-app/monosmith/apps/smith/dependencies"
+	"github.com/monosmith-app/monosmith/apps/smith/doctor"
+	"github.com/monosmith-app/monosmith/apps/smith/explain"
+	"github.com/monosmith-app/monosmith/apps/smith/graphview"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/apps/smith/release"
+	"github.com/monosmith-app/monosmith/apps/smith/scaffold"
+	"github.com/monosmith-app/monosmith/apps/smith/slicecheck"
+	"github.com/monosmith-app/monosmith/apps/smith/stackview"
+	"github.com/monosmith-app/monosmith/apps/smith/taskrun"
+	"github.com/monosmith-app/monosmith/apps/smith/tui"
+	"github.com/monosmith-app/monosmith/apps/smith/upgrade"
+	"github.com/monosmith-app/monosmith/apps/smith/whymiss"
 	"github.com/spf13/cobra"
 )
 
-// Root builds the mnci command.
+// Root builds the smith command.
 func Root(version string) *cobra.Command {
 	root := &cobra.Command{
-		Use:   "mnci",
+		Use:   "smith",
 		Short: "A simple monorepo tool: add apps, libs and packages; build, test, release",
-		Long: `mnci runs a monorepo in Node, Go, Python, Rust, .NET, Ruby, PHP, C++, Dart, the JVM and Bicep (and anything a plugin adds):
+		Long: `smith runs a monorepo in Node, Go, Python, Rust, .NET, Ruby, PHP, C++, Dart, the JVM and Bicep (and anything a plugin adds):
 it scaffolds projects, runs their tasks in dependency order from a cache,
 generates CI pipelines, and releases packages from conventional commits.`,
-		Example: `  mnci                      open the interactive menu (in a terminal)
-  mnci new acme
-  mnci add app web --lang node
-  mnci build`,
+		Example: `  smith                      open the interactive menu (in a terminal)
+  smith new acme
+  smith add app web --lang node
+  smith build`,
 		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -66,12 +66,12 @@ generates CI pipelines, and releases packages from conventional commits.`,
 	return root
 }
 
-// Execute runs mnci and returns the process exit code.
+// Execute runs smith and returns the process exit code.
 func Execute(version string, args []string) int {
 	if len(args) == 0 && tui.Interactive() {
 		chosen, err := tui.Choose(version, os.Stdout, clicontract.DescribeCommands(Root(version)))
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "mnci: "+err.Error())
+			fmt.Fprintln(os.Stderr, "smith: "+err.Error())
 			return 1
 		}
 		if len(chosen) == 0 {
@@ -83,7 +83,7 @@ func Execute(version string, args []string) int {
 	root.SetArgs(args)
 	if err := root.Execute(); err != nil {
 		if !errors.Is(err, taskrun.ErrTasksFailed) && !errors.Is(err, doctor.ErrUnhealthy) && !errors.Is(err, adoption.ErrBlocked) {
-			fmt.Fprintln(os.Stderr, "mnci: "+err.Error())
+			fmt.Fprintln(os.Stderr, "smith: "+err.Error())
 		}
 		return 1
 	}

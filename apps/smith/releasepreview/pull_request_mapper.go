@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// Marker identifies mnci's comment, so a later run updates it.
-const Marker = "<!-- mnci:release-preview -->"
+// Marker identifies smith's comment, so a later run updates it.
+const Marker = "<!-- smith:release-preview -->"
 
 // PullRequest is where the preview goes.
 type PullRequest struct {

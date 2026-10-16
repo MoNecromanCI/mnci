@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/host"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// PluginSet is the running plugins of one mnci invocation.
+// PluginSet is the running plugins of one smith invocation.
 type PluginSet struct {
 	Clients []*host.Client
 }

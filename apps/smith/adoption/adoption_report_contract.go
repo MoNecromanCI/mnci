@@ -1,16 +1,16 @@
 package adoption
 
-import "github.com/MoNecromanCI/mnci/apps/mnci/releaselineage"
+import "github.com/monosmith-app/monosmith/apps/smith/releaselineage"
 
 // What an item stops.
 const (
-	// BlocksAdoption stops mnci adopt --init.
+	// BlocksAdoption stops smith adopt --init.
 	BlocksAdoption = "adoption"
 	// BlocksRelease would make the first release wrong.
 	BlocksRelease = "release"
 )
 
-// Report is `mnci adopt --json`.
+// Report is `smith adopt --json`.
 type Report struct {
 	Root string `json:"root"`
 	// Name, Scope and Providers are what --init would write.
@@ -34,7 +34,7 @@ type Item struct {
 	Baseline *releaselineage.Baseline `json:"baseline,omitempty"`
 }
 
-// ProjectLine is one project mnci would see.
+// ProjectLine is one project smith would see.
 type ProjectLine struct {
 	Name     string `json:"name"`
 	Root     string `json:"root"`

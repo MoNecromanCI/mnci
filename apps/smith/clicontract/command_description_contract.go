@@ -1,6 +1,6 @@
 package clicontract
 
-// CommandDescription is one command in `mnci commands --json`.
+// CommandDescription is one command in `smith commands --json`.
 type CommandDescription struct {
 	Name    string   `json:"name"`
 	Aliases []string `json:"aliases"`
@@ -37,7 +37,7 @@ type OptionDescription struct {
 	DefaultValue any      `json:"defaultValue,omitempty"`
 }
 
-// KindDescription is one entry of `mnci kinds --json`: what `mnci add <kind>`
+// KindDescription is one entry of `smith kinds --json`: what `smith add <kind>`
 // accepts.
 type KindDescription struct {
 	Kind          string   `json:"kind"`
@@ -48,13 +48,13 @@ type KindDescription struct {
 	RequiredFlags []string `json:"requiredFlags,omitempty"`
 }
 
-// Info is `mnci info --json`.
+// Info is `smith info --json`.
 type Info struct {
 	CLI       CLIInfo        `json:"cli"`
 	Workspace *WorkspaceInfo `json:"workspace"`
 }
 
-// CLIInfo is the installed and newest mnci.
+// CLIInfo is the installed and newest smith.
 type CLIInfo struct {
 	Version string `json:"version"`
 	// Latest is null when it could not be found out.
@@ -62,7 +62,7 @@ type CLIInfo struct {
 	UpdateAvailable bool    `json:"updateAvailable"`
 }
 
-// WorkspaceInfo is the workspace mnci runs in, and its mnci.toml as JSON.
+// WorkspaceInfo is the workspace smith runs in, and its smith.toml as JSON.
 type WorkspaceInfo struct {
 	Root   string         `json:"root"`
 	Config map[string]any `json:"config"`

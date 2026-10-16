@@ -1,7 +1,7 @@
 package discovery
 
 import (
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // inputs are what a project's results depend on: its Bicep files, its
@@ -13,7 +13,7 @@ var inputs = []string{"**/*.bicep", "**/*.bicepparam", "bicepconfig.json"}
 // warnings); build compiles main.bicep into the workspace's
 // dist/<project dir>/template, after params compiles main.bicepparam, when
 // there is one, into dist/<project dir>/parameters. Each owns its own
-// directory: mnci empties a task's outputs before it runs.
+// directory: smith empties a task's outputs before it runs.
 func Tasks(root string, params bool) map[string]protocol.Task {
 	out := protocol.BuildDirFromProject(root)
 	build := protocol.Task{Command: []string{"az", "bicep", "build", "--file", Manifest, "--outdir", out + "/template"}, Inputs: inputs, Outputs: []string{out + "/template"}, Cache: true, Description: "Compile main.bicep to an ARM template in dist/"}

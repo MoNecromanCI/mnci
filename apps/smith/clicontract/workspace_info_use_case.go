@@ -8,16 +8,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 	"github.com/pelletier/go-toml/v2"
 )
 
 // releasesURL lists the GitHub Releases (by tag name, not by version); tests
 // replace it.
-var releasesURL = "https://api.github.com/repos/MoNecromanCI/mnci/releases?per_page=100"
+var releasesURL = "https://api.github.com/repos/monosmith-app/monosmith/releases?per_page=100"
 
-// WorkspaceReport says which mnci runs, the newest one released, and the
-// workspace under dir with its mnci.toml.
+// WorkspaceReport says which smith runs, the newest one released, and the
+// workspace under dir with its smith.toml.
 func WorkspaceReport(version, dir string) Info {
 	info := Info{CLI: CLIInfo{Version: version}}
 	if latest := latestRelease(); latest != "" {
@@ -34,10 +34,10 @@ func WorkspaceReport(version, dir string) Info {
 	return info
 }
 
-// latestRelease is the version of the newest mnci release, or "" when it
-// cannot be found out quickly (offline, rate-limited, MNCI_NO_UPDATE_CHECK).
+// latestRelease is the version of the newest smith release, or "" when it
+// cannot be found out quickly (offline, rate-limited, SMITH_NO_UPDATE_CHECK).
 func latestRelease() string {
-	if os.Getenv("MNCI_NO_UPDATE_CHECK") != "" {
+	if os.Getenv("SMITH_NO_UPDATE_CHECK") != "" {
 		return ""
 	}
 	client := &http.Client{Timeout: 5 * time.Second}
@@ -54,11 +54,11 @@ func latestRelease() string {
 	if resp.StatusCode != http.StatusOK || json.NewDecoder(resp.Body).Decode(&releases) != nil {
 		return ""
 	}
-	// GitHub lists releases by tag name as text (mnci@0.9.0 before
-	// mnci@0.20.0), so the newest is the highest version, not the first.
+	// GitHub lists releases by tag name as text (smith@0.9.0 before
+	// smith@0.20.0), so the newest is the highest version, not the first.
 	best := ""
 	for _, r := range releases {
-		if v, ok := strings.CutPrefix(r.Tag, "mnci@"); ok && !r.Draft && !r.Prerelease && (best == "" || newer(v, best)) {
+		if v, ok := strings.CutPrefix(r.Tag, "smith@"); ok && !r.Draft && !r.Prerelease && (best == "" || newer(v, best)) {
 			best = v
 		}
 	}

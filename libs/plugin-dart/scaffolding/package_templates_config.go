@@ -38,7 +38,7 @@ dev_dependencies:
   test: ` + TestVersion + `
 [[- end]]
 
-mnci:
+smith:
   kind: [[.Kind]]
 [[- if .Stack]]
   stack: [[.Stack]]
@@ -110,6 +110,6 @@ class MainApp extends StatelessWidget {
 `,
 }
 
-// flutterCreated are the files flutter create writes that mnci writes its
+// flutterCreated are the files flutter create writes that smith writes its
 // own way, or that a workspace member does not have.
 var flutterCreated = []string{"pubspec.yaml", "pubspec.lock", "analysis_options.yaml", "README.md", "lib/main.dart", ".idea"}

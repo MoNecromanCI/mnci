@@ -3,8 +3,8 @@ package tui
 import (
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/clicontract"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/monosmith-app/monosmith/apps/smith/clicontract"
 )
 
 type tab int
@@ -21,7 +21,7 @@ var tabNames = map[tab]string{tabMenu: "Menu", tabCommands: "Commands", tabDocto
 
 // Shell is the TUI: the guided menu, a palette of every command, and, inside
 // a workspace, the doctor, release and settings views. Nothing happens only here:
-// every action ends as an mnci command line, printed before it runs.
+// every action ends as a smith command line, printed before it runs.
 type Shell struct {
 	header   string
 	tabs     []tab

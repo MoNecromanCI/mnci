@@ -8,7 +8,7 @@ import (
 var tableHeader = regexp.MustCompile(`^\s*\[\[?\s*([^\]]+?)\s*\]\]?\s*(#.*)?$`)
 
 // RemoveProjectTables deletes [projects.<name>] and every table under it
-// ([projects.<name>.tasks.build], ...) from mnci.toml text, keeping all other
+// ([projects.<name>.tasks.build], ...) from smith.toml text, keeping all other
 // lines exactly. It reports whether anything was removed.
 func RemoveProjectTables(src, name string) (string, bool) {
 	lines := strings.SplitAfter(src, "\n")

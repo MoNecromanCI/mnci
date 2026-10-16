@@ -7,13 +7,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
 )
 
 // Node is a project as the graph views show it; it is also the JSON contract
-// of `mnci graph --json` and `mnci projects --json`. Dir, Ecosystem and
+// of `smith graph --json` and `smith projects --json`. Dir, Ecosystem and
 // Targets repeat Root, the package ecosystem and Tasks under the names the
-// mnci VS Code extension reads (it was written against the TypeScript mnci).
+// smith VS Code extension reads (it was written against the TypeScript smith).
 type Node struct {
 	Name      string   `json:"name"`
 	Root      string   `json:"root"`
@@ -34,7 +34,7 @@ type Node struct {
 }
 
 // ecosystems names a language plugin's package ecosystem as the TypeScript
-// mnci did; any other plugin's ecosystem is its name.
+// smith did; any other plugin's ecosystem is its name.
 var ecosystems = map[string]string{"node": "npm", "python": "pip", "go": "go"}
 
 // Ecosystem is a plugin's package ecosystem.
@@ -78,7 +78,7 @@ func JSON(g *projectgraph.Graph, marked map[string]bool) string {
 func Text(g *projectgraph.Graph, marked map[string]bool) string {
 	var b strings.Builder
 	if len(g.Projects) == 0 {
-		return "No projects yet. Add one: mnci add app web --lang node\n"
+		return "No projects yet. Add one: smith add app web --lang node\n"
 	}
 	for _, n := range Nodes(g, marked) {
 		star := ""
@@ -100,7 +100,7 @@ func Text(g *projectgraph.Graph, marked map[string]bool) string {
 // DOT renders Graphviz; a marked project is drawn bold.
 func DOT(g *projectgraph.Graph, marked map[string]bool) string {
 	var b strings.Builder
-	b.WriteString("digraph mnci {\n  rankdir=BT;\n  node [shape=box, style=rounded];\n")
+	b.WriteString("digraph smith {\n  rankdir=BT;\n  node [shape=box, style=rounded];\n")
 	for _, n := range Nodes(g, marked) {
 		bold := ""
 		if n.Marked {

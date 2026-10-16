@@ -1,0 +1,6 @@
+?   	github.com/MoNecromanCI/mnci/libs/plugin-node	[no test files]
+ok  	github.com/MoNecromanCI/mnci/libs/plugin-node/discovery	(cached)
+ok  	github.com/MoNecromanCI/mnci/libs/plugin-node/pipeline	(cached)
+?   	github.com/MoNecromanCI/mnci/libs/plugin-node/plugin	[no test files]
+ok  	github.com/MoNecromanCI/mnci/libs/plugin-node/releasing	(cached)
+ok  	github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding	(cached)

@@ -3,29 +3,29 @@ package pluginhost
 import (
 	"sort"
 
-	bicepp "github.com/MoNecromanCI/mnci/libs/plugin-bicep/plugin"
-	cppp "github.com/MoNecromanCI/mnci/libs/plugin-cpp/plugin"
-	dartp "github.com/MoNecromanCI/mnci/libs/plugin-dart/plugin"
-	dockerp "github.com/MoNecromanCI/mnci/libs/plugin-docker/plugin"
-	dotnetp "github.com/MoNecromanCI/mnci/libs/plugin-dotnet/plugin"
-	gop "github.com/MoNecromanCI/mnci/libs/plugin-go/plugin"
-	"github.com/MoNecromanCI/mnci/libs/plugin-go/pluginkit"
-	jvmp "github.com/MoNecromanCI/mnci/libs/plugin-jvm/plugin"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/angular"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/astro"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/eslint"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/jest"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/typescript"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/vite"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/vitest"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/vscode"
-	nodep "github.com/MoNecromanCI/mnci/libs/plugin-node/plugin"
-	phpp "github.com/MoNecromanCI/mnci/libs/plugin-php/plugin"
-	pythonp "github.com/MoNecromanCI/mnci/libs/plugin-python/plugin"
-	rubyp "github.com/MoNecromanCI/mnci/libs/plugin-ruby/plugin"
-	rustp "github.com/MoNecromanCI/mnci/libs/plugin-rust/plugin"
-	slicesp "github.com/MoNecromanCI/mnci/libs/plugin-vertical-slices/plugin"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/serve"
+	bicepp "github.com/monosmith-app/monosmith/libs/plugin-bicep/plugin"
+	cppp "github.com/monosmith-app/monosmith/libs/plugin-cpp/plugin"
+	dartp "github.com/monosmith-app/monosmith/libs/plugin-dart/plugin"
+	dockerp "github.com/monosmith-app/monosmith/libs/plugin-docker/plugin"
+	dotnetp "github.com/monosmith-app/monosmith/libs/plugin-dotnet/plugin"
+	gop "github.com/monosmith-app/monosmith/libs/plugin-go/plugin"
+	"github.com/monosmith-app/monosmith/libs/plugin-go/pluginkit"
+	jvmp "github.com/monosmith-app/monosmith/libs/plugin-jvm/plugin"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/angular"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/astro"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/eslint"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/jest"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/typescript"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/vite"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/vitest"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/vscode"
+	nodep "github.com/monosmith-app/monosmith/libs/plugin-node/plugin"
+	phpp "github.com/monosmith-app/monosmith/libs/plugin-php/plugin"
+	pythonp "github.com/monosmith-app/monosmith/libs/plugin-python/plugin"
+	rubyp "github.com/monosmith-app/monosmith/libs/plugin-ruby/plugin"
+	rustp "github.com/monosmith-app/monosmith/libs/plugin-rust/plugin"
+	slicesp "github.com/monosmith-app/monosmith/libs/plugin-vertical-slices/plugin"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/serve"
 )
 
 // Builtins constructs each built-in language plugin by name.
@@ -46,7 +46,7 @@ var Builtins = map[string]func(version string) serve.Plugin{
 // BuiltinAddons constructs each built-in plugin that is not a language:
 // toolchain, structure, scaffold and deploy plugins. They are always loaded,
 // so their stacks are available, but act only on projects whose stack names
-// them, or as a convention mnci.toml configures ([conventions.<name>]).
+// them, or as a convention smith.toml configures ([conventions.<name>]).
 var BuiltinAddons = map[string]func(version string) serve.Plugin{
 	slicesp.Name:    func(v string) serve.Plugin { return slicesp.New(v) },
 	eslint.Name:     func(v string) serve.Plugin { return eslint.New(v) },

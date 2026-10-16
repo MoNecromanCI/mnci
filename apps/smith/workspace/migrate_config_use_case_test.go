@@ -28,9 +28,9 @@ func TestMigrateTo(t *testing.T) {
 		t.Fatal("a migrated file is left alone")
 	}
 	if _, _, err := migrateTo("schema = 4\n", 3, migrations); err == nil {
-		t.Fatal("a newer schema needs a newer mnci")
+		t.Fatal("a newer schema needs a newer smith")
 	}
-	if _, _, err := migrateTo("[workspace]\nname = \"x\"\n", 2, nil); err == nil || !strings.Contains(err.Error(), "no migration from mnci.toml schema 1") {
+	if _, _, err := migrateTo("[workspace]\nname = \"x\"\n", 2, nil); err == nil || !strings.Contains(err.Error(), "no migration from smith.toml schema 1") {
 		t.Fatalf("%v", err)
 	}
 	if out, changes, _ := MigrateText("[workspace]\nname = \"x\"\n"); len(changes) != 0 || out != "[workspace]\nname = \"x\"\n" {

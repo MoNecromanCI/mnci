@@ -7,15 +7,15 @@ A task is a command a plugin infers for a project: `build`, `test`, `lint`,
 
 | Field | Meaning |
 |---|---|
-| `command` | argv, run without a shell, from the project root; `{workspaceRoot}`, `{projectRoot}` and `{mnci}` (the running mnci binary) are expanded |
+| `command` | argv, run without a shell, from the project root; `{workspaceRoot}`, `{projectRoot}` and `{smith}` (the running smith binary) are expanded |
 | `dependsOn` | `build` — this project's build first; `^build` — the build of every project this one imports first (reaching through projects without a build); `web:build` — a specific task |
 | `inputs` | globs relative to the project, `{workspaceRoot}/...` for root files, `!` to exclude; default: every file of the project |
 | `outputs` | directories restored on a cache hit (`dist`) |
 | `cache` | whether results are cached |
 
 ```sh
-mnci run <task>... [-p <projects>] [--affected] [--parallel N] [--bail] [--no-cache] [--json]
-mnci build | test | lint | typecheck [project...]
+smith run <task>... [-p <projects>] [--affected] [--parallel N] [--bail] [--no-cache] [--json]
+smith build | test | lint | typecheck [project...]
 ```
 
 Project selection (`-p`, comma-separated or repeated): a name, a glob over names
@@ -28,7 +28,7 @@ installed in the venv are the workspace's on every OS.
 
 Tasks run in parallel (one per CPU by default) in dependency order. A failed task
 skips the tasks that depend on it; independent tasks keep going unless `--bail`.
-Ctrl+C stops every process tree mnci started — on Windows through a Job Object,
+Ctrl+C stops every process tree smith started — on Windows through a Job Object,
 elsewhere through a process group.
 
 ## Builds go to dist/
@@ -36,7 +36,7 @@ elsewhere through a process group.
 Every build writes to one directory at the workspace root, `dist/`, in a path
 that mirrors the project's: `apps/web` builds into `dist/apps/web/`. Nothing is
 written into a source tree, and deleting `dist/` cleans everything.
-`dist/drop/` holds what `mnci ci pack` keeps, and `dist/release/` holds release
+`dist/drop/` holds what `smith ci pack` keeps, and `dist/release/` holds release
 assets. A tool that builds the whole workspace into one directory gets its own
 folder there: Cargo builds into `dist/cargo` (`target-dir` in
 `.cargo/config.toml`, written with the first crate).
@@ -53,33 +53,33 @@ does Node 24 when an app runs, stripping the types. That's why relative imports
 name the file (`./greeting/index.ts`): `tsc` rewrites them to `.js` when it
 emits, and `erasableSyntaxOnly` keeps the code to what Node can strip. A
 package is read from its sources inside the workspace too. It is published from
-`dist/packages/<name>/`, where mnci stages a copy of its `package.json` whose
+`dist/packages/<name>/`, where smith stages a copy of its `package.json` whose
 `exports`, `main` and `types` point at the built files, along with its README
 and LICENSE.
 
-`mnci doctor` enforces this. Any task output outside `dist/` fails, naming
-the task and where its outputs were set (a plugin or `mnci.toml`). For Node, a
+`smith doctor` enforces this. Any task output outside `dist/` fails, naming
+the task and where its outputs were set (a plugin or `smith.toml`). For Node, a
 `tsconfig` whose `outDir` is in the source tree fails too.
 
 ## Cache
 
 A task's **key** is a SHA-256 over a versioned, canonical encoding of:
 
-- the task id and its command (before `{workspaceRoot}` and `{mnci}` are expanded, so keys do
+- the task id and its command (before `{workspaceRoot}` and `{smith}` are expanded, so keys do
   not depend on where the repository is checked out)
 - the declared env
 - the content of every input file
 - the sources of every project it depends on, transitively
 - the keys of the tasks it depends on
-- the OS/architecture, the mnci version, and the version of every plugin
+- the OS/architecture, the smith version, and the version of every plugin
   that shapes the project (its language plugin, its stack's plugins, its
   conventions)
 
-On a hit, mnci replaces the task's output directories with the cached files and
+On a hit, smith replaces the task's output directories with the cached files and
 replays its log. On a miss it clears the outputs, runs the task, and stores the
 result if it succeeded.
 
-The store is a directory (`.mnci/cache/v1`) split like Bazel's remote cache:
+The store is a directory (`.smith/cache/v1`) split like Bazel's remote cache:
 `ac/` holds one small JSON entry per key; `cas/` holds blobs named by their
 SHA-256, shared between entries. Writes land by rename, so an interrupted run
 never leaves a half-written entry; an entry with a missing blob is a miss. When
@@ -88,18 +88,18 @@ the cache grows past `max_size_mb`, the least recently used entries go first.
 Each entry also keeps what its key was computed from (the files and their
 digests, the command, env, upstream sources and dependency keys), and `last/`
 remembers, per task, the key of its most recent cached run. That is what
-`mnci why-miss` compares with:
+`smith why-miss` compares with:
 
 ```sh
-$ mnci why-miss api:build
+$ smith why-miss api:build
 api:build would run: 2 change(s) since its last cached run (2026-10-16 09:12)
   upstream   core changed
-  dependency core:build changed   (mnci why-miss core:build)
+  dependency core:build changed   (smith why-miss core:build)
 ```
 
 It names added, removed and changed input files, a changed command, env
 variables (names only), the projects upstream whose sources changed, the
-dependency tasks whose keys changed, and a new mnci or plugin version. It runs
+dependency tasks whose keys changed, and a new smith or plugin version. It runs
 nothing; `--json` prints the same report.
 
 Everything goes through a `Storage` interface (`Has/Get/Put/Delete/Walk/Touch`)
@@ -113,58 +113,58 @@ builds once and every developer's next run replays it:
 
 ```toml
 [cache]
-remote = "s3://acme-mnci-cache/main"   # or https://cache.acme.dev/mnci, azblob://acme/mnci
+remote = "s3://acme-smith-cache/main"   # or https://cache.acme.dev/smith, azblob://acme/smith
 remote_read_only = false               # true on developer machines, if only CI should write
 ```
 
-Every object is signed with HMAC-SHA256 under `MNCI_CACHE_KEY`, a secret the
+Every object is signed with HMAC-SHA256 under `SMITH_CACHE_KEY`, a secret the
 team shares (a CI secret, a developer's environment), and the signature covers
 the object's name too. A local miss asks the remote, and a hit is verified, and
 for blobs digest-checked, before it is kept locally and used. An object that
 fails verification is a miss, said once. So is a remote that cannot be
 reached, and a remote that cannot be written is only a warning. A remote cache
-can make a run slower, never wrong. Without `MNCI_CACHE_KEY` the remote is
+can make a run slower, never wrong. Without `SMITH_CACHE_KEY` the remote is
 off: nothing is shared unsigned.
 
 | Store | `remote` | Credentials |
 |---|---|---|
-| any server taking PUT, GET and HEAD | `https://host/path` | `MNCI_CACHE_TOKEN`, sent as a bearer token, when set |
+| any server taking PUT, GET and HEAD | `https://host/path` | `SMITH_CACHE_TOKEN`, sent as a bearer token, when set |
 | S3 | `s3://bucket/prefix` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_REGION`; `AWS_ENDPOINT_URL_S3` for an S3-compatible store |
 | Azure Blob | `azblob://account/container/prefix` | `AZURE_STORAGE_SAS_TOKEN` |
 
-`MNCI_CACHE_REMOTE` and `MNCI_CACHE_READ_ONLY=1` override the settings for
+`SMITH_CACHE_REMOTE` and `SMITH_CACHE_READ_ONLY=1` override the settings for
 one machine. The remote holds results only: which run was last (for
-`mnci why-miss`) and pruning stay local.
+`smith why-miss`) and pruning stay local.
 
 ## Affected
 
 ```sh
-mnci affected [--base main]
-mnci test --affected
+smith affected [--base main]
+smith test --affected
 ```
 
 The affected projects are those owning a changed file (since the merge base
 with the base branch, plus uncommitted and untracked files) and every project
 that depends on them. The base is `--base`, else the pull request target
-(`GITHUB_BASE_REF`, `SYSTEM_PULLREQUEST_TARGETBRANCH`, `MNCI_BASE`), else the
+(`GITHUB_BASE_REF`, `SYSTEM_PULLREQUEST_TARGETBRANCH`, `SMITH_BASE`), else the
 release branch.
 
-When mnci cannot be sure it affects **everything**: no base, an unknown base, no
+When smith cannot be sure it affects **everything**: no base, an unknown base, no
 common ancestor (a shallow clone), or a changed workspace-level file such as
-`mnci.toml` or a lockfile. Documentation (`*.md`, `docs/**`) never affects a
+`smith.toml` or a lockfile. Documentation (`*.md`, `docs/**`) never affects a
 project. Too wide costs minutes; too narrow reports green for code nothing
 checked.
 
 ## Paths
 
-Inside mnci every path is POSIX and relative: project roots, task `cwd`,
+Inside smith every path is POSIX and relative: project roots, task `cwd`,
 inputs and outputs, cache entries and keys, graph and JSON output. Paths keep
-the case git reports for them. Whatever a plugin or `mnci.toml` gives is put
+the case git reports for them. Whatever a plugin or `smith.toml` gives is put
 in that form when the workspace is read (backslashes become slashes, `.` and
 `..` segments are resolved), and an absolute path or one that climbs out of
 the workspace is an error.
 
-On disk mnci joins them to the absolute workspace root, so files nested past
+On disk smith joins them to the absolute workspace root, so files nested past
 Windows' 260-character limit still save to and restore from the cache: Go
 adds the `\?\` long-path prefix to absolute paths. Git itself needs
 `git config core.longpaths true` to check such files out.

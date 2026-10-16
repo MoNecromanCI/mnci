@@ -6,12 +6,12 @@ import (
 	"sort"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// ApplyConventions asks every convention mnci.toml configures for its
+// ApplyConventions asks every convention smith.toml configures for its
 // additions to the projects it applies to, and merges them: a new task is
 // added unless the project already has one by that name, and extra
 // dependencies are added to existing tasks. It returns the projects each
@@ -26,7 +26,7 @@ func ApplyConventions(projects []*Project, plugins *pluginhost.PluginSet, cfg wo
 			continue
 		}
 		if c.Info.Kind != protocol.KindConvention {
-			return nil, fmt.Errorf("mnci.toml [conventions.%s]: %s is not a convention plugin", name, name)
+			return nil, fmt.Errorf("smith.toml [conventions.%s]: %s is not a convention plugin", name, name)
 		}
 		targets, err := ConventionTargets(name, projects, c.Info.Languages, conv)
 		if err != nil {

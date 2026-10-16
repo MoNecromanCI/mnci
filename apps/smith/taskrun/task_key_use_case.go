@@ -3,8 +3,8 @@ package taskrun
 import (
 	"sync"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskcache"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/taskcache"
+	"github.com/monosmith-app/monosmith/apps/smith/taskgraph"
 )
 
 // keyer computes what a task's cache key is made of: its inputs, the sources

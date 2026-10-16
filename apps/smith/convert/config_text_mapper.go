@@ -5,15 +5,15 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
-// ConfigText renders mnci.toml for a converted workspace: only the settings
-// that differ from mnci's defaults, in a stable order.
+// ConfigText renders smith.toml for a converted workspace: only the settings
+// that differ from smith's defaults, in a stable order.
 func ConfigText(cfg workspace.Config) string {
 	var b strings.Builder
 	b.WriteString("#:schema " + workspace.SchemaURL + "\n")
-	b.WriteString("# mnci workspace configuration. Written by `mnci convert`; edit it freely or with the TUI.\n")
+	b.WriteString("# smith workspace configuration. Written by `smith convert`; edit it freely or with the TUI.\n")
 	b.WriteString("# Every setting is optional except [workspace] name; see docs/configuration.md.\n")
 	fmt.Fprintf(&b, "schema = %d\n\n[workspace]\nname = %s\n", workspace.SchemaVersion, q(cfg.Workspace.Name))
 	if cfg.Workspace.Scope != "" {

@@ -4,10 +4,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/host"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // language is a language plugin for the made-up language "x".
@@ -68,7 +68,7 @@ func TestApplyStacksPerProject(t *testing.T) {
 	}
 	a, b, c := ps[0], ps[1], ps[2]
 	if a.Stack != "x-xfmt" || b.Stack != "x-xlint" || c.Stack != "x-xfmt" {
-		t.Fatalf("stacks: default %q, manifest %q, mnci.toml %q", a.Stack, b.Stack, c.Stack)
+		t.Fatalf("stacks: default %q, manifest %q, smith.toml %q", a.Stack, b.Stack, c.Stack)
 	}
 	if a.Tasks["lint"].Command[0] != "xfmt" || b.Tasks["lint"].Command[0] != "xlint" {
 		t.Fatalf("a stack's toolchain replaces lint: %v %v", a.Tasks["lint"], b.Tasks["lint"])

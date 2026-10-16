@@ -10,11 +10,11 @@ type CIParams struct {
 type CIResult struct {
 	// Toolchains are rendered as provider-native setup steps.
 	Toolchains []Toolchain `json:"toolchains,omitempty"`
-	// Setup steps run in `mnci ci setup`, in order, from the workspace root.
+	// Setup steps run in `smith ci setup`, in order, from the workspace root.
 	Setup []Step `json:"setup,omitempty"`
-	// Audit steps run in `mnci ci audit`.
+	// Audit steps run in `smith ci audit`.
 	Audit []Step `json:"audit,omitempty"`
-	// Credentials names the environment variables `mnci ci release` needs.
+	// Credentials names the environment variables `smith ci release` needs.
 	Credentials []Credential `json:"credentials,omitempty"`
 }
 

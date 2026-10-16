@@ -25,7 +25,7 @@ type Client struct {
 	HTTP *http.Client
 }
 
-// Release is the part of a GitHub Release mnci uses.
+// Release is the part of a GitHub Release smith uses.
 type Release struct {
 	ID        int64   `json:"id"`
 	HTMLURL   string  `json:"html_url"`

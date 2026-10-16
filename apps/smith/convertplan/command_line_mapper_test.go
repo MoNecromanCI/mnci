@@ -8,7 +8,7 @@ import (
 func TestSplitCommandLine(t *testing.T) {
 	for line, want := range map[string]string{
 		`go build -o ../../dist/x .`:                     `go|build|-o|../../dist/x|.`,
-		`node tools/go-slice-check.cjs apps/mnci`:        `node|tools/go-slice-check.cjs|apps/mnci`,
+		`node tools/go-slice-check.cjs apps/smith`:       `node|tools/go-slice-check.cjs|apps/smith`,
 		`node -e "console.log('a b')"`:                   `node|-e|console.log('a b')`,
 		`eslint . --ignore-pattern "apps/**"`:            `eslint|.|--ignore-pattern|apps/**`,
 		`go build "-gcflags=all=-N -l" -o out .`:         `go|build|-gcflags=all=-N -l|-o|out|.`,

@@ -22,7 +22,7 @@ func TestDockerWorkspace(t *testing.T) {
 		t.Skip("no Docker daemon running Linux containers")
 	}
 	// A throwaway registry on a free port.
-	registry := fmt.Sprintf("mnci-e2e-registry-%d", freePort(t))
+	registry := fmt.Sprintf("smith-e2e-registry-%d", freePort(t))
 	if out, err := exec.Command("docker", "run", "-d", "--rm", "--name", registry, "-p", "127.0.0.1::5000", "registry:2").CombinedOutput(); err != nil {
 		t.Fatalf("starting a registry: %v\n%s", err, out)
 	}
@@ -37,18 +37,18 @@ func TestDockerWorkspace(t *testing.T) {
 	address := strings.TrimSpace(strings.Split(string(port), "\n")[0])
 
 	base := t.TempDir()
-	w := &workspace{t: t, bin: buildMnci(t, base), dir: base, env: append(identity(), "CONTAINER_REGISTRY="+address+"/mnci-e2e")}
-	w.mnci(true, "new", "mnci-e2e-docker", "--ci", "github")
-	w.dir = filepath.Join(base, "mnci-e2e-docker")
-	w.write("mnci.toml", w.read("mnci.toml")+"\n[conventions.docker]\n")
-	w.mnci(true, "add", "app", "api", "--lang", "go")
+	w := &workspace{t: t, bin: buildSmith(t, base), dir: base, env: append(identity(), "CONTAINER_REGISTRY="+address+"/smith-e2e")}
+	w.smith(true, "new", "smith-e2e-docker", "--ci", "github")
+	w.dir = filepath.Join(base, "smith-e2e-docker")
+	w.write("smith.toml", w.read("smith.toml")+"\n[conventions.docker]\n")
+	w.smith(true, "add", "app", "api", "--lang", "go")
 	if dockerfile := w.read("apps/api/Dockerfile"); !strings.Contains(dockerfile, "go build -trimpath -o /out/app ./apps/api") {
 		t.Fatalf("the convention writes a new Go app's Dockerfile:\n%s", dockerfile)
 	}
 	if _, err := os.Stat(filepath.Join(w.dir, ".dockerignore")); err != nil {
 		t.Fatal(".dockerignore keeps the context small")
 	}
-	if out := w.mnci(true, "run", "image", "-p", "api"); !strings.Contains(out, "api:image ✔") {
+	if out := w.smith(true, "run", "image", "-p", "api"); !strings.Contains(out, "api:image ✔") {
 		t.Fatalf("image:\n%s", out)
 	}
 	if ci := w.read(".github/workflows/ci.yml"); !strings.Contains(ci, "CONTAINER_REGISTRY") {
@@ -58,10 +58,10 @@ func TestDockerWorkspace(t *testing.T) {
 	// An app with a Dockerfile releases: its image is pushed with the version.
 	w.git("add", "-A")
 	w.git("commit", "-qm", "feat: the api")
-	if out := w.mnci(true, "release", "--yes"); !strings.Contains(out, "docker published 0.1.0") {
+	if out := w.smith(true, "release", "--yes"); !strings.Contains(out, "docker published 0.1.0") {
 		t.Fatalf("release:\n%s", out)
 	}
-	resp, err := http.Get("http://" + address + "/v2/mnci-e2e/api/tags/list")
+	resp, err := http.Get("http://" + address + "/v2/smith-e2e/api/tags/list")
 	if err != nil {
 		t.Fatal(err)
 	}

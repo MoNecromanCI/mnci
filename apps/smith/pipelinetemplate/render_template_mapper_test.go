@@ -4,15 +4,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
+	"github.com/monosmith-app/monosmith/apps/smith/cipipeline"
 )
 
 func TestEveryTemplateRenders(t *testing.T) {
 	m := cipipeline.NewModel(cipipeline.Contributions{}, "1.2.3", "main")
 	app := App{Name: "web", Root: "apps/web", Output: "dist"}
 	does := map[string]string{
-		"e2e":                   "mnci run e2e",
-		"package-zip":           "mnci ci pack",
+		"e2e":                   "smith run e2e",
+		"package-zip":           "smith ci pack",
 		"deploy-pages":          "path: apps/web/dist",
 		"deploy-azure-function": "apps/web",
 	}
@@ -27,7 +27,7 @@ func TestEveryTemplateRenders(t *testing.T) {
 			if !ok {
 				continue
 			}
-			for _, want := range []string{"Yours from here", "mnci ci setup", "1.2.3", does[tmpl.Name]} {
+			for _, want := range []string{"Yours from here", "smith ci setup", "1.2.3", does[tmpl.Name]} {
 				if !strings.Contains(content, want) {
 					t.Errorf("%s/%s lacks %q:\n%s", tmpl.Name, provider, want, content)
 				}

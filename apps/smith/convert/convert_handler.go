@@ -7,31 +7,31 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/convertplan"
-	"github.com/MoNecromanCI/mnci/apps/mnci/gitclient"
-	"github.com/MoNecromanCI/mnci/apps/mnci/nxworkspace"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/convertplan"
+	"github.com/monosmith-app/monosmith/apps/smith/gitclient"
+	"github.com/monosmith-app/monosmith/apps/smith/nxworkspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 	"github.com/spf13/cobra"
 )
 
 // ErrBlocked is returned when the plan has findings that stop the conversion.
 var ErrBlocked = errors.New("the conversion is blocked; see the report")
 
-// Command is `mnci convert`.
+// Command is `smith convert`.
 func Command(version string) *cobra.Command {
 	var dryRun, asJSON, strict, skipInstall, allowDirty bool
 	cmd := &cobra.Command{
 		Use:   "convert",
-		Short: "Convert an Nx workspace (or one made by the old mnci) to mnci",
-		Long: `convert turns the Nx workspace in the current directory into an mnci workspace:
+		Short: "Convert an Nx workspace (or one made by the old mnci) to smith",
+		Long: `convert turns the Nx workspace in the current directory into a smith workspace:
 projects keep their directories, targets become plugin tasks, package.json
-scripts or mnci.toml tasks, release settings and existing tags carry over, Nx is
+scripts or smith.toml tasks, release settings and existing tags carry over, Nx is
 removed and the CI pipelines are regenerated.
 
 Run it with --dry-run first: the report lists what maps, what changes behaviour
 and what needs you. Nothing is dropped silently. The workspace's dependencies
 must be installed (npm ci), because Nx itself describes the projects.`,
-		Example: "  mnci convert --dry-run\n  mnci convert",
+		Example: "  smith convert --dry-run\n  smith convert",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := cmd.OutOrStdout()
@@ -40,7 +40,7 @@ must be installed (npm ci), because Nx itself describes the projects.`,
 				return err
 			}
 			if _, err := os.Stat(filepath.Join(root, workspace.FileName)); err == nil {
-				return fmt.Errorf("%s already exists: this workspace is already an mnci workspace", workspace.FileName)
+				return fmt.Errorf("%s already exists: this workspace is already a smith workspace", workspace.FileName)
 			}
 			git := gitclient.New(root)
 			if !git.IsRepository() {
@@ -83,7 +83,7 @@ must be installed (npm ci), because Nx itself describes the projects.`,
 			}
 			if dryRun {
 				if !asJSON {
-					fmt.Fprintln(out, "\nNothing changed (dry run). Run `mnci convert` to apply.")
+					fmt.Fprintln(out, "\nNothing changed (dry run). Run `smith convert` to apply.")
 				}
 				return nil
 			}
@@ -99,7 +99,7 @@ must be installed (npm ci), because Nx itself describes the projects.`,
 			for _, s := range res.LostSlots {
 				fmt.Fprintf(log, "pipeline slot %s holds steps the new pipeline has no place for: move them into another slot\n", s)
 			}
-			fmt.Fprintln(log, "\nConverted. Next: review `git status`, run `mnci doctor` and `mnci run lint typecheck test build`, then commit.")
+			fmt.Fprintln(log, "\nConverted. Next: review `git status`, run `smith doctor` and `smith run lint typecheck test build`, then commit.")
 			return nil
 		},
 	}

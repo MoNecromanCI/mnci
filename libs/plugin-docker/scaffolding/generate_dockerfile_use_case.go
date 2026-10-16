@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-docker/images"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/templating"
+	"github.com/monosmith-app/monosmith/libs/plugin-docker/images"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/templating"
 )
 
 // webMarkers are files a static web app's root holds: Vite's page,
@@ -62,6 +62,6 @@ func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.Ge
 		return res, err
 	}
 	res.Files = written
-	res.Notes = append(res.Notes, "mnci run image -p "+params.Name+" builds its container image; a release pushes it to CONTAINER_REGISTRY.")
+	res.Notes = append(res.Notes, "smith run image -p "+params.Name+" builds its container image; a release pushes it to CONTAINER_REGISTRY.")
 	return res, nil
 }

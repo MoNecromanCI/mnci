@@ -3,12 +3,12 @@ package tui
 import (
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/clicontract"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/monosmith-app/monosmith/apps/smith/clicontract"
 )
 
-// palette finds any mnci command by typing part of its name or description;
+// palette finds any smith command by typing part of its name or description;
 // enter takes it, then the rest of the command line can be typed.
 type palette struct {
 	commands []clicontract.CommandDescription
@@ -111,7 +111,7 @@ func usage(c clicontract.CommandDescription) string {
 func (p palette) view() string {
 	var b strings.Builder
 	if p.chosen != nil {
-		b.WriteString(titleStyle.Render("mnci "+p.chosen.Name) + " " + p.filter.View() + "\n")
+		b.WriteString(titleStyle.Render("smith "+p.chosen.Name) + " " + p.filter.View() + "\n")
 		b.WriteString(hintStyle.Render("\nenter run · esc back") + "\n")
 		return b.String()
 	}

@@ -1,12 +1,12 @@
 package plugin
 
 import (
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/dependencies"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/discovery"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/pipeline"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/releasing"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/dependencies"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/discovery"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/pipeline"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/releasing"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Node is the Node.js/TypeScript language plugin.

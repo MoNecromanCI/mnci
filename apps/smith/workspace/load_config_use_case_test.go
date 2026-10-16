@@ -13,7 +13,7 @@ func TestParseAppliesDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Schema != 1 || cfg.CI.Providers[0] != "github" || cfg.Release.Branch != "main" || cfg.Cache.Dir != ".mnci/cache" || cfg.Cache.MaxSizeMB != 2048 {
+	if cfg.Schema != 1 || cfg.CI.Providers[0] != "github" || cfg.Release.Branch != "main" || cfg.Cache.Dir != ".smith/cache" || cfg.Cache.MaxSizeMB != 2048 {
 		t.Fatalf("defaults %+v", cfg)
 	}
 }
@@ -23,8 +23,8 @@ func TestParseRejectsMistakes(t *testing.T) {
 		"[workspace]\nname = \"a\"\nnmae = \"typo\"\n": "nmae",
 		"[workspace]\n": "name is required",
 		"[workspace]\nname = \"a\"\n[ci]\nproviders=[\"x\"]": "unknown CI provider",
-		"schema = 9\n[workspace]\nname = \"a\"\n":            "upgrade mnci",
-		"[workspace\nname = \"a\"\n":                         "mnci.toml:",
+		"schema = 9\n[workspace]\nname = \"a\"\n":            "upgrade smith",
+		"[workspace\nname = \"a\"\n":                         "smith.toml:",
 	} {
 		_, err := Parse([]byte(input))
 		if err == nil || !strings.Contains(err.Error(), want) {
@@ -44,7 +44,7 @@ func TestParseOverrides(t *testing.T) {
 }
 
 func TestFindRoot(t *testing.T) {
-	t.Setenv("MNCI_WORKSPACE_ROOT", "") // set when the test runs as an mnci task
+	t.Setenv("SMITH_WORKSPACE_ROOT", "") // set when the test runs as a smith task
 	root := t.TempDir()
 	deep := filepath.Join(root, "apps", "web", "src")
 	_ = os.MkdirAll(deep, 0o755)

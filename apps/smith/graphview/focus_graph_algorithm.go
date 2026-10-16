@@ -3,7 +3,7 @@ package graphview
 import (
 	"sort"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
 )
 
 // Around returns the part of the graph that touches the named projects: them,

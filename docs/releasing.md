@@ -1,15 +1,15 @@
 # Releasing
 
 ```sh
-mnci release --dry-run    # the plan; changes nothing
-mnci release --dry-run --comment   # in a pull request build: also post the plan on it (docs/ci.md)
-mnci release              # asks before releasing (CI: mnci ci release)
+smith release --dry-run    # the plan; changes nothing
+smith release --dry-run --comment   # in a pull request build: also post the plan on it (docs/ci.md)
+smith release              # asks before releasing (CI: smith ci release)
 ```
 
 ## What releases
 
 Every project of kind `package`, and every app with a release section (see
-[Apps](#apps)). For each, mnci reads the commits since its last release tag that
+[Apps](#apps)). For each, smith reads the commits since its last release tag that
 touched its directory, or the directory of an internal `lib` it imports (a lib
 ships inside what uses it, so a fix there releases its users):
 
@@ -32,7 +32,7 @@ version(sdk)[1.0.0]: first stable release
 
 ## Apps
 
-An app releases when `mnci.toml` gives it a release section:
+An app releases when `smith.toml` gives it a release section:
 
 ```toml
 [projects.cli.release]
@@ -57,7 +57,7 @@ The notes come from the releasing commits. Breaking changes are listed first,
 with the text of their `BREAKING CHANGE:` footer. Then come Features, Fixes,
 Performance and Reverts, each entry with its scope and short hash. A release
 caused only by a dependency says so. The notes end by thanking the commits'
-authors, bots aside. `mnci release --dry-run --notes` prints them before
+authors, bots aside. `smith release --dry-run --notes` prints them before
 anything is released.
 
 ## Package managers
@@ -120,7 +120,7 @@ this way.
 | Go | `<dir>/v<version>` (e.g. `packages/gokit/v0.1.0`) | how `go get` finds a nested module's version |
 
 The model is **tag-only**: nothing is committed back to the branch. For each
-package, in dependency order, mnci:
+package, in dependency order, smith:
 
 1. writes the version into the manifest (keeping its formatting), and the new
    versions of workspace dependencies into its dependency ranges
@@ -132,7 +132,7 @@ package, in dependency order, mnci:
 ## Tag checks
 
 Versions come from tags, so before showing a plan, even for `--dry-run`,
-`mnci release` fetches the tags from the release remote and checks them for
+`smith release` fetches the tags from the release remote and checks them for
 every releasable project. A failed fetch is a warning. Each of these stops the
 release, because the plan's versions would be wrong:
 
@@ -144,7 +144,7 @@ release, because the plan's versions would be wrong:
 
 The registry is asked through the project's plugin (`npm view` for Node, the
 PEP 503 index for Python; a Go module's tags are its registry). An unreachable
-registry is a warning, not a stop. `mnci doctor` runs the same checks without
+registry is a warning, not a stop. `smith doctor` runs the same checks without
 fetching.
 
 ## When something fails
@@ -154,13 +154,13 @@ pushed. Re-run it: tagged packages have no new commits and are kept, and a
 package that was published but not tagged is skipped by the registry check and
 then tagged. Tags left local by an interrupted push are pushed by the next run.
 
-Before a real release mnci refuses a shallow clone, a branch other than
+Before a real release smith refuses a shallow clone, a branch other than
 `[release] branch`, uncommitted changes, and a missing publish credential —
 before anything is tagged.
 
 ## The report
 
-Every run writes `.mnci/release-report.json` (also printed by `--json`) and, on
+Every run writes `.smith/release-report.json` (also printed by `--json`) and, on
 GitHub Actions, a summary table:
 
 ```json

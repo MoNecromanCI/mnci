@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/githubrelease"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/githubrelease"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Preflight refuses a real release that would fail halfway or corrupt history:
@@ -20,7 +20,7 @@ func Preflight(s *session.Session, plan Plan) error {
 	if s.Git.IsShallow() {
 		problems = append(problems, "the clone is shallow, so versions cannot be computed from history: fetch with full depth (actions/checkout fetch-depth: 0)")
 	}
-	if branch := s.Git.CurrentBranch(); branch != "" && branch != s.Config.Release.Branch && os.Getenv("MNCI_RELEASE_ANY_BRANCH") == "" {
+	if branch := s.Git.CurrentBranch(); branch != "" && branch != s.Config.Release.Branch && os.Getenv("SMITH_RELEASE_ANY_BRANCH") == "" {
 		problems = append(problems, fmt.Sprintf("releases run from %s, not %s", s.Config.Release.Branch, branch))
 	}
 	if out, err := s.Git.Run("status", "--porcelain", "--untracked-files=no"); err == nil {
@@ -92,7 +92,7 @@ func alternative(env string) bool {
 	case "PYPI_TOKEN":
 		return os.Getenv("TWINE_PASSWORD") != ""
 	case "NODE_AUTH_TOKEN":
-		return os.Getenv("NPM_TOKEN") != "" || os.Getenv("MNCI_NPM_ALREADY_AUTHENTICATED") != ""
+		return os.Getenv("NPM_TOKEN") != "" || os.Getenv("SMITH_NPM_ALREADY_AUTHENTICATED") != ""
 	}
 	return false
 }

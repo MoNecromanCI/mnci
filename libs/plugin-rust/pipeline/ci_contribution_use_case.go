@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // RustVersion is installed when rust-toolchain.toml does not pin one; bump it

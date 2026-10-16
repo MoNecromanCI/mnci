@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // ValidateStack checks a stack against the loaded plugins: every plugin it

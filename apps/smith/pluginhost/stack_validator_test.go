@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/serve"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/host"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/serve"
 )
 
 // fake describes itself with info.
@@ -75,7 +75,7 @@ func TestValidateStack(t *testing.T) {
 
 	_, err := NewCatalog(set, workspace.Config{Stacks: map[string]workspace.StackConfig{"bad": {Language: "node", Toolchain: []string{"jest", "vitest"}}}})
 	if err == nil || !strings.Contains(err.Error(), "[stacks.bad]") {
-		t.Fatalf("a bad mnci.toml stack fails: %v", err)
+		t.Fatalf("a bad smith.toml stack fails: %v", err)
 	}
 	_, err = NewCatalog(set, workspace.Config{DefaultStacks: map[string]string{"node": "missing"}})
 	if err == nil || !strings.Contains(err.Error(), "[default_stacks]") {

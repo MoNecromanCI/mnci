@@ -6,7 +6,7 @@ import (
 )
 
 // slotRenames maps the old mnci's pipeline slots to the closest slot of the
-// pipelines mnci generates. A slot with no equivalent is reported.
+// pipelines smith generates. A slot with no equivalent is reported.
 var slotRenames = map[string]string{
 	"after-install":  "before-setup",
 	"before-release": "after-verify",
@@ -29,7 +29,7 @@ func RenameSlots(old string) (string, []string) {
 			}
 			to = name
 		}
-		return indent + "# mnci:slot " + to + "\n" + body + indent + "# mnci:slot-end " + to
+		return indent + "# smith:slot " + to + "\n" + body + indent + "# smith:slot-end " + to
 	})
 	return out, orphans
 }

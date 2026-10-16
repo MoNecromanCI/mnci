@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // runtime is a toolchain whose plugin gives both providers' steps.
@@ -24,7 +24,7 @@ func model() Model {
 	c.Add(protocol.CIResult{Toolchains: []protocol.Toolchain{runtime("python", "3.12", "actions/setup-python@v5", "UsePythonVersion@0", "versionSpec")}, Credentials: []protocol.Credential{{Env: "PYPI_TOKEN", Required: true}}})
 	c.Add(protocol.CIResult{Toolchains: []protocol.Toolchain{runtime("node", "24", "actions/setup-node@v4", "UseNode@1", "version"), {Name: "python", Version: "9"}}, Credentials: []protocol.Credential{{Env: "NODE_AUTH_TOKEN"}}})
 	c.Add(protocol.CIResult{Toolchains: []protocol.Toolchain{runtime("go", "1.26", "actions/setup-go@v5", "GoTool@0", "version")}})
-	// A plugin for a language mnci does not know: an install command only,
+	// A plugin for a language smith does not know: an install command only,
 	// or nothing at all.
 	c.Add(protocol.CIResult{Toolchains: []protocol.Toolchain{{Name: "zig", Version: "0.14", Install: "curl -fsSL https://example.com/zig.sh | sh\nzig version"}, {Name: "rust", Version: "1.90"}}})
 	return NewModel(c, "dev", "main")
@@ -37,8 +37,8 @@ func TestRenderersCarryTheSameSteps(t *testing.T) {
 		"      - uses: actions/setup-node@v4\n        with:\n          node-version: '24'\n          cache: false\n",
 		"python-version: '3.12'", "go-version: '1.26'",
 		"      - name: Install zig\n        run: |\n          curl -fsSL https://example.com/zig.sh | sh\n          zig version\n",
-		"      # mnci: no plugin says how to install rust 1.90",
-		"mnci ci setup", "mnci ci audit", "mnci ci verify", "mnci ci release", "mnci release --dry-run", "NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}", "fetch-depth: 0", "MNCI_VERSION: latest", "github.ref_name == 'main'"} {
+		"      # smith: no plugin says how to install rust 1.90",
+		"smith ci setup", "smith ci audit", "smith ci verify", "smith ci release", "smith release --dry-run", "NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}", "fetch-depth: 0", "SMITH_VERSION: latest", "github.ref_name == 'main'"} {
 		if !strings.Contains(gh, want) {
 			t.Errorf("GitHub workflow lacks %q", want)
 		}
@@ -47,8 +47,8 @@ func TestRenderersCarryTheSameSteps(t *testing.T) {
 		"  - task: UseNode@1\n    inputs:\n      version: '24.x'\n",
 		"versionSpec: '3.12.x'", "  - task: GoTool@0",
 		"  - bash: |\n      curl -fsSL https://example.com/zig.sh | sh\n      zig version\n    displayName: Install zig\n",
-		"  # mnci: no plugin says how to install rust 1.90",
-		"mnci ci setup", "mnci ci audit", "mnci ci verify", "mnci ci release", "mnci release --dry-run", "PYPI_TOKEN: $(PYPI_TOKEN)", "fetchDepth: 0", "persistCredentials: true", "refs/heads/main"} {
+		"  # smith: no plugin says how to install rust 1.90",
+		"smith ci setup", "smith ci audit", "smith ci verify", "smith ci release", "smith release --dry-run", "PYPI_TOKEN: $(PYPI_TOKEN)", "fetchDepth: 0", "persistCredentials: true", "refs/heads/main"} {
 		if !strings.Contains(az, want) {
 			t.Errorf("Azure pipeline lacks %q", want)
 		}
@@ -57,7 +57,7 @@ func TestRenderersCarryTheSameSteps(t *testing.T) {
 	phases := func(s string) []string {
 		var out []string
 		for _, line := range strings.Split(s, "\n") {
-			if i := strings.Index(line, "mnci ci "); i >= 0 {
+			if i := strings.Index(line, "smith ci "); i >= 0 {
 				out = append(out, strings.TrimSpace(line[i:]))
 			}
 		}
@@ -73,7 +73,7 @@ func TestRenderersCarryTheSameSteps(t *testing.T) {
 
 func TestNoToolchainsWhenNoProjects(t *testing.T) {
 	gh := RenderGitHub(NewModel(Contributions{}, "1.2.3", "main"))
-	if strings.Contains(gh, "setup-node") || !strings.Contains(gh, "MNCI_VERSION: 1.2.3") || strings.Contains(gh, "env:\n          NODE") {
+	if strings.Contains(gh, "setup-node") || !strings.Contains(gh, "SMITH_VERSION: 1.2.3") || strings.Contains(gh, "env:\n          NODE") {
 		t.Fatal(gh)
 	}
 }
@@ -91,7 +91,7 @@ func TestWriteKeepsSlotsAndReportsDrift(t *testing.T) {
 	}
 	path := filepath.Join(root, ".github", "workflows", "ci.yml")
 	raw, _ := os.ReadFile(path)
-	custom := strings.Replace(string(raw), "      # mnci:slot after-verify\n", "      # mnci:slot after-verify\n      - name: Team step\n        run: make e2e\n", 1)
+	custom := strings.Replace(string(raw), "      # smith:slot after-verify\n", "      # smith:slot after-verify\n      - name: Team step\n        run: make e2e\n", 1)
 	_ = os.WriteFile(path, []byte(custom), 0o644)
 	if drift := Drift(root, cfg, m); len(drift) != 0 {
 		t.Fatalf("slot content is not drift: %v", drift)
@@ -115,34 +115,34 @@ func TestWriteKeepsSlotsAndReportsDrift(t *testing.T) {
 func TestThePreviewIsPostedOnPullRequests(t *testing.T) {
 	m := model()
 	gh, az := RenderGitHub(m), RenderAzure(m)
-	for _, want := range []string{"  pull-requests: write\n", "run: mnci release --dry-run --comment\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n"} {
+	for _, want := range []string{"  pull-requests: write\n", "run: smith release --dry-run --comment\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n"} {
 		if !strings.Contains(gh, want) {
 			t.Errorf("GitHub workflow lacks %q", want)
 		}
 	}
-	if !strings.Contains(az, "bash: mnci release --dry-run --comment\n    displayName: Release preview\n    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))\n    env:\n      SYSTEM_ACCESSTOKEN: $(System.AccessToken)\n") {
+	if !strings.Contains(az, "bash: smith release --dry-run --comment\n    displayName: Release preview\n    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))\n    env:\n      SYSTEM_ACCESSTOKEN: $(System.AccessToken)\n") {
 		t.Errorf("Azure pipeline lacks the preview comment step:\n%s", az)
 	}
 }
 
 func TestPackOnlyWhenAProjectPackages(t *testing.T) {
 	m := model()
-	if strings.Contains(RenderGitHub(m), "mnci ci pack") || strings.Contains(RenderAzure(m), "mnci ci pack") {
+	if strings.Contains(RenderGitHub(m), "smith ci pack") || strings.Contains(RenderAzure(m), "smith ci pack") {
 		t.Fatal("no project packages: no pack step")
 	}
 	m.Pack = true
 	gh, az := RenderGitHub(m), RenderAzure(m)
-	for _, want := range []string{"run: mnci ci pack", "uses: actions/upload-artifact@v4", "name: drop", "path: dist/drop", "if-no-files-found: ignore"} {
+	for _, want := range []string{"run: smith ci pack", "uses: actions/upload-artifact@v4", "name: drop", "path: dist/drop", "if-no-files-found: ignore"} {
 		if !strings.Contains(gh, want) {
 			t.Errorf("GitHub workflow lacks %q", want)
 		}
 	}
-	for _, want := range []string{"bash: mnci ci pack", "publish: dist/drop", "artifact: drop", "refs/heads/main"} {
+	for _, want := range []string{"bash: smith ci pack", "publish: dist/drop", "artifact: drop", "refs/heads/main"} {
 		if !strings.Contains(az, want) {
 			t.Errorf("Azure pipeline lacks %q", want)
 		}
 	}
-	if strings.Index(gh, "mnci ci pack") > strings.Index(gh, "mnci ci release") {
+	if strings.Index(gh, "smith ci pack") > strings.Index(gh, "smith ci release") {
 		t.Error("pack runs before release")
 	}
 }

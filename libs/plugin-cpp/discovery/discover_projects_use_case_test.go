@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestParseLists(t *testing.T) {
@@ -14,8 +14,8 @@ func TestParseLists(t *testing.T) {
 project(acme_api
   VERSION 1.2.0
   LANGUAGES CXX)
-set(MNCI_KIND "app")
-set(MNCI_STACK cpp)
+set(SMITH_KIND "app")
+set(SMITH_STACK cpp)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../libs/core ${CMAKE_CURRENT_BINARY_DIR}/core)
 add_subdirectory(src)
 add_executable(acme_api src/main.cpp)
@@ -38,7 +38,7 @@ func TestDiscover(t *testing.T) {
 		_ = os.MkdirAll(filepath.Dir(p), 0o755)
 		_ = os.WriteFile(p, []byte(body), 0o644)
 	}
-	write("apps/api/CMakeLists.txt", "project(acme_api VERSION 0.1.0)\nset(MNCI_KIND app)\nadd_subdirectory(../../libs/core core)\nadd_subdirectory(src)\nadd_executable(acme_api src/main.cpp)\n")
+	write("apps/api/CMakeLists.txt", "project(acme_api VERSION 0.1.0)\nset(SMITH_KIND app)\nadd_subdirectory(../../libs/core core)\nadd_subdirectory(src)\nadd_executable(acme_api src/main.cpp)\n")
 	write("apps/api/src/CMakeLists.txt", "target_sources(acme_api PRIVATE x.cpp)\n")
 	write("apps/api/src/main.cpp", "")
 	write("libs/core/CMakeLists.txt", "project(acme_core)\nadd_library(acme_core src/core.cpp)\n")

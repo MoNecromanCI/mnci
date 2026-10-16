@@ -7,11 +7,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/nxworkspace"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/nxworkspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
-// pluginTargets are executors whose job the mnci language plugin does.
+// pluginTargets are executors whose job the smith language plugin does.
 var pluginTargets = map[string]string{
 	"@nx-go/nx-go:build":            "go",
 	"@nx-go/nx-go:test":             "go",
@@ -24,23 +24,23 @@ var pluginTargets = map[string]string{
 
 // plumbing are targets and executors that only serve Nx itself.
 var plumbing = map[string]string{
-	"build-deps":                    "Nx's build-deps helper; mnci builds dependencies first on its own",
+	"build-deps":                    "Nx's build-deps helper; smith builds dependencies first on its own",
 	"watch-deps":                    "Nx's watch helper",
-	"nx-release-publish":            "mnci release publishes",
+	"nx-release-publish":            "smith release publishes",
 	"nx:noop":                       "an Nx no-op",
-	"@nx/js:release-publish":        "mnci release publishes",
-	"@mnci/nx-python-pip:publish":   "mnci release publishes",
-	"@nx/js:prune-lockfile":         "an Nx deployment helper with no mnci equivalent",
-	"@nx/js:copy-workspace-modules": "an Nx deployment helper with no mnci equivalent",
+	"@nx/js:release-publish":        "smith release publishes",
+	"@mnci/nx-python-pip:publish":   "smith release publishes",
+	"@nx/js:prune-lockfile":         "an Nx deployment helper with no smith equivalent",
+	"@nx/js:copy-workspace-modules": "an Nx deployment helper with no smith equivalent",
 	"@nx/js:verdaccio":              "a local registry helper",
-	"@nx-go/nx-go:serve":            "mnci run start runs the app (go run .)",
+	"@nx-go/nx-go:serve":            "smith run start runs the app (go run .)",
 	"@nx-go/nx-go:tidy":             "run go mod tidy directly",
 	"@nx-go/nx-go:generate":         "run go generate ./... directly",
 }
 
 // mapTargets converts one project's targets: each either stays with the
 // language plugin, becomes a package.json script (Node), becomes an
-// mnci.toml task, or is reported.
+// smith.toml task, or is reported.
 func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp *ProjectPlan, legacy map[string]string) {
 	names := make([]string, 0, len(p.Targets))
 	for name := range p.Targets {
@@ -63,7 +63,7 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 		}
 		if reason, ok := plumbing[t.Executor]; ok {
 			severity := Dropped
-			if strings.Contains(reason, "no mnci equivalent") {
+			if strings.Contains(reason, "no smith equivalent") {
 				severity = Changed
 			}
 			plan.Add(severity, pp.Name, name, reason)
@@ -80,7 +80,7 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 		if t.Executor == "nx:run-commands" || t.Executor == "@nx/workspace:run-commands" || t.Executor == "@nrwl/workspace:run-commands" || (t.Executor == "" && t.Command != "") {
 			line, cwd, env, err := commandOf(t)
 			if err != nil {
-				plan.Add(Manual, pp.Name, name, "not converted: "+err.Error()+"; add it to mnci.toml by hand")
+				plan.Add(Manual, pp.Name, name, "not converted: "+err.Error()+"; add it to smith.toml by hand")
 				continue
 			}
 			commandTarget(plan, pp, name, t, line, cwd, env)
@@ -106,7 +106,7 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 			}
 			continue
 		}
-		plan.Add(Manual, pp.Name, name, fmt.Sprintf("the executor %s has no mnci equivalent; add the command it runs to mnci.toml by hand", t.Executor))
+		plan.Add(Manual, pp.Name, name, fmt.Sprintf("the executor %s has no smith equivalent; add the command it runs to smith.toml by hand", t.Executor))
 	}
 }
 
@@ -122,24 +122,24 @@ func pluginTarget(plan *Plan, pp *ProjectPlan, name string, t nxworkspace.Target
 			o.Command = append(strings.Fields(linter), args...)
 			if t.Parallelism != nil && !*t.Parallelism && o.Command[0] == "golangci-lint" {
 				// Nx ran it one at a time; golangci-lint waits for its own
-				// lock instead of failing when mnci runs projects in parallel.
+				// lock instead of failing when smith runs projects in parallel.
 				o.Command = append(o.Command, "--allow-serial-runners")
 			}
 		}
 	} else if t.Parallelism != nil && !*t.Parallelism {
-		plan.Add(Changed, pp.Name, name, "Nx ran it one at a time (parallelism: false); mnci may run it alongside other tasks")
+		plan.Add(Changed, pp.Name, name, "Nx ran it one at a time (parallelism: false); smith may run it alongside other tasks")
 	}
 	if o.Command == nil && o.DependsOn == nil {
 		plan.Add(Mapped, pp.Name, name, "run by the "+pp.Language+" plugin")
 		return
 	}
 	plan.SetTask(pp.Name, name, o)
-	plan.Add(Mapped, pp.Name, name, "run by the "+pp.Language+" plugin, with its settings kept in mnci.toml")
+	plan.Add(Mapped, pp.Name, name, "run by the "+pp.Language+" plugin, with its settings kept in smith.toml")
 }
 
 // commandTarget converts one shell command. A Node project runs it as a
 // package.json script when it runs in the project root (npm runs scripts
-// through a shell, so nothing is lost); anything else becomes an mnci.toml
+// through a shell, so nothing is lost); anything else becomes a smith.toml
 // task with an argv.
 func commandTarget(plan *Plan, pp *ProjectPlan, name string, t nxworkspace.Target, line, cwd string, env map[string]string) {
 	if pp.Language == "node" && cwd == pp.Root {
@@ -168,7 +168,7 @@ func commandTarget(plan *Plan, pp *ProjectPlan, name string, t nxworkspace.Targe
 		cwd = ""
 	}
 	if pp.Language == "python" {
-		// mnci puts the workspace's .venv first on PATH, and a Windows venv
+		// smith puts the workspace's .venv first on PATH, and a Windows venv
 		// has python but no python3.
 		for i, a := range cl.Argv {
 			if a == "python3" {
@@ -185,7 +185,7 @@ func commandTarget(plan *Plan, pp *ProjectPlan, name string, t nxworkspace.Targe
 	}
 }
 
-// customTask writes an mnci.toml task with everything Nx knew about it.
+// customTask writes a smith.toml task with everything Nx knew about it.
 func customTask(plan *Plan, pp *ProjectPlan, name string, t nxworkspace.Target, argv []string, cwd string) {
 	o := workspace.TaskOverride{Command: argv, Cwd: cwd, DependsOn: dependsOn(t), Inputs: inputs(pp.Root, t), Outputs: outputs(pp.Root, t)}
 	cache := t.Cache != nil && *t.Cache && !t.Continuous
@@ -193,7 +193,7 @@ func customTask(plan *Plan, pp *ProjectPlan, name string, t nxworkspace.Target, 
 		o.Cache = &cache
 	}
 	plan.SetTask(pp.Name, name, o)
-	plan.Add(Mapped, pp.Name, name, "mnci.toml task: "+strings.Join(argv, " "))
+	plan.Add(Mapped, pp.Name, name, "smith.toml task: "+strings.Join(argv, " "))
 }
 
 // setScript records a package.json script and the task settings npm cannot
@@ -242,8 +242,8 @@ func extraDependsOn(t nxworkspace.Target) []string {
 	return nil
 }
 
-// inputs translates Nx inputs to mnci globs. Named inputs (default,
-// production) mean the project's files, which is also mnci's default, so a
+// inputs translates Nx inputs to smith globs. Named inputs (default,
+// production) mean the project's files, which is also smith's default, so a
 // target whose inputs are all named keeps the default.
 func inputs(root string, t nxworkspace.Target) []string {
 	var out []string

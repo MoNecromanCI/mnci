@@ -4,8 +4,8 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-dart/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-dart/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // tool is flutter for a Flutter project (its tasks run flutter), else dart.

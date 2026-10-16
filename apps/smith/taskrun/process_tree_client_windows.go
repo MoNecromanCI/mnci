@@ -11,13 +11,13 @@ import (
 var jobs sync.Map // *exec.Cmd -> windows.Handle
 
 // prepare starts the child in a new process group so Ctrl+C in the terminal
-// reaches mnci first, and mnci decides how to stop the tree.
+// reaches smith first, and smith decides how to stop the tree.
 func prepare(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &windows.SysProcAttr{CreationFlags: windows.CREATE_NEW_PROCESS_GROUP}
 }
 
 // track puts the started child in a Job Object that kills every process in it
-// when the job is closed, so no grandchild (node, tsc, python) outlives mnci.
+// when the job is closed, so no grandchild (node, tsc, python) outlives smith.
 func track(cmd *exec.Cmd) (release func(), err error) {
 	job, err := windows.CreateJobObject(nil, nil)
 	if err != nil {

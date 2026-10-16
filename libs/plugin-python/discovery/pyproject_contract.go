@@ -14,10 +14,10 @@ type PyProject struct {
 		Scripts      map[string]string `toml:"scripts"`
 	} `toml:"project"`
 	Tool struct {
-		Mnci struct {
+		Smith struct {
 			Kind  string `toml:"kind"`
 			Stack string `toml:"stack"`
-		} `toml:"mnci"`
+		} `toml:"smith"`
 		// Mypy is present when the project configures mypy, which gives it
 		// a typecheck task.
 		Mypy map[string]any `toml:"mypy"`

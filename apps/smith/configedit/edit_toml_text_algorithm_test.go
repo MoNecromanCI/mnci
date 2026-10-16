@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-const sample = `#:schema https://example.com/mnci.schema.json
+const sample = `#:schema https://example.com/smith.schema.json
 # A workspace.
 schema = 1
 
@@ -24,7 +24,7 @@ devcontainer = true
 # branch = "main"
 
 [cache] # where results go
-dir = ".mnci/cache"
+dir = ".smith/cache"
 `
 
 func TestSetKeyChangesOnlyTheValue(t *testing.T) {
@@ -41,7 +41,7 @@ func TestSetKeyChangesOnlyTheValue(t *testing.T) {
 
 func TestSetKeyAddsKeysAndTables(t *testing.T) {
 	got := SetKey(sample, "cache", "max_size_mb", "512")
-	if !strings.Contains(got, "[cache] # where results go\ndir = \".mnci/cache\"\nmax_size_mb = 512\n") {
+	if !strings.Contains(got, "[cache] # where results go\ndir = \".smith/cache\"\nmax_size_mb = 512\n") {
 		t.Fatalf("added key:\n%s", got)
 	}
 	got = SetKey(sample, "workspace", "scope", `"@acme"`)
@@ -53,7 +53,7 @@ func TestSetKeyAddsKeysAndTables(t *testing.T) {
 		t.Fatalf("the next table's comments stay with it:\n%s", got)
 	}
 	got = SetKey(sample, "release", "branch", `"trunk"`)
-	if !strings.Contains(got, "dir = \".mnci/cache\"\n\n[release]\nbranch = \"trunk\"\n") || !strings.Contains(got, `# branch = "main"`) {
+	if !strings.Contains(got, "dir = \".smith/cache\"\n\n[release]\nbranch = \"trunk\"\n") || !strings.Contains(got, `# branch = "main"`) {
 		t.Fatalf("added table:\n%s", got)
 	}
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Command is `mnci mcp`.
+// Command is `smith mcp`.
 func Command(version string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "mcp",
@@ -19,7 +19,7 @@ func Command(version string) *cobra.Command {
 stdin and stdout: tools to list the projects, graph, kinds, stacks and commands,
 check the workspace, preview a release and the available updates, run tasks,
 add and remove projects, install and remove dependencies, sync versions and add
-a pipeline. Each tool runs the mnci command it stands for. Register mnci mcp
+a pipeline. Each tool runs the smith command it stands for. Register smith mcp
 as the server's command, started in the workspace.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -38,7 +38,7 @@ as the server's command, started in the workspace.`,
 				if text == "" && err == nil {
 					text = "done"
 				}
-				return Outcome{Text: "$ mnci " + strings.Join(args, " ") + "\n" + text, IsError: err != nil}
+				return Outcome{Text: "$ smith " + strings.Join(args, " ") + "\n" + text, IsError: err != nil}
 			}}
 			in := bufio.NewScanner(cmd.InOrStdin())
 			in.Buffer(make([]byte, 1<<20), 16<<20)

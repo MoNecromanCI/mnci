@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/cipipeline"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/cipipeline"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// RemoveOptions configure mnci remove.
+// RemoveOptions configure smith remove.
 type RemoveOptions struct {
 	Name string
 	// DryRun says what would change, changing nothing.
@@ -29,13 +29,13 @@ type Removal struct {
 	Root    string `json:"root"`
 	// Dependents still import the project (only with Force).
 	Dependents []string `json:"dependents,omitempty"`
-	// Files are the other files changed: plugin clean-up, mnci.toml, pipelines.
+	// Files are the other files changed: plugin clean-up, smith.toml, pipelines.
 	Files []string `json:"files,omitempty"`
 	Notes []string `json:"notes,omitempty"`
 }
 
 // RemoveProject deletes a project's directory, lets its plugin clean what it
-// owns outside it (go.work, the lockfile, the venv), drops its mnci.toml
+// owns outside it (go.work, the lockfile, the venv), drops its smith.toml
 // tables and regenerates the pipelines. A project others import is refused
 // unless Force.
 func RemoveProject(s *session.Session, opts RemoveOptions) (Removal, error) {

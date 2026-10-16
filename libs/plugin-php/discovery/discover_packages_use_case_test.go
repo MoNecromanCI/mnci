@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestDiscover(t *testing.T) {
@@ -20,7 +20,7 @@ func TestDiscover(t *testing.T) {
   "name": "acme/cli", "version": "1.2.0", "bin": ["bin/cli"],
   "require": {"php": ">=8.2", "ext-json": "*", "acme/core": "*"},
   "require-dev": {"mockery/mockery": "^1.6"},
-  "extra": {"mnci": {"kind": "app", "stack": "php"}}
+  "extra": {"smith": {"kind": "app", "stack": "php"}}
 }`)
 	write("packages/core/composer.json", `{"name": "acme/core", "version": "0.0.0"}`)
 	write("packages/core/tests/CoreTest.php", "")

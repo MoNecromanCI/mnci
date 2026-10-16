@@ -5,13 +5,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/libs/plugin-node-toolchains/jest"
-	slicesp "github.com/MoNecromanCI/mnci/libs/plugin-vertical-slices/plugin"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/host"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/serve"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/jest"
+	slicesp "github.com/monosmith-app/monosmith/libs/plugin-vertical-slices/plugin"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/host"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/serve"
 )
 
 // connect runs a plugin in-process over pipes.
@@ -49,7 +49,7 @@ func TestApplyConventions(t *testing.T) {
 		t.Fatalf("applied to %v", applied)
 	}
 	tool := ps[0]
-	if tool.Tasks["slice-check"].Command[0] != "{mnci}" || strings.Join(tool.Tasks["lint"].DependsOn, ",") != "slice-check" {
+	if tool.Tasks["slice-check"].Command[0] != "{smith}" || strings.Join(tool.Tasks["lint"].DependsOn, ",") != "slice-check" {
 		t.Fatalf("tool tasks %+v", tool.Tasks)
 	}
 	if err := ApplyOverrides(tool, cfg); err != nil {

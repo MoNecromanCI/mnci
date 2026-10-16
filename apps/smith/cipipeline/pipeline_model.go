@@ -3,24 +3,24 @@ package cipipeline
 import (
 	"sort"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// InstallScriptURL serves the mnci installer used by generated pipelines.
-const InstallScriptURL = "https://raw.githubusercontent.com/MoNecromanCI/mnci/main/install.sh"
+// InstallScriptURL serves the smith installer used by generated pipelines.
+const InstallScriptURL = "https://raw.githubusercontent.com/monosmith-app/monosmith/main/install.sh"
 
 // Model is a pipeline independent of any CI provider.
 type Model struct {
-	// MnciVersion is installed by the pipeline; "latest" when mnci is a dev build.
-	MnciVersion   string
+	// SmithVersion is installed by the pipeline; "latest" when smith is a dev build.
+	SmithVersion  string
 	ReleaseBranch string
 	Toolchains    []protocol.Toolchain
 	Credentials   []protocol.Credential
 	// Pack is true when a project has a package task: pushes to the release
-	// branch then run mnci ci pack and keep dist/drop as the "drop" artifact.
+	// branch then run smith ci pack and keep dist/drop as the "drop" artifact.
 	Pack bool
 	// Native is true when a project is tagged native: a job per OS then runs
-	// mnci ci native.
+	// smith ci native.
 	Native bool
 	// NativeRunners and NativeLinuxPackages configure that job.
 	NativeRunners       []string
@@ -70,11 +70,11 @@ func (c *Contributions) Add(r protocol.CIResult) {
 }
 
 // NewModel builds the model, sorted so the YAML is deterministic.
-func NewModel(c Contributions, mnciVersion, releaseBranch string) Model {
-	if mnciVersion == "" || mnciVersion == "dev" {
-		mnciVersion = "latest"
+func NewModel(c Contributions, smithVersion, releaseBranch string) Model {
+	if smithVersion == "" || smithVersion == "dev" {
+		smithVersion = "latest"
 	}
-	m := Model{MnciVersion: mnciVersion, ReleaseBranch: releaseBranch, Pack: c.Pack, Native: c.Native,
+	m := Model{SmithVersion: smithVersion, ReleaseBranch: releaseBranch, Pack: c.Pack, Native: c.Native,
 		NativeRunners: c.NativeRunners, NativeLinuxPackages: c.NativeLinuxPackages, Provenance: c.Provenance}
 	if len(m.NativeRunners) == 0 {
 		m.NativeRunners = DefaultNativeRunners

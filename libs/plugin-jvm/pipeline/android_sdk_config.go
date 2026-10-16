@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // AndroidToolsRevision is the Android command-line tools build installed

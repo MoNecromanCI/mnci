@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
 func TestSetChecksTheSchemaAndKeepsComments(t *testing.T) {

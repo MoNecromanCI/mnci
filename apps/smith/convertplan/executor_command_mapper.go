@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/nxworkspace"
+	"github.com/monosmith-app/monosmith/apps/smith/nxworkspace"
 )
 
 // runCommandsOptions are nx:run-commands' own options; any other option is

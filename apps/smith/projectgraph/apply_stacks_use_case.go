@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/pluginhost"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// StackOf is the name of the stack a project uses: mnci.toml
+// StackOf is the name of the stack a project uses: smith.toml
 // [projects.<name>] stack, else the one its manifest records, else the
 // workspace default for its language plugin. Empty means none: the language
 // plugin alone.

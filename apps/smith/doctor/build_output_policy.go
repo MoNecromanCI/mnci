@@ -5,8 +5,8 @@ import (
 	"path"
 	"sort"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // OutsideBuildDir lists the task outputs that fall outside the workspace's

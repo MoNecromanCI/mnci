@@ -1,6 +1,6 @@
 package discovery
 
-import "github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+import "github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 
 // inputs are what a gem's results depend on: its sources and the
 // workspace's resolution and RuboCop rules.

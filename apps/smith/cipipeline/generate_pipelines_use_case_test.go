@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
-// A pipeline mnci generated for a provider the workspace dropped is deleted
-// and reported; one the team wrote (no mnci header) is kept.
+// A pipeline smith generated for a provider the workspace dropped is deleted
+// and reported; one the team wrote (no smith header) is kept.
 func TestWriteDeletesWhatItNoLongerGenerates(t *testing.T) {
 	root := t.TempDir()
 	both := workspace.Config{CI: workspace.CISection{Providers: []string{"github", "azure"}}}
@@ -36,7 +36,7 @@ func TestWriteDeletesWhatItNoLongerGenerates(t *testing.T) {
 	}
 }
 
-// Turning the dev container off deletes the one mnci generated.
+// Turning the dev container off deletes the one smith generated.
 func TestWriteDeletesTheDevcontainerWhenTurnedOff(t *testing.T) {
 	root := t.TempDir()
 	on := workspace.Config{CI: workspace.CISection{Providers: []string{"github"}, Devcontainer: true}}

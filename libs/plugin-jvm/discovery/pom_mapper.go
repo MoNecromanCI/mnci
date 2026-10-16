@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-// Pom is what mnci reads from a pom.xml.
+// Pom is what smith reads from a pom.xml.
 type Pom struct {
 	GroupID, ArtifactID, Version, Packaging string
-	// Kind and Stack are the mnci.kind and mnci.stack properties.
+	// Kind and Stack are the smith.kind and smith.stack properties.
 	Kind, Stack string
 	// Dependencies are groupId:artifactId of every dependency.
 	Dependencies []string
@@ -59,9 +59,9 @@ func ParsePom(src []byte) (Pom, error) {
 	}
 	for _, e := range x.Properties.Entries {
 		switch e.XMLName.Local {
-		case "mnci.kind":
+		case "smith.kind":
 			p.Kind = strings.TrimSpace(e.Value)
-		case "mnci.stack":
+		case "smith.stack":
 			p.Stack = strings.TrimSpace(e.Value)
 		}
 	}

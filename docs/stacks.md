@@ -19,7 +19,7 @@ Every plugin plays one or more roles:
 
 Any plugin may add `doctor` checks and CI steps for the projects it serves.
 
-mnci itself knows no language: the graph, the cache, affected and releases work
+smith itself knows no language: the graph, the cache, affected and releases work
 the same for every project, because dependencies always come from the language
 plugin. A project built with one stack can depend on a project built with
 another.
@@ -31,7 +31,7 @@ JavaScript; TypeScript is the `typescript` plugin's, through a stack.
 
 ## Declaring a stack
 
-Plugins publish ready-made stacks, and `mnci.toml` declares more (a stack
+Plugins publish ready-made stacks, and `smith.toml` declares more (a stack
 declared there wins over a published one of the same name):
 
 ```toml
@@ -45,30 +45,30 @@ deploy = ["azure-functions"]
 ```
 
 Toolchain plugins apply in order, so a later one may replace a task an earlier
-one added. mnci checks every stack against the loaded plugins: each is loaded,
+one added. smith checks every stack against the loaded plugins: each is loaded,
 plays the role it is listed under and applies to the stack's language, and no
 two provide the same task (`jest` and `vitest` both provide `test`).
 
-`mnci stacks` lists every stack, where it comes from, its plugins, what is
+`smith stacks` lists every stack, where it comes from, its plugins, what is
 wrong with it if it cannot be used, and the projects using it.
 
 ## Choosing a stack
 
 ```sh
-mnci add app api --stack ts-func
-mnci add app web --lang node          # the default stack for node, if any
-mnci add lib util --lang node --stack none   # the language plugin alone
+smith add app api --stack ts-func
+smith add app web --lang node          # the default stack for node, if any
+smith add lib util --lang node --stack none   # the language plugin alone
 ```
 
 The project records its stack in its manifest:
 
 | Language | Where |
 |---|---|
-| Node | `"mnci": { "kind": "app", "stack": "ts-func" }` in `package.json` |
-| Python | `stack = "ts-func"` under `[tool.mnci]` in `pyproject.toml` |
-| Go | a `// mnci:stack ts-func` line at the top of `go.mod` |
+| Node | `"smith": { "kind": "app", "stack": "ts-func" }` in `package.json` |
+| Python | `stack = "ts-func"` under `[tool.smith]` in `pyproject.toml` |
+| Go | a `// smith:stack ts-func` line at the top of `go.mod` |
 
-A project's stack is, in order: `[projects.<name>] stack` in `mnci.toml`, the
+A project's stack is, in order: `[projects.<name>] stack` in `smith.toml`, the
 one its manifest records, or the default for its language. `none` means
 the language plugin alone, even where there is a default:
 
@@ -85,14 +85,14 @@ node = "node-jest"
    an existing task depend on one of its own.
 3. Conventions apply to every project of their languages
    ([conventions](conventions.md)).
-4. `mnci.toml` task overrides apply last, so you always have the final word.
+4. `smith.toml` task overrides apply last, so you always have the final word.
 
-`mnci explain <project>:<task>` shows where every field came from, for example
+`smith explain <project>:<task>` shows where every field came from, for example
 `from plugin vitest (stack node-vitest)`.
 
 ## Creating a project
 
-`mnci add` asks the stack's scaffold (or, without one, the language plugin) to
+`smith add` asks the stack's scaffold (or, without one, the language plugin) to
 generate the project and record the stack, then asks each of the stack's other
 plugins to add its part: files, scripts, settings, dependencies. These only
 add: a file, script, setting or dependency that already exists is kept.
@@ -104,9 +104,9 @@ add: a file, script, setting or dependency that already exists is kept.
 | `node-ts` | node | `typescript` | `typescript` | `typescript` |
 | `node-jest` | node | `typescript` | `typescript`, `eslint` (`@mnci/eslint-config`), `jest` | `jest` |
 | `node-vitest` | node | `typescript` | `typescript`, `eslint` (`@mnci/eslint-config`), `vitest` | `vitest` |
-| `go-mnci-plugin` | go | `go-mnci-plugin` | — | `go-mnci-plugin`: an mnci plugin written in Go (see plugins) |
+| `go-smith-plugin` | go | `go-smith-plugin` | — | `go-smith-plugin`: a smith plugin written in Go (see plugins) |
 
-`mnci new` makes `node-jest` the default for Node. The `node` plugin alone
+`smith new` makes `node-jest` the default for Node. The `node` plugin alone
 scaffolds plain JavaScript (CommonJS), with nothing to compile. The
 `typescript` plugin scaffolds a TypeScript project instead: `tsconfig`, and
 `build` and `typecheck` scripts that run `tsc`. The other toolchain plugins add
@@ -122,8 +122,8 @@ the rest when a project is created:
 The starter's spec is written for the TypeScript starter; a JavaScript
 project gets the test script and its runner, and you write the first spec.
 
-A workspace created by mnci 0.1 had ESLint and Jest built into the node
-plugin. Add `[default_stacks]` with `node = "node-jest"` to its `mnci.toml` to
+A workspace created by smith 0.1 had ESLint and Jest built into the node
+plugin. Add `[default_stacks]` with `node = "node-jest"` to its `smith.toml` to
 keep new projects the same; existing projects are unchanged.
 
 ## Adding plugins
@@ -133,12 +133,12 @@ written in any language. Declare it, then use it in a stack:
 
 ```toml
 [plugins.external.azure-function]
-command = ["mnci-plugin-azure-function"]
+command = ["smith-plugin-azure-function"]
 ```
 
 A new language is a language plugin like any other.
-`apps/mnci/goldenpath/testdata/kiwiplugin` is a complete one, for a made-up
+`apps/smith/goldenpath/testdata/kiwiplugin` is a complete one, for a made-up
 language, in about 200 lines: discovery and imports, generation, a published
 stack whose toolchain replaces a task, CI setup, doctor, versions and
-publishing. The end-to-end tests run it through all of mnci. Installing
+publishing. The end-to-end tests run it through all of smith. Installing
 plugins by name from a registry is planned (#164).

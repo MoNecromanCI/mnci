@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-go/pipeline"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-go/pipeline"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // FetchJSON reads a JSON document over HTTP; tests replace it.
@@ -30,7 +30,7 @@ var FetchJSON = func(url string, v any) error {
 
 // Latest compares the tools the Go plugin pins with their newest releases:
 // Go (the version go.work names) and golangci-lint (the version CI
-// installs). Module updates are go get's: mnci up does not list them.
+// installs). Module updates are go get's: smith up does not list them.
 func Latest(workspaceRoot string, params protocol.LatestParams) (protocol.LatestResult, error) {
 	var res protocol.LatestResult
 	if !params.Tools {

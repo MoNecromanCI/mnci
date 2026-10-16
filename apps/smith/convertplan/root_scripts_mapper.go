@@ -6,8 +6,8 @@ import (
 )
 
 // RewriteScript turns a root package.json script that drives Nx (or the old
-// mnci CLI) into the mnci command doing the same. names maps Nx project
-// names to mnci names. ok is false when part of it has no mnci equivalent.
+// smith CLI) into the smith command doing the same. names maps Nx project
+// names to smith names. ok is false when part of it has no smith equivalent.
 func RewriteScript(script string, names map[string]string) (string, bool) {
 	parts := strings.Split(script, "&&")
 	out := make([]string, 0, len(parts))
@@ -40,7 +40,7 @@ func rewriteOne(words []string, names map[string]string) (string, bool) {
 	if tool == "mnci" {
 		// The old CLI's `mnci lint [--affected] [--base x]`.
 		if args[0] == "lint" {
-			return "mnci run lint" + flags(args[1:]), true
+			return "smith run lint" + flags(args[1:]), true
 		}
 		return "", false
 	}
@@ -50,7 +50,7 @@ func rewriteOne(words []string, names map[string]string) (string, bool) {
 		if !ok {
 			return "", false
 		}
-		cmd := "mnci run " + strings.Join(targets, " ")
+		cmd := "smith run " + strings.Join(targets, " ")
 		if args[0] == "affected" {
 			cmd += " --affected"
 		}
@@ -82,14 +82,14 @@ func rewriteOne(words []string, names map[string]string) (string, bool) {
 		project, target, ok := strings.Cut(args[1], ":")
 		target, _, _ = strings.Cut(target, ":")
 		if n, known := names[project]; ok && known {
-			return fmt.Sprintf("mnci run %s -p %s", target, n), true
+			return fmt.Sprintf("smith run %s -p %s", target, n), true
 		}
 		return "", false
 	case "graph":
-		return "mnci graph", true
+		return "smith graph", true
 	case "show":
 		if len(args) > 1 && args[1] == "projects" {
-			return "mnci projects", true
+			return "smith projects", true
 		}
 	case "release":
 		for _, a := range args[1:] {
@@ -97,12 +97,12 @@ func rewriteOne(words []string, names map[string]string) (string, bool) {
 				return "", false
 			}
 		}
-		return "mnci release" + flags(args[1:]), true
+		return "smith release" + flags(args[1:]), true
 	}
 	if len(args) == 2 {
 		// `nx build api` is `nx run api:build`.
 		if n, known := names[args[1]]; known {
-			return fmt.Sprintf("mnci run %s -p %s", args[0], n), true
+			return fmt.Sprintf("smith run %s -p %s", args[0], n), true
 		}
 	}
 	return "", false

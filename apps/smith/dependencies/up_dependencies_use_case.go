@@ -6,11 +6,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
-// UpReport is `mnci up --json`.
+// UpReport is `smith up --json`.
 type UpReport struct {
 	Updates []Update `json:"updates"`
 	// Unreachable are names a registry could not be asked about, by plugin.
@@ -131,7 +131,7 @@ func PrintUp(w io.Writer, r UpReport) {
 		}
 	}
 	if len(r.Tools) > 0 {
-		fmt.Fprintln(w, "\nTools mnci pins (informational):")
+		fmt.Fprintln(w, "\nTools smith pins (informational):")
 		for _, t := range r.Tools {
 			switch {
 			case t.Latest == "":

@@ -7,7 +7,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskcache"
+	"github.com/monosmith-app/monosmith/apps/smith/taskcache"
 )
 
 // Tiered is the local cache in front of a remote store. Reads try local

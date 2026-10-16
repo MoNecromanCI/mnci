@@ -1,9 +1,9 @@
 package scaffold
 
-import "github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+import "github.com/monosmith-app/monosmith/apps/smith/workspace"
 
 const configTemplate = `#:schema ` + workspace.SchemaURL + `
-# mnci workspace configuration. Every setting below has a default; most
+# smith workspace configuration. Every setting below has a default; most
 # workspaces need nothing more than a name. See docs/configuration.md.
 schema = 1
 
@@ -23,8 +23,8 @@ devcontainer = true
 
 # A stack is the set of plugins a project is built with: its language plugin
 # and the toolchain, structure, scaffold and deploy plugins on top. Each
-# project records its own, so one monorepo can mix them; ` + "`mnci stacks`" + ` lists
-# them and ` + "`mnci add app web --stack node-vitest`" + ` picks one. Projects that record
+# project records its own, so one monorepo can mix them; ` + "`smith stacks`" + ` lists
+# them and ` + "`smith add app web --stack node-vitest`" + ` picks one. Projects that record
 # none use the default of their language. See docs/stacks.md.
 [default_stacks]
 node = "node-jest"     # ESLint with @mnci/eslint-config, and Jest
@@ -44,7 +44,7 @@ node = "node-jest"     # ESLint with @mnci/eslint-config, and Jest
 # remote = "origin"   # release tags are pushed here
 
 # [cache]
-# dir = ".mnci/cache"
+# dir = ".smith/cache"
 # max_size_mb = 2048
 
 # Override any task a plugin infers, for every project or for one:
@@ -54,8 +54,8 @@ node = "node-jest"     # ESLint with @mnci/eslint-config, and Jest
 # depends_on = ["^build", "codegen"]
 `
 
-const gitignore = `# mnci
-.mnci/
+const gitignore = `# smith
+.smith/
 
 # build output
 dist/
@@ -84,20 +84,20 @@ const gitattributes = `* text=auto eol=lf
 
 const readme = `# %s
 
-A monorepo managed by [mnci](https://github.com/MoNecromanCI/mnci).
+A monorepo managed by [smith](https://github.com/monosmith-app/monosmith).
 
 ## Everyday commands
 
 ` + "```sh" + `
-mnci add app web --lang node        # an app: deployed, never published
-mnci add lib core --lang go         # an internal library: imported, never published
-mnci add package sdk --lang python  # a package: published on release
+smith add app web --lang node        # an app: deployed, never published
+smith add lib core --lang go         # an internal library: imported, never published
+smith add package sdk --lang python  # a package: published on release
 
-mnci build | test | lint            # every project, in dependency order, cached
-mnci test --affected                # only what changed since main
-mnci graph                          # how projects depend on each other
-mnci release --dry-run              # what the next release would publish
-mnci doctor                         # check the workspace is healthy
+smith build | test | lint            # every project, in dependency order, cached
+smith test --affected                # only what changed since main
+smith graph                          # how projects depend on each other
+smith release --dry-run              # what the next release would publish
+smith doctor                         # check the workspace is healthy
 ` + "```" + `
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org): ` + "`feat:`" + ` releases a

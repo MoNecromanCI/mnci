@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Levels are the groups of the up report, in order.
@@ -33,7 +33,7 @@ func (u Update) Projects() []string {
 }
 
 // FindUpdates lists the dependencies whose latest release is newer than a
-// declaration of them. Peers, the workspace's own packages and specs mnci
+// declaration of them. Peers, the workspace's own packages and specs smith
 // does not rewrite are left out.
 func FindUpdates(plugin string, declared protocol.DeclaredResult, latest map[string]string, local map[string]bool) []Update {
 	byName := map[string]*Update{}

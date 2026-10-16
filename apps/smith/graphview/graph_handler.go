@@ -6,13 +6,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/affected"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/monosmith-app/monosmith/apps/smith/affected"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/spf13/cobra"
 )
 
-// Commands returns `mnci graph`, `mnci projects` and `mnci affected`.
+// Commands returns `smith graph`, `smith projects` and `smith affected`.
 func Commands(version string) []*cobra.Command {
 	var format, file, graphBase, diffFrom string
 	var focus []string
@@ -25,11 +25,11 @@ func Commands(version string) []*cobra.Command {
 --focus keeps the named projects and everything they depend on or that depends
 on them; --affected keeps the projects affected by changes since --base and
 marks the ones that changed.`,
-		Example: `  mnci graph                       tree in the terminal
-  mnci graph --format tui          browse it
-  mnci graph --focus web           web, what it uses and what uses it
-  mnci graph --affected --format html -o affected.html
-  mnci graph --format dot | dot -Tsvg > graph.svg`,
+		Example: `  smith graph                       tree in the terminal
+  smith graph --format tui          browse it
+  smith graph --focus web           web, what it uses and what uses it
+  smith graph --affected --format html -o affected.html
+  smith graph --format dot | dot -Tsvg > graph.svg`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})

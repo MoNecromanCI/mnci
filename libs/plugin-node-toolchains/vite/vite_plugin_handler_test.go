@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/libs/plugin-node/scaffolding"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/libs/plugin-node/scaffolding"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestDescribe(t *testing.T) {
@@ -52,14 +52,14 @@ func TestGenerate(t *testing.T) {
 			read("apps/web/src/greeting/greet.use-case.ts")
 			var manifest struct {
 				Name         string
-				Mnci         struct{ Kind, Stack string }
+				Smith        struct{ Kind, Stack string }
 				Scripts      map[string]string
 				Dependencies map[string]string
 			}
 			if err := json.Unmarshal(read("apps/web/package.json"), &manifest); err != nil {
 				t.Fatal(err)
 			}
-			if manifest.Name != "@acme/web" || manifest.Mnci.Kind != "app" || manifest.Mnci.Stack != stack || manifest.Scripts["typecheck"] != want.typecheck || manifest.Scripts["build"] != "vite build" {
+			if manifest.Name != "@acme/web" || manifest.Smith.Kind != "app" || manifest.Smith.Stack != stack || manifest.Scripts["typecheck"] != want.typecheck || manifest.Scripts["build"] != "vite build" {
 				t.Errorf("manifest %+v", manifest)
 			}
 			if want.dep != "" && manifest.Dependencies[want.dep] == "" {
@@ -89,7 +89,7 @@ func TestGenerate(t *testing.T) {
 func TestGenerateRefuses(t *testing.T) {
 	p := New("1.0.0")
 	_, _ = p.Describe(protocol.InitializeParams{WorkspaceRoot: t.TempDir()})
-	if _, err := p.Generate(protocol.GenerateParams{Kind: protocol.ProjectLib, Name: "ui", Directory: "libs/ui", Stack: "react"}); err == nil || !strings.Contains(err.Error(), "mnci add app ui --stack react") {
+	if _, err := p.Generate(protocol.GenerateParams{Kind: protocol.ProjectLib, Name: "ui", Directory: "libs/ui", Stack: "react"}); err == nil || !strings.Contains(err.Error(), "smith add app ui --stack react") {
 		t.Errorf("a lib is refused: %v", err)
 	}
 	if _, err := p.Generate(protocol.GenerateParams{Kind: protocol.ProjectApp, Name: "web", Directory: "apps/web", Stack: "angular"}); err == nil {

@@ -13,14 +13,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/githubrelease"
-	"github.com/MoNecromanCI/mnci/apps/mnci/npmbinaries"
-	"github.com/MoNecromanCI/mnci/apps/mnci/packagemanifests"
-	"github.com/MoNecromanCI/mnci/apps/mnci/projectgraph"
-	"github.com/MoNecromanCI/mnci/apps/mnci/pypiwheels"
-	"github.com/MoNecromanCI/mnci/apps/mnci/session"
-	"github.com/MoNecromanCI/mnci/apps/mnci/taskrun"
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/apps/smith/githubrelease"
+	"github.com/monosmith-app/monosmith/apps/smith/npmbinaries"
+	"github.com/monosmith-app/monosmith/apps/smith/packagemanifests"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/pypiwheels"
+	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/taskrun"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Options configure a release run.
@@ -188,7 +188,7 @@ func packageManifests(s *session.Session, p *projectgraph.Project, item Item, pr
 	return written
 }
 
-// NativeTag marks a project built on each OS (mnci ci native), whose release
+// NativeTag marks a project built on each OS (smith ci native), whose release
 // assets each native job attaches for its own platform.
 const NativeTag = "native"
 
@@ -436,7 +436,7 @@ func pushPending(s *session.Session, opts Options) {
 }
 
 func writeReport(root string, r Report) {
-	dir := filepath.Join(root, ".mnci")
+	dir := filepath.Join(root, ".smith")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return
 	}

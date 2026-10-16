@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-// CleanRelative puts a relative path from a plugin or mnci.toml in mnci's
+// CleanRelative puts a relative path from a plugin or smith.toml in smith's
 // form: forward slashes, no "." or ".." segments, "." for the base itself.
-// Paths stay POSIX inside mnci (cache keys, graphs, messages) and keep the
+// Paths stay POSIX inside smith (cache keys, graphs, messages) and keep the
 // case they were given, which for discovered projects is the case git reports.
 // An absolute path, or one that climbs out of its base, is an error.
 func CleanRelative(p string) (string, error) {

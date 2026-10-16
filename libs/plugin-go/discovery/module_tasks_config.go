@@ -3,13 +3,13 @@ package discovery
 import (
 	"runtime"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 var inputs = []string{"**/*", "{workspaceRoot}/go.work", "{workspaceRoot}/go.work.sum"}
 
-// NativeTag marks a module built on each OS (cgo): mnci ci verify leaves it
-// to mnci ci native, which runs on every runner.
+// NativeTag marks a module built on each OS (cgo): smith ci verify leaves it
+// to smith ci native, which runs on every runner.
 const NativeTag = "native"
 
 // Tasks returns the tasks of a Go module. Go builds its dependencies itself,
@@ -34,7 +34,7 @@ func Tasks(name, root string, kind protocol.ProjectKind, native bool) map[string
 		tasks["start"] = protocol.Task{Command: []string{"go", "run", "."}, Description: "Run the app"}
 		tasks["package"] = protocol.Task{
 			Command:     []string{"go", "build", "-trimpath", "-o", "{workspaceRoot}/dist/drop/" + name + "/" + binary, "."},
-			Description: "Build the binary into dist/drop/" + name + "/ (mnci ci pack)",
+			Description: "Build the binary into dist/drop/" + name + "/ (smith ci pack)",
 		}
 	} else {
 		tasks["build"] = protocol.Task{Command: []string{"go", "build", "./..."}, Inputs: inputs, Cache: true, Description: "Compile every package"}

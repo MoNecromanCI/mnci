@@ -6,7 +6,7 @@ import (
 )
 
 // Tool is one MCP tool: what a client lists, and how its input becomes the
-// mnci arguments.
+// smith arguments.
 type Tool struct {
 	Name        string
 	Description string
@@ -85,10 +85,10 @@ func fixed(args ...string) func(map[string]any) ([]string, error) {
 
 var noInput = object(map[string]any{})
 
-// Tools are the tools mnci mcp serves.
+// Tools are the tools smith mcp serves.
 var Tools = []Tool{
-	{Name: "mnci_projects", Description: "List the workspace's projects as JSON: name, directory, kind, language, stack, dependencies, tasks.", InputSchema: noInput, ReadOnly: true, Args: fixed("projects", "--json")},
-	{Name: "mnci_graph", Description: "The project graph as JSON (who imports whom); with focus, only those projects and everything connected to them.", ReadOnly: true,
+	{Name: "smith_projects", Description: "List the workspace's projects as JSON: name, directory, kind, language, stack, dependencies, tasks.", InputSchema: noInput, ReadOnly: true, Args: fixed("projects", "--json")},
+	{Name: "smith_graph", Description: "The project graph as JSON (who imports whom); with focus, only those projects and everything connected to them.", ReadOnly: true,
 		InputSchema: object(map[string]any{"focus": list("projects to focus on: names, globs, kind:x, lang:x")}),
 		Args: func(in map[string]any) ([]string, error) {
 			focus, err := words(in, "focus", false)
@@ -98,7 +98,7 @@ var Tools = []Tool{
 			}
 			return args, err
 		}},
-	{Name: "mnci_affected", Description: "The projects a change affects, as JSON, compared with a base branch (default: the release branch).", ReadOnly: true,
+	{Name: "smith_affected", Description: "The projects a change affects, as JSON, compared with a base branch (default: the release branch).", ReadOnly: true,
 		InputSchema: object(map[string]any{"base": str("the branch or commit to compare with")}),
 		Args: func(in map[string]any) ([]string, error) {
 			base, ok, err := optional(in, "base")
@@ -108,14 +108,14 @@ var Tools = []Tool{
 			}
 			return args, err
 		}},
-	{Name: "mnci_kinds", Description: "The kinds of project mnci_add_project can create, as JSON.", InputSchema: noInput, ReadOnly: true, Args: fixed("kinds", "--json")},
-	{Name: "mnci_stacks", Description: "The stacks a project can be built with (the plugins of each), and which projects use them.", InputSchema: noInput, ReadOnly: true, Args: fixed("stacks")},
-	{Name: "mnci_commands", Description: "Every mnci command with its arguments and options, as JSON.", InputSchema: noInput, ReadOnly: true, Args: fixed("commands", "--json")},
-	{Name: "mnci_info", Description: "The workspace and the mnci serving it, as JSON.", InputSchema: noInput, ReadOnly: true, Args: fixed("info", "--json")},
-	{Name: "mnci_doctor", Description: "Check the workspace's health, as JSON; every failed check names its remedy.", InputSchema: noInput, ReadOnly: true, Args: fixed("doctor", "--json")},
-	{Name: "mnci_release_preview", Description: "What the next release would version, tag and publish, as JSON; changes nothing.", InputSchema: noInput, ReadOnly: true, Args: fixed("release", "--dry-run", "--json")},
-	{Name: "mnci_updates", Description: "Declared dependencies with newer releases, grouped patch, minor and major, and the tools mnci pins against their newest releases, as JSON; changes nothing.", InputSchema: noInput, ReadOnly: true, Args: fixed("up", "--json")},
-	{Name: "mnci_run", Description: "Run tasks (build, test, lint, typecheck, or any task a project has) in dependency order, from the cache when nothing changed.",
+	{Name: "smith_kinds", Description: "The kinds of project smith_add_project can create, as JSON.", InputSchema: noInput, ReadOnly: true, Args: fixed("kinds", "--json")},
+	{Name: "smith_stacks", Description: "The stacks a project can be built with (the plugins of each), and which projects use them.", InputSchema: noInput, ReadOnly: true, Args: fixed("stacks")},
+	{Name: "smith_commands", Description: "Every smith command with its arguments and options, as JSON.", InputSchema: noInput, ReadOnly: true, Args: fixed("commands", "--json")},
+	{Name: "smith_info", Description: "The workspace and the smith serving it, as JSON.", InputSchema: noInput, ReadOnly: true, Args: fixed("info", "--json")},
+	{Name: "smith_doctor", Description: "Check the workspace's health, as JSON; every failed check names its remedy.", InputSchema: noInput, ReadOnly: true, Args: fixed("doctor", "--json")},
+	{Name: "smith_release_preview", Description: "What the next release would version, tag and publish, as JSON; changes nothing.", InputSchema: noInput, ReadOnly: true, Args: fixed("release", "--dry-run", "--json")},
+	{Name: "smith_updates", Description: "Declared dependencies with newer releases, grouped patch, minor and major, and the tools smith pins against their newest releases, as JSON; changes nothing.", InputSchema: noInput, ReadOnly: true, Args: fixed("up", "--json")},
+	{Name: "smith_run", Description: "Run tasks (build, test, lint, typecheck, or any task a project has) in dependency order, from the cache when nothing changed.",
 		InputSchema: object(map[string]any{
 			"tasks":    list("the tasks to run"),
 			"projects": list("the projects: names, globs, kind:x, lang:x; default every project"),
@@ -136,12 +136,12 @@ var Tools = []Tool{
 			}
 			return args, err
 		}},
-	{Name: "mnci_add_project", Description: "Add a project: kind app (deployed), lib (imported internally) or package (published), or a combined kind from mnci_kinds (node-app). Writes files, installs packages and regenerates the pipelines.",
+	{Name: "smith_add_project", Description: "Add a project: kind app (deployed), lib (imported internally) or package (published), or a combined kind from smith_kinds (node-app). Writes files, installs packages and regenerates the pipelines.",
 		InputSchema: object(map[string]any{
 			"kind":  str("app, lib, package, or a combined kind such as node-app"),
 			"name":  str("the project name, kebab-case"),
 			"lang":  str("node, go, python, or a language a plugin adds"),
-			"stack": str("the stack to build it with (see mnci_stacks); none for the language plugin alone"),
+			"stack": str("the stack to build it with (see smith_stacks); none for the language plugin alone"),
 		}, "kind", "name"),
 		Args: func(in map[string]any) ([]string, error) {
 			kind, err := word(in, "kind")
@@ -164,7 +164,7 @@ var Tools = []Tool{
 			}
 			return args, nil
 		}},
-	{Name: "mnci_remove_project", Description: "Remove a project and its traces (go.work, the lockfile, the venv, mnci.toml). Refused while another project imports it. With dry_run, only says what would change.",
+	{Name: "smith_remove_project", Description: "Remove a project and its traces (go.work, the lockfile, the venv, smith.toml). Refused while another project imports it. With dry_run, only says what would change.",
 		InputSchema: object(map[string]any{"name": str("the project"), "dry_run": boolean("report only")}, "name"),
 		Args: func(in map[string]any) ([]string, error) {
 			name, err := word(in, "name")
@@ -173,7 +173,7 @@ var Tools = []Tool{
 			}
 			return []string{"remove", name, "--yes"}, err
 		}},
-	{Name: "mnci_install", Description: "Add a package to one or more projects with each project's own toolchain (npm, pip, go). A dependency always belongs to a project, never the root.",
+	{Name: "smith_install", Description: "Add a package to one or more projects with each project's own toolchain (npm, pip, go). A dependency always belongs to a project, never the root.",
 		InputSchema: object(map[string]any{"package": str("the package, optionally with a version"), "projects": list("the projects, by name or directory"), "dev": boolean("a development dependency")}, "package", "projects"),
 		Args: func(in map[string]any) ([]string, error) {
 			pkg, err := word(in, "package")
@@ -193,7 +193,7 @@ var Tools = []Tool{
 			}
 			return append(args, pkg), nil
 		}},
-	{Name: "mnci_uninstall", Description: "Remove a package from one or more projects with each project's own toolchain.",
+	{Name: "smith_uninstall", Description: "Remove a package from one or more projects with each project's own toolchain.",
 		InputSchema: object(map[string]any{"package": str("the package"), "projects": list("the projects, by name or directory")}, "package", "projects"),
 		Args: func(in map[string]any) ([]string, error) {
 			pkg, err := word(in, "package")
@@ -210,7 +210,7 @@ var Tools = []Tool{
 			}
 			return append(args, pkg), nil
 		}},
-	{Name: "mnci_sync", Description: "Make every project declare a shared dependency at the same version, then install. With check, only report.",
+	{Name: "smith_sync", Description: "Make every project declare a shared dependency at the same version, then install. With check, only report.",
 		InputSchema: object(map[string]any{"check": boolean("report without writing")}),
 		Args: func(in map[string]any) ([]string, error) {
 			if flag(in, "check") {
@@ -218,7 +218,7 @@ var Tools = []Tool{
 			}
 			return []string{"sync"}, nil
 		}},
-	{Name: "mnci_pipeline", Description: "Add a ready-made CI pipeline (e2e, package-zip, deploy-pages, deploy-azure-function); without a template, list them.",
+	{Name: "smith_pipeline", Description: "Add a ready-made CI pipeline (e2e, package-zip, deploy-pages, deploy-azure-function); without a template, list them.",
 		InputSchema: object(map[string]any{"template": str("the template"), "project": str("the app a deploy template works on"), "ci": map[string]any{"type": "string", "enum": []string{"github", "azure", "both"}}}),
 		Args: func(in map[string]any) ([]string, error) {
 			args := []string{"pipeline"}

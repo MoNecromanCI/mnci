@@ -14,8 +14,8 @@ const DevcontainerPath = ".devcontainer/devcontainer.json"
 const DevcontainerImage = "mcr.microsoft.com/devcontainers/base:bookworm"
 
 // RenderDevcontainer renders a dev container with the toolchains CI installs,
-// at the same versions, and mnci at the version the pipelines install; it
-// then runs mnci ci setup, as CI does.
+// at the same versions, and smith at the version the pipelines install; it
+// then runs smith ci setup, as CI does.
 func RenderDevcontainer(name string, m Model) string {
 	features := map[string]map[string]string{}
 	var ids []string
@@ -40,7 +40,7 @@ func RenderDevcontainer(name string, m Model) string {
 		Post     string                       `json:"postCreateCommand"`
 	}{
 		Name: name, Image: DevcontainerImage, Features: features,
-		Post: `curl -fsSL ` + InstallScriptURL + ` | sh -s -- "` + m.MnciVersion + `" && "$HOME/.local/bin/mnci" ci setup`,
+		Post: `curl -fsSL ` + InstallScriptURL + ` | sh -s -- "` + m.SmithVersion + `" && "$HOME/.local/bin/smith" ci setup`,
 	}
 	var b strings.Builder
 	b.WriteString(header("//"))

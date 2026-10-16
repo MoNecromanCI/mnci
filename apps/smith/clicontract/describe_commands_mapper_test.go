@@ -10,7 +10,7 @@ import (
 )
 
 func tree() *cobra.Command {
-	root := &cobra.Command{Use: "mnci"}
+	root := &cobra.Command{Use: "smith"}
 	root.AddGroup(&cobra.Group{ID: "start", Title: "Create:"}, &cobra.Group{ID: "work", Title: "Work:"}, &cobra.Group{ID: "inspect", Title: "Inspect:"})
 	add := &cobra.Command{Use: "add <kind> <name>", Short: "Add a project", GroupID: "start", Run: func(*cobra.Command, []string) {}}
 	add.Flags().StringP("lang", "l", "", "language plugin")

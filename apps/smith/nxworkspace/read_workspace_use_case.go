@@ -105,7 +105,7 @@ func describe(root string) (graphFile, error) {
 			return g, ErrNxNotInstalled
 		}
 	}
-	dir, err := os.MkdirTemp("", "mnci-convert-")
+	dir, err := os.MkdirTemp("", "smith-convert-")
 	if err != nil {
 		return g, err
 	}

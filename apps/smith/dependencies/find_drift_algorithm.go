@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // Drift is one dependency the projects of one plugin declare differently.

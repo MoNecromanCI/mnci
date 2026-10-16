@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 func TestDiscover(t *testing.T) {
@@ -20,7 +20,7 @@ func TestDiscover(t *testing.T) {
 	write("package.json", `{"name":"root","private":true}`)
 	write("apps/web/package.json", `{"name":"@acme/web","version":"0.0.0","private":true,"scripts":{"build":"tsc","test":"jest","custom":"x"}}`)
 	write("apps/web/src/main.ts", `import { greet } from '@acme/ui'`)
-	write("libs/ui/package.json", `{"name":"@acme/ui","version":"0.0.0","private":true,"mnci":{"kind":"lib"},"dependencies":{"zod":"^3"}}`)
+	write("libs/ui/package.json", `{"name":"@acme/ui","version":"0.0.0","private":true,"smith":{"kind":"lib"},"dependencies":{"zod":"^3"}}`)
 
 	res, err := Discover(ws, []string{"package.json", "apps/web/package.json", "libs/ui/package.json"})
 	if err != nil {

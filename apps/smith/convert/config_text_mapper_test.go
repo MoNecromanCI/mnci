@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MoNecromanCI/mnci/apps/mnci/workspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 )
 
 func TestConfigTextRoundTrips(t *testing.T) {

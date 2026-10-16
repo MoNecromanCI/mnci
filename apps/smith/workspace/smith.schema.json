@@ -1,13 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/MoNecromanCI/mnci/main/apps/mnci/workspace/mnci.schema.json",
-  "title": "mnci.toml",
-  "description": "The configuration of an mnci workspace (schema 1). Every setting has a default; a key mnci does not know is an error.",
+  "$id": "https://raw.githubusercontent.com/monosmith-app/monosmith/main/apps/smith/workspace/smith.schema.json",
+  "title": "smith.toml",
+  "description": "The configuration of a smith workspace (schema 1). Every setting has a default; a key smith does not know is an error.",
   "type": "object",
   "additionalProperties": false,
   "required": ["workspace"],
   "properties": {
-    "schema": { "type": "integer", "const": 1, "description": "The mnci.toml schema version; mnci upgrade migrates older files." },
+    "schema": { "type": "integer", "const": 1, "description": "The smith.toml schema version; smith upgrade migrates older files." },
     "workspace": {
       "type": "object",
       "additionalProperties": false,
@@ -41,10 +41,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "dir": { "type": "string", "description": "The task cache directory, workspace-relative or absolute. Default: .mnci/cache." },
+        "dir": { "type": "string", "description": "The task cache directory, workspace-relative or absolute. Default: .smith/cache." },
         "max_size_mb": { "type": "integer", "minimum": 1, "description": "Prune the least recently used entries past this size. Default: 2048." },
-        "remote": { "type": "string", "pattern": "^(https?|s3|azblob)://", "description": "A shared cache behind the local one: https://host/path, s3://bucket/prefix or azblob://account/container/prefix. Objects are signed with MNCI_CACHE_KEY; one that fails verification is a miss." },
-        "remote_read_only": { "type": "boolean", "description": "Read the remote cache without writing to it (MNCI_CACHE_READ_ONLY=1 does the same). Default: false." }
+        "remote": { "type": "string", "pattern": "^(https?|s3|azblob)://", "description": "A shared cache behind the local one: https://host/path, s3://bucket/prefix or azblob://account/container/prefix. Objects are signed with SMITH_CACHE_KEY; one that fails verification is a miss." },
+        "remote_read_only": { "type": "boolean", "description": "Read the remote cache without writing to it (SMITH_CACHE_READ_ONLY=1 does the same). Default: false." }
       }
     },
     "plugins": {
@@ -54,7 +54,7 @@
         "enabled": { "type": "array", "items": { "type": "string" }, "description": "Built-in language plugins to load. Default: all of them." },
         "external": {
           "type": "object",
-          "description": "Plugins outside the mnci binary, by name; one replaces a built-in plugin of the same name.",
+          "description": "Plugins outside the smith binary, by name; one replaces a built-in plugin of the same name.",
           "additionalProperties": {
             "type": "object",
             "additionalProperties": false,
@@ -97,7 +97,7 @@
     },
     "default_stacks": {
       "type": "object",
-      "description": "The stack of a project that records none, and of mnci add without --stack, by language plugin.",
+      "description": "The stack of a project that records none, and of smith add without --stack, by language plugin.",
       "additionalProperties": { "type": "string" }
     },
     "tasks": {
@@ -144,7 +144,7 @@
       "description": "Replaces individual fields of a plugin-inferred task; unset fields keep the plugin's value.",
       "additionalProperties": false,
       "properties": {
-        "command": { "type": "array", "items": { "type": "string" }, "description": "argv, run without a shell; {workspaceRoot}, {projectRoot} and {mnci} are expanded." },
+        "command": { "type": "array", "items": { "type": "string" }, "description": "argv, run without a shell; {workspaceRoot}, {projectRoot} and {smith} are expanded." },
         "cwd": { "type": "string", "description": "Workspace-relative working directory (. is the root)." },
         "inputs": { "type": "array", "items": { "type": "string" }, "description": "Globs relative to the project; {workspaceRoot}/... for root files; ! excludes." },
         "outputs": { "type": "array", "items": { "type": "string" }, "description": "Directories restored on a cache hit." },

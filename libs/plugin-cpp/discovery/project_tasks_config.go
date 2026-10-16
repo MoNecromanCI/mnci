@@ -3,7 +3,7 @@ package discovery
 import (
 	"runtime"
 
-	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
 // inputs are what a project's results depend on: its sources, and those of

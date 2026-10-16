@@ -23,7 +23,7 @@ func TestSetScriptVersion(t *testing.T) {
 }
 
 func TestSetPropertyVersion(t *testing.T) {
-	if got, changed := SetPropertyVersion("mnci.kind=package\nversion=0.0.0\n", "1.0.0"); got != "mnci.kind=package\nversion=1.0.0\n" || !changed {
+	if got, changed := SetPropertyVersion("smith.kind=package\nversion=0.0.0\n", "1.0.0"); got != "smith.kind=package\nversion=1.0.0\n" || !changed {
 		t.Errorf("%q", got)
 	}
 }

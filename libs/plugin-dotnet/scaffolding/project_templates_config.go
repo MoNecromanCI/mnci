@@ -13,7 +13,7 @@ const (
 // rootTemplates are written once, by the first .NET project.
 var rootTemplates = map[string]string{
 	directoryBuildProps: `<Project>
-  <!-- Every build goes to the workspace's dist/ (mnci): bin/ and obj/ of
+  <!-- Every build goes to the workspace's dist/ (smith): bin/ and obj/ of
        every project live under dist/dotnet, never in a source tree. -->
   <PropertyGroup>
     <UseArtifactsOutput>true</UseArtifactsOutput>
@@ -93,9 +93,9 @@ var projectTemplate = map[string]string{
     <IsPackable>false</IsPackable>
 [[- end]]
     <Version>0.0.0</Version>
-    <MnciKind>[[.Kind]]</MnciKind>
+    <SmithKind>[[.Kind]]</SmithKind>
 [[- if .Stack]]
-    <MnciStack>[[.Stack]]</MnciStack>
+    <SmithStack>[[.Stack]]</SmithStack>
 [[- end]]
   </PropertyGroup>
 

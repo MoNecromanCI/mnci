@@ -17,6 +17,10 @@ type Stack struct {
 	Deploy   []string `json:"deploy,omitempty"`
 }
 
+// NoStack, recorded as a project's stack, means the language plugin alone,
+// even where the workspace sets a default stack.
+const NoStack = "none"
+
 // Plugins lists the stack's plugins other than its language and scaffold,
 // in the order they apply.
 func (s Stack) Plugins() []string {

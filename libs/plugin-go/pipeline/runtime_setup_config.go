@@ -17,5 +17,10 @@ func runtime(version string) protocol.Toolchain {
 		Name: "go", Version: version,
 		GitHub: &protocol.ActionStep{Uses: "actions/setup-go@v5", Inputs: []protocol.Input{{Name: "go-version", Value: version}, {Name: "cache", Value: "false"}}},
 		Azure:  &protocol.ActionStep{Uses: "GoTool@0", Inputs: []protocol.Input{{Name: "version", Value: azure}}},
+		// The feature would otherwise install the newest golangci-lint.
+		Devcontainer: &protocol.DevcontainerFeature{
+			ID:      "ghcr.io/devcontainers/features/go:1",
+			Options: map[string]string{"version": azure, "golangciLintVersion": strings.TrimPrefix(GolangciLintVersion, "v")},
+		},
 	}
 }

@@ -51,6 +51,10 @@ type WorkspaceSection struct {
 type CISection struct {
 	// Providers is any of "github", "azure". Default: ["github"].
 	Providers []string `toml:"providers"`
+	// Devcontainer writes .devcontainer/devcontainer.json with the
+	// toolchains CI installs, at the same versions. Default: false (mnci new
+	// turns it on).
+	Devcontainer bool `toml:"devcontainer"`
 }
 
 // ReleaseSection configures `mnci release`.

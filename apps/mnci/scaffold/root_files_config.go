@@ -14,6 +14,9 @@ module_prefix = %q
 [ci]
 # Pipelines to generate: "github", "azure" or both.
 providers = [%s]
+# A dev container (.devcontainer/devcontainer.json) with the toolchains CI
+# installs, at the same versions.
+devcontainer = true
 
 # A stack is the set of plugins a project is built with: its language plugin
 # and the toolchain, structure, scaffold and deploy plugins on top. Each

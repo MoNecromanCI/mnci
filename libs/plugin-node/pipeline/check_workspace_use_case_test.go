@@ -11,7 +11,7 @@ import (
 func TestDoctor(t *testing.T) {
 	ws := t.TempDir()
 	_ = os.WriteFile(filepath.Join(ws, "package.json"), []byte(`{"workspaces":["apps/*"]}`), 0o644)
-	res := Doctor(ws, protocol.DoctorParams{Projects: []protocol.Project{{Root: "apps/web"}, {Root: "tools/x"}}})
+	res := Doctor(ws, protocol.DoctorParams{Projects: []protocol.Project{{Root: "apps/web"}, {Root: "tools/x"}}}, "24")
 	got := map[string]bool{}
 	for _, f := range res.Findings {
 		got[f.Check] = f.OK

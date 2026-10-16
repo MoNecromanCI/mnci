@@ -16,6 +16,8 @@ func TestWorkspaceReport(t *testing.T) {
 	defer srv.Close()
 	releasesURL = srv.URL
 	t.Setenv("MNCI_NO_UPDATE_CHECK", "")
+	// Under mnci (CI runs the tests as a task) this names the outer workspace.
+	t.Setenv("MNCI_WORKSPACE_ROOT", "")
 
 	ws := t.TempDir()
 	_ = os.WriteFile(filepath.Join(ws, "mnci.toml"), []byte("[workspace]\nname = \"acme\"\n"), 0o644)

@@ -43,7 +43,7 @@ func walk(r *Report, root string, rules languages.Rules, rel string, parent *lan
 			if strings.HasPrefix(name, ".") || skippedFolders[name] || (rules.Skip != nil && rules.Skip(name, here)) {
 				continue
 			}
-			if languages.ForbiddenFolders[name] {
+			if languages.ForbiddenFolders[strings.ToLower(name)] {
 				r.problem(shown(name)+"/", fmt.Sprintf("%q is a junk drawer; name the folder for the outcome it serves", name))
 				continue
 			}

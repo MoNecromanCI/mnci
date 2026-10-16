@@ -9,8 +9,13 @@ committed pipeline is out of date.
 
 Each plugin contributes, for its own projects:
 
-- **toolchains** — rendered as provider-native setup steps (`actions/setup-node`,
-  `UsePythonVersion@0`, …), at versions the plugin pins
+- **toolchains** — the runtimes to install, at versions the plugin pins. The
+  plugin says how: a GitHub action and an Azure task with their inputs
+  (`actions/setup-node@v4`, `UsePythonVersion@0`, …), or a shell command run
+  on either provider. mnci itself knows no runtime, so a plugin for a new
+  language installs it the same way; a runtime no plugin says how to install
+  is left as a comment in the pipeline, to fill through the `before-setup`
+  slot.
 - **setup** — e.g. `npm ci`, the Python venv and editable installs, `go mod download`
 - **audit** — `npm audit` (blocking), `pip-audit` and `govulncheck` (reported)
 - **credentials** — the secrets publishing needs (`NODE_AUTH_TOKEN`, `PYPI_TOKEN`)

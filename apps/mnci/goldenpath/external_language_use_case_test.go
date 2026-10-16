@@ -1,0 +1,86 @@
+//go:build e2e
+
+package goldenpath
+
+import (
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"testing"
+)
+
+// TestExternalLanguagePlugin adds a language mnci knows nothing about, kiwi,
+// through an external plugin alone (testdata/kiwiplugin): projects, graph
+// edges, tasks and cache, a published stack, CI setup, doctor and release.
+func TestExternalLanguagePlugin(t *testing.T) {
+	base := t.TempDir()
+	w := &workspace{t: t, bin: buildMnci(t, base), dir: base, env: identity()}
+	plugin := filepath.Join(base, "kiwiplugin")
+	if runtime.GOOS == "windows" {
+		plugin += ".exe"
+	}
+	wd, _ := os.Getwd()
+	run(t, filepath.Dir(wd), "go", "build", "-o", plugin, "./goldenpath/testdata/kiwiplugin")
+
+	w.mnci(true, "new", "acme", "--ci", "github,azure")
+	w.dir = filepath.Join(base, "acme")
+	toml, _ := os.ReadFile(filepath.Join(w.dir, "mnci.toml"))
+	w.write("mnci.toml", string(toml)+"\n[plugins.external.kiwi]\ncommand = ["+quote(filepath.ToSlash(plugin))+"]\n")
+	ignore, _ := os.ReadFile(filepath.Join(w.dir, ".gitignore"))
+	w.write(".gitignore", string(ignore)+".kiwi-registry\nout/\n")
+
+	// Projects of the new language, one with the stack the plugin publishes.
+	w.mnci(true, "add", "package", "fruit", "--lang", "kiwi")
+	w.mnci(true, "add", "app", "basket", "--stack", "kiwi-strict")
+	manifest, _ := os.ReadFile(filepath.Join(w.dir, "apps", "basket", "kiwi.toml"))
+	w.write("apps/basket/kiwi.toml", string(manifest)+"imports = \"kiwi:fruit\"\n")
+	if !hasEdge(w.mnci(true, "graph", "--format", "json"), "basket", "fruit") {
+		t.Fatal("the plugin's imports must become a graph edge")
+	}
+	if out := w.mnci(true, "stacks"); !strings.Contains(out, "kiwi-strict  (plugin kiwi)") || !strings.Contains(out, "projects   basket") {
+		t.Fatalf("stacks:\n%s", out)
+	}
+	if out := w.mnci(true, "explain", "basket:test"); !strings.Contains(out, "from plugin kiwi (stack kiwi-strict)") {
+		t.Fatalf("the stack replaces test:\n%s", out)
+	}
+
+	// Tasks run in dependency order and come from the cache the second time.
+	out := w.mnci(true, "run", "build", "test")
+	for _, want := range []string{"fruit:build", "basket:fmt", "kiwi tests passed --strict", "kiwi tests passed"} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("run lacks %q:\n%s", want, out)
+		}
+	}
+	if out := w.mnci(true, "run", "build", "test"); strings.Contains(out, "▶") {
+		t.Fatalf("second run executed tasks:\n%s", out)
+	}
+
+	// CI installs the language the way its plugin says; doctor asks it.
+	w.mnci(true, "ci", "generate")
+	for _, f := range []string{".github/workflows/ci.yml", "azure-pipelines.yml"} {
+		if body, _ := os.ReadFile(filepath.Join(w.dir, filepath.FromSlash(f))); !strings.Contains(string(body), "install-kiwi.sh") {
+			t.Fatalf("%s does not install kiwi:\n%s", f, body)
+		}
+	}
+	if out := w.mnci(true, "doctor"); !strings.Contains(out, "kiwi project fruit has a kiwi.toml") {
+		t.Fatalf("doctor:\n%s", out)
+	}
+
+	// Release publishes through the plugin and tags the version.
+	remote := filepath.Join(base, "remote.git")
+	run(t, base, "git", "init", "-q", "--bare", remote)
+	w.git("remote", "add", "origin", remote)
+	w.git("add", "-A")
+	w.git("commit", "-qm", "feat: kiwi projects")
+	w.git("push", "-q", "origin", "main")
+	w.mnci(true, "release", "--yes")
+	if registry, _ := os.ReadFile(filepath.Join(w.dir, ".kiwi-registry")); string(registry) != "fruit@0.1.0\n" {
+		t.Fatalf("registry %q", registry)
+	}
+	if tags := w.git("ls-remote", "--tags", "origin"); !strings.Contains(tags, "fruit@0.1.0") {
+		t.Fatalf("tags:\n%s", tags)
+	}
+}
+
+func quote(s string) string { return `"` + s + `"` }

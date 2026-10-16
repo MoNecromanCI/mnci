@@ -126,5 +126,9 @@ written in any language. Declare it, then use it in a stack:
 command = ["mnci-plugin-azure-function"]
 ```
 
-A new language is a language plugin like any other. Installing plugins by name
-from a registry is planned (#164).
+A new language is a language plugin like any other.
+`apps/mnci/goldenpath/testdata/kiwiplugin` is a complete one, for a made-up
+language, in about 200 lines: discovery and imports, generation, a published
+stack whose toolchain replaces a task, CI setup, doctor, versions and
+publishing. The end-to-end tests run it through all of mnci. Installing
+plugins by name from a registry is planned (#164).

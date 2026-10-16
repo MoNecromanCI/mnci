@@ -24,7 +24,7 @@ func CI(params protocol.CIParams) protocol.CIResult {
 		setup = append(setup, protocol.Step{Name: "Install " + p.Name, Command: []string{py, "-m", "pip", "install", "--quiet", "--disable-pip-version-check", "-e", "./" + p.Root}, Blocking: true})
 	}
 	result := protocol.CIResult{
-		Toolchains: []protocol.Toolchain{{Name: "python", Version: venv.PythonVersion}},
+		Toolchains: []protocol.Toolchain{runtime(venv.PythonVersion)},
 		Setup:      setup,
 		Audit:      []protocol.Step{{Name: "pip-audit", Command: []string{py, "-m", "pip_audit", "--skip-editable"}, Blocking: false}},
 	}

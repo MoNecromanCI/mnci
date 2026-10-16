@@ -44,7 +44,7 @@ Core slices in `apps/mnci`:
 | `session` | open a workspace for a command |
 | `gitclient` | every git call |
 | `commandline` | assemble the command tree |
-| `goldenpath` | the end-to-end tests (build tag `e2e`): the golden path and converting Nx and old-mnci workspaces |
+| `goldenpath` | the end-to-end tests (build tag `e2e`): the golden path, a language added by an external plugin (`testdata/kiwiplugin`), and converting Nx and old-mnci workspaces |
 
 ## Checks
 

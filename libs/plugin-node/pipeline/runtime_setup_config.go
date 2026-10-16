@@ -1,0 +1,12 @@
+package pipeline
+
+import "github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+
+// runtime installs Node.js in the generated pipelines.
+func runtime(version string) protocol.Toolchain {
+	return protocol.Toolchain{
+		Name: "node", Version: version,
+		GitHub: &protocol.ActionStep{Uses: "actions/setup-node@v4", Inputs: []protocol.Input{{Name: "node-version", Value: version}}},
+		Azure:  &protocol.ActionStep{Uses: "UseNode@1", Inputs: []protocol.Input{{Name: "version", Value: version + ".x"}}},
+	}
+}

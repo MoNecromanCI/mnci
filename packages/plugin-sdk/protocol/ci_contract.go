@@ -18,11 +18,33 @@ type CIResult struct {
 	Credentials []Credential `json:"credentials,omitempty"`
 }
 
-// Toolchain is a language runtime the pipeline must install.
+// Toolchain is a runtime the pipeline must install, and how. Plugins asking
+// for the same name share one setup step (the first plugin's).
 type Toolchain struct {
-	// Name is one of node, python, go.
 	Name    string `json:"name"`
 	Version string `json:"version"`
+	// GitHub is the GitHub Actions step that installs it (an action).
+	GitHub *ActionStep `json:"github,omitempty"`
+	// Azure is the Azure Pipelines step that installs it (a task).
+	Azure *ActionStep `json:"azure,omitempty"`
+	// Install is a shell command that installs it, run on a provider the
+	// plugin gives no native step for.
+	Install string `json:"install,omitempty"`
+}
+
+// ActionStep is a provider-native step: a GitHub action or an Azure task,
+// with its inputs in the order they are written.
+type ActionStep struct {
+	// Uses is the action ("actions/setup-go@v5") or task ("GoTool@0").
+	Uses   string  `json:"uses"`
+	Inputs []Input `json:"inputs,omitempty"`
+}
+
+// Input is one input of an ActionStep. Values are written as quoted YAML
+// strings, except true and false.
+type Input struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 // Step is one command a CI phase runs.

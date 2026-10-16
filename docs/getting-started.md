@@ -8,7 +8,8 @@
   **Ruby 3.2+** with Bundler,
   **PHP 8.2+** with Composer,
   **CMake 3.25+** with Ninja, a C++ compiler and cppcheck,
-  **Dart** (or Flutter, which carries it; installed outside the workspace).
+  **Dart** (or Flutter, which carries it; installed outside the workspace),
+  a **JDK 21** with **Maven**.
   mnci tells you what is missing.
 
 ## Create a workspace

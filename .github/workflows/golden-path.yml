@@ -82,6 +82,11 @@ jobs:
         with:
           channel: stable
           cache: true
+      # The jvm plugin's e2e; the hosted images carry Maven.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
       - name: New workspace, every kind in every language, build, test, release
         working-directory: apps/mnci
         run: go test -tags e2e -timeout 40m -v -skip 'TestConvert' ./goldenpath

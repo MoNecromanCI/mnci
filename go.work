@@ -6,6 +6,7 @@ use (
 	./libs/plugin-cpp
 	./libs/plugin-dart
 	./libs/plugin-go
+	./libs/plugin-jvm
 	./libs/plugin-node
 	./libs/plugin-node-toolchains
 	./libs/plugin-php

@@ -8,12 +8,6 @@ import (
 // AzurePath is where the Azure Pipelines definition is written.
 const AzurePath = "azure-pipelines.yml"
 
-var azureSetup = map[string]string{
-	"node":   "  - task: UseNode@1\n    inputs:\n      version: '%s.x'\n",
-	"python": "  - task: UsePythonVersion@0\n    inputs:\n      versionSpec: '%s'\n",
-	"go":     "  - task: GoTool@0\n    inputs:\n      version: '%s'\n",
-}
-
 // RenderAzure renders the model as an Azure Pipelines definition.
 func RenderAzure(m Model) string {
 	var b strings.Builder
@@ -35,13 +29,7 @@ steps:
     persistCredentials: true
 `, m.ReleaseBranch)
 	for _, t := range m.Toolchains {
-		if tmpl, ok := azureSetup[t.Name]; ok {
-			version := t.Version
-			if t.Name == "go" && strings.Count(version, ".") == 1 {
-				version += ".0"
-			}
-			fmt.Fprintf(&b, tmpl, version)
-		}
+		b.WriteString(azureSetup(t))
 	}
 	fmt.Fprintf(&b, `  - bash: curl -fsSL %s | sh -s -- "%s"
     displayName: Install mnci

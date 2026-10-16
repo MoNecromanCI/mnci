@@ -9,7 +9,7 @@ func CI(params protocol.CIParams, nodeVersion string) protocol.CIResult {
 		return protocol.CIResult{}
 	}
 	result := protocol.CIResult{
-		Toolchains: []protocol.Toolchain{{Name: "node", Version: nodeVersion}},
+		Toolchains: []protocol.Toolchain{runtime(nodeVersion)},
 		Setup:      []protocol.Step{{Name: "Install Node dependencies", Command: []string{"npm", "ci", "--no-audit", "--no-fund"}, Blocking: true}},
 		Audit:      []protocol.Step{{Name: "npm audit (runtime dependencies)", Command: []string{"npm", "audit", "--omit=dev", "--audit-level=moderate"}, Blocking: true}},
 	}

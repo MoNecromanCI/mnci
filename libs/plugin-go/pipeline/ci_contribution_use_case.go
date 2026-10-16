@@ -30,7 +30,7 @@ func CI(workspaceRoot string, params protocol.CIParams) protocol.CIResult {
 		}
 	}
 	result := protocol.CIResult{
-		Toolchains: []protocol.Toolchain{{Name: "go", Version: version}},
+		Toolchains: []protocol.Toolchain{runtime(version)},
 		Setup:      []protocol.Step{{Name: "Download Go modules", Command: []string{"go", "mod", "download"}, Blocking: true}},
 	}
 	for _, p := range params.Projects {

@@ -8,12 +8,6 @@ import (
 // GitHubPath is where the GitHub Actions workflow is written.
 const GitHubPath = ".github/workflows/ci.yml"
 
-var githubSetup = map[string]string{
-	"node":   "      - uses: actions/setup-node@v4\n        with:\n          node-version: '%s'\n",
-	"python": "      - uses: actions/setup-python@v5\n        with:\n          python-version: '%s'\n",
-	"go":     "      - uses: actions/setup-go@v5\n        with:\n          go-version: '%s'\n          cache: false\n",
-}
-
 // RenderGitHub renders the model as a GitHub Actions workflow.
 func RenderGitHub(m Model) string {
 	var b strings.Builder
@@ -42,9 +36,7 @@ jobs:
           fetch-depth: 0
 `, m.ReleaseBranch)
 	for _, t := range m.Toolchains {
-		if tmpl, ok := githubSetup[t.Name]; ok {
-			fmt.Fprintf(&b, tmpl, t.Version)
-		}
+		b.WriteString(githubSetup(t))
 	}
 	fmt.Fprintf(&b, `      - name: Install mnci
         run: curl -fsSL %s | sh -s -- "$MNCI_VERSION"

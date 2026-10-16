@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"github.com/MoNecromanCI/mnci/libs/plugin-go/dependencies"
 	"github.com/MoNecromanCI/mnci/libs/plugin-go/discovery"
 	"github.com/MoNecromanCI/mnci/libs/plugin-go/pipeline"
 	"github.com/MoNecromanCI/mnci/libs/plugin-go/releasing"
@@ -56,4 +57,14 @@ func (g *Go) Doctor(params protocol.DoctorParams) (protocol.DoctorResult, error)
 // Remove implements serve.Remover.
 func (g *Go) Remove(params protocol.RemoveParams) (protocol.RemoveResult, error) {
 	return pipeline.Remove(g.root, params)
+}
+
+// Install implements serve.DependencyManager.
+func (g *Go) Install(params protocol.InstallParams) (protocol.DependencyResult, error) {
+	return dependencies.Install(g.root, params)
+}
+
+// Uninstall implements serve.DependencyManager.
+func (g *Go) Uninstall(params protocol.UninstallParams) (protocol.DependencyResult, error) {
+	return dependencies.Uninstall(g.root, params)
 }

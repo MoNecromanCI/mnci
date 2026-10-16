@@ -49,6 +49,13 @@ type Remover interface {
 	Remove(params protocol.RemoveParams) (protocol.RemoveResult, error)
 }
 
+// DependencyManager adds and removes packages in its projects with the
+// ecosystem's own toolchain (mnci install / uninstall).
+type DependencyManager interface {
+	Install(params protocol.InstallParams) (protocol.DependencyResult, error)
+	Uninstall(params protocol.UninstallParams) (protocol.DependencyResult, error)
+}
+
 // Contributor is a convention: it adds tasks to the projects it applies to.
 type Contributor interface {
 	Contribute(params protocol.ContributeParams) (protocol.ContributeResult, error)

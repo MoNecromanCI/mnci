@@ -71,4 +71,6 @@ type Capabilities struct {
 	Remove bool `json:"remove,omitempty"`
 	// Published reports what a registry has of a project.
 	Published bool `json:"published,omitempty"`
+	// Dependencies installs and uninstalls packages in its projects.
+	Dependencies bool `json:"dependencies,omitempty"`
 }

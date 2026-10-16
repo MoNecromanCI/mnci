@@ -9,6 +9,7 @@ import (
 	"github.com/MoNecromanCI/mnci/apps/mnci/clicontract"
 	"github.com/MoNecromanCI/mnci/apps/mnci/configedit"
 	"github.com/MoNecromanCI/mnci/apps/mnci/convert"
+	"github.com/MoNecromanCI/mnci/apps/mnci/dependencies"
 	"github.com/MoNecromanCI/mnci/apps/mnci/doctor"
 	"github.com/MoNecromanCI/mnci/apps/mnci/explain"
 	"github.com/MoNecromanCI/mnci/apps/mnci/graphview"
@@ -48,6 +49,7 @@ generates CI pipelines, and releases packages from conventional commits.`,
 	}
 	add("start", scaffold.NewCommand(version), scaffold.AddCommand(version), scaffold.RemoveCommand(version), convert.Command(version), configedit.Command())
 	add("work", taskrun.Commands(version)...)
+	add("work", dependencies.Commands(version)...)
 	add("ship", release.Command(version), cipipeline.Command(version))
 	add("inspect", graphview.Commands(version)...)
 	add("inspect", clicontract.Commands(version)...)

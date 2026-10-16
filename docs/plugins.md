@@ -142,6 +142,8 @@ Content-Length: 85\r\n
 | `doctor` | the plugin's projects → findings, each with a remedy | `doctor` |
 | `remove` | a project whose directory the host deleted, dry run → the files the plugin cleaned (go.work, the lockfile), notes | `remove` |
 | `published` | a project → the newest version its registry has, or none, or that the registry could not be asked | `published` |
+| `dependencies/install` | a project, packages, dev → the files changed, notes; with no project, the projects it serves, to install them all | `dependencies` |
+| `dependencies/uninstall` | a project, packages → the files changed, notes | `dependencies` |
 | `contribute` | the projects whose stack includes the plugin, or a convention applies to → new tasks, replaced tasks and extra task dependencies, by project | `contribute` |
 | `shutdown` | → `{}`; the plugin then exits | always |
 

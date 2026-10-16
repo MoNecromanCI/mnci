@@ -37,8 +37,11 @@ if [ "$VERSION" = "latest" ]; then
   else
     set --
   fi
-  VERSION=$(curl -fsSL "$@" "https://api.github.com/repos/$REPO/releases?per_page=50" \
-    | grep -o '"tag_name": *"mnci@[^"]*"' | head -n 1 | sed 's/.*mnci@\([^"]*\)".*/\1/')
+  # GitHub lists releases by tag name as text (mnci@0.9.0 before mnci@0.20.0),
+  # so take the highest version, comparing its numbers.
+  VERSION=$(curl -fsSL "$@" "https://api.github.com/repos/$REPO/releases?per_page=100" \
+    | grep -o '"tag_name": *"mnci@[0-9][0-9.]*"' | sed 's/.*mnci@\([^"]*\)".*/\1/' \
+    | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1)
   [ -n "$VERSION" ] || fail "no mnci release found"
 fi
 VERSION="${VERSION#v}"

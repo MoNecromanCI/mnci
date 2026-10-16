@@ -12,8 +12,9 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
-// releasesURL lists mnci's GitHub Releases, newest first; tests replace it.
-var releasesURL = "https://api.github.com/repos/MoNecromanCI/mnci/releases?per_page=30"
+// releasesURL lists the GitHub Releases (by tag name, not by version); tests
+// replace it.
+var releasesURL = "https://api.github.com/repos/MoNecromanCI/mnci/releases?per_page=100"
 
 // WorkspaceReport says which mnci runs, the newest one released, and the
 // workspace under dir with its mnci.toml.
@@ -53,12 +54,15 @@ func latestRelease() string {
 	if resp.StatusCode != http.StatusOK || json.NewDecoder(resp.Body).Decode(&releases) != nil {
 		return ""
 	}
+	// GitHub lists releases by tag name as text (mnci@0.9.0 before
+	// mnci@0.20.0), so the newest is the highest version, not the first.
+	best := ""
 	for _, r := range releases {
-		if v, ok := strings.CutPrefix(r.Tag, "mnci@"); ok && !r.Draft && !r.Prerelease {
-			return v
+		if v, ok := strings.CutPrefix(r.Tag, "mnci@"); ok && !r.Draft && !r.Prerelease && (best == "" || newer(v, best)) {
+			best = v
 		}
 	}
-	return ""
+	return best
 }
 
 // newer reports whether latest is a higher X.Y.Z than current; a development

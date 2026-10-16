@@ -16,8 +16,11 @@ if ($Version -eq 'latest') {
   # exhaust; a token (CI provides one) lifts the limit.
   $headers = @{}
   if ($env:GITHUB_TOKEN) { $headers['Authorization'] = "Bearer $env:GITHUB_TOKEN" }
-  $release = (Invoke-RestMethod -Headers $headers "https://api.github.com/repos/$repo/releases?per_page=50") |
-    Where-Object { $_.tag_name -like 'mnci@*' } | Select-Object -First 1
+  # GitHub lists releases by tag name as text (mnci@0.9.0 before mnci@0.20.0),
+  # so take the highest version, comparing its numbers.
+  $release = (Invoke-RestMethod -Headers $headers "https://api.github.com/repos/$repo/releases?per_page=100") |
+    Where-Object { $_.tag_name -match '^mnci@\d+\.\d+\.\d+$' -and -not $_.prerelease } |
+    Sort-Object { [version]$_.tag_name.Substring(5) } | Select-Object -Last 1
   if (-not $release) { throw 'no mnci release found' }
   $Version = $release.tag_name.Substring(5)
 }

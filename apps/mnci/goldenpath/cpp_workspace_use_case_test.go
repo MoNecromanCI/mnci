@@ -24,6 +24,13 @@ func TestCppWorkspace(t *testing.T) {
 			t.Skip("no C++ compiler (c++ or g++) is installed")
 		}
 	}
+	// Some cppcheck builds (the MinGW bundle on the Windows runners) cannot
+	// find their own std.cfg and fail on any file.
+	probe := filepath.Join(t.TempDir(), "probe.cpp")
+	_ = os.WriteFile(probe, []byte("int main() { return 0; }\n"), 0o644)
+	if out, err := exec.Command("cppcheck", "--quiet", "--error-exitcode=1", probe).CombinedOutput(); err != nil {
+		t.Skipf("cppcheck cannot check a file here: %v\n%s", err, out)
+	}
 	base := t.TempDir()
 	w := &workspace{t: t, bin: buildMnci(t, base), dir: base, env: identity()}
 	w.mnci(true, "new", "mnci-e2e-cpp", "--ci", "github")

@@ -97,7 +97,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: New workspace, every kind in every language, build, test, release
-        working-directory: apps/mnci
+        working-directory: apps/smith
         shell: bash
         env:
           SUITE: ${{ matrix.suite == 'core' && '-run=^TestGoldenPath$' || '-skip=^(TestConvert.*|TestGoldenPath)$' }}
@@ -125,5 +125,5 @@ jobs:
         with:
           python-version: '3.12'
       - name: Convert an Nx workspace and an old-mnci workspace, then build and plan a release
-        working-directory: apps/mnci
+        working-directory: apps/smith
         run: go test -tags e2e -timeout 85m -v -run TestConvert ./goldenpath

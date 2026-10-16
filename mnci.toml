@@ -30,8 +30,8 @@ description = "Runs a monorepo in Node, Go and Python: tasks from a cache, CI an
 license = "MIT"
 
 [projects.mnci.tasks.build-dev]
-command = ["go", "build", "-gcflags=all=-N -l", "-o", "../../dist/dev/apps/mnci/mnci", "."]
-outputs = ["../../dist/dev/apps/mnci"]
+command = ["go", "build", "-gcflags=all=-N -l", "-o", "../../dist/dev/apps/smith/mnci", "."]
+outputs = ["../../dist/dev/apps/smith"]
 
 [projects.mnci.tasks.dev]
 command = ["go", "run", "github.com/air-verse/air@v1.61.7", "--build.cmd", "go build ./...", "--build.bin", "go run .", "--build.exclude_dir", "tmp"]

@@ -35,7 +35,7 @@ jobs:
       # mnci:slot before-setup
       # This repository is mnci: every step below runs the mnci built from this commit.
       - name: Build mnci from this commit
-        run: go build -o "$HOME/.local/bin/mnci" ./apps/mnci
+        run: go build -o "$HOME/.local/bin/mnci" ./apps/smith
       # mnci:slot-end before-setup
       - name: Setup
         run: mnci ci setup

@@ -86,7 +86,7 @@ pipelines are regenerated to install its toolchain.`,
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&lang, "lang", "l", "", "language: node, go, python, rust, dotnet (default: the stack's, or the workspace's only language)")
+	cmd.Flags().StringVarP(&lang, "lang", "l", "", "language: node, go, python, rust, dotnet, ruby (default: the stack's, or the workspace's only language)")
 	cmd.Flags().StringVarP(&stack, "stack", "s", "", "stack the project is built with (default: [default_stacks] in mnci.toml; mnci stacks lists them; none: the language plugin alone)")
 	return cmd
 }

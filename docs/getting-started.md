@@ -132,6 +132,11 @@ shift+tab switch between them):
   one to see its detail and remedy, and r to check again.
 - **Release** (inside a workspace): what the next release would do, or why it
   is blocked. Press p to preview it and R to release.
+- **Settings** (inside a workspace): the settings of `mnci.toml`, with their
+  values and what they do. Enter edits one (or flips a yes/no setting), u
+  returns it to its default. A value the schema rejects is refused on the
+  spot. The change is made by `mnci config set` or `unset`, which keep the
+  file's comments.
 
 The shell never acts by itself. Each action ends as an mnci command line,
 printed before it runs: you can type the same command in a script or in CI. R,

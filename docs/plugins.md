@@ -13,7 +13,7 @@ with through its [stack](stacks.md).
 | `node` | language (+ default toolchain, scaffold) | `package.json` projects (npm workspaces); every package.json script is a task; scaffolds plain JavaScript | `npm publish`, skipping an existing version |
 | `go` | language (+ default toolchain, scaffold) | `go.mod` projects (in a root `go.work`); `go build`, `go test`, `go vet` | a `<dir>/vX.Y.Z` module tag |
 | `python` | language (+ default toolchain, scaffold) | `pyproject.toml` projects (src layout); one root `.venv`, Ruff, pytest, PyPA `build` | `twine upload` of files the index lacks |
-| `rust` | language (+ default toolchain, scaffold) | `Cargo.toml` crates in a root Cargo workspace; `cargo build`, `test`, `clippy` (lint), `check` (typecheck), `fmt --check` (format), `package` | `cargo publish` of package crates (`CARGO_REGISTRY_TOKEN`) |
+| `rust` | language (+ default toolchain, scaffold) | `Cargo.toml` crates in a root Cargo workspace; `cargo build`, `test`, `clippy` (lint), `check` (typecheck), `fmt --check` (format), `package`; every build under `dist/cargo` | `cargo publish` of package crates (`CARGO_REGISTRY_TOKEN`) |
 | `typescript` | scaffold and toolchain, provides `build`, `typecheck`; publishes `node-ts` | scaffolds TypeScript projects that build and type-check with `tsc` | — |
 | `eslint` | toolchain, provides `lint` | Node projects lint with ESLint and `@mnci/eslint-config` (TypeScript rules, Standard style, vertical slices) | — |
 | `jest` | toolchain, provides `test`; publishes `node-jest` | Node projects test with Jest (`ts-jest`) | — |
@@ -40,6 +40,11 @@ version = "^1.2"                 # installed on the search path; "1.2.3", "~1.2"
 ```
 
 An external plugin with the name of a built-in one replaces it.
+
+A plugin builds every project into `protocol.ProjectBuildDir(root)`
+(`dist/<project dir>`), and declares that directory as the task's outputs with
+`protocol.BuildDirFromProject(root)` (`../../dist/apps/web`, relative to the
+project). `mnci doctor` fails any output elsewhere.
 
 ### Installing a plugin
 

@@ -31,6 +31,36 @@ skips the tasks that depend on it; independent tasks keep going unless `--bail`.
 Ctrl+C stops every process tree mnci started — on Windows through a Job Object,
 elsewhere through a process group.
 
+## Builds go to dist/
+
+Every build writes to one directory at the workspace root, `dist/`, in a path
+that mirrors the project's: `apps/web` builds into `dist/apps/web/`. Nothing is
+written into a source tree, and deleting `dist/` cleans everything.
+`dist/drop/` holds what `mnci ci pack` keeps, and `dist/release/` holds release
+assets. A tool that builds the whole workspace into one directory gets its own
+folder there: Cargo builds into `dist/cargo` (`target-dir` in
+`.cargo/config.toml`, written with the first crate).
+
+| Language | Builds to `dist/<project dir>/` |
+|---|---|
+| Go | the app's binary (`go build -o`) |
+| Python | a package's wheel and sdist (`python -m build --outdir`) |
+| Node (TypeScript) | an app's or a package's compiled JavaScript (`tsc`, `outDir`) |
+
+TypeScript libraries don't build at all. A library's `package.json` exports
+its sources (`"exports": "./src/index.ts"`). TypeScript reads them, and so
+does Node 24 when an app runs, stripping the types. That's why relative imports
+name the file (`./greeting/index.ts`): `tsc` rewrites them to `.js` when it
+emits, and `erasableSyntaxOnly` keeps the code to what Node can strip. A
+package is read from its sources inside the workspace too. It is published from
+`dist/packages/<name>/`, where mnci stages a copy of its `package.json` whose
+`exports`, `main` and `types` point at the built files, along with its README
+and LICENSE.
+
+`mnci doctor` enforces this. Any task output outside `dist/` fails, naming
+the task and where its outputs were set (a plugin or `mnci.toml`). For Node, a
+`tsconfig` whose `outDir` is in the source tree fails too.
+
 ## Cache
 
 A task's **key** is a SHA-256 over a versioned, canonical encoding of:

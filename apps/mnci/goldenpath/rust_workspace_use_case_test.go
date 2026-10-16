@@ -3,6 +3,7 @@
 package goldenpath
 
 import (
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -46,6 +47,13 @@ func TestRustWorkspace(t *testing.T) {
 	}
 	if out := w.mnci(true, "run", "start", "-p", "cli"); !strings.Contains(out, "Hello, world! Hello, core!") {
 		t.Fatalf("start:\n%s", out)
+	}
+	// Cargo builds into dist/, never target/ beside the sources.
+	if _, err := os.Stat(filepath.Join(w.dir, "target")); err == nil {
+		t.Error("target/ exists: Cargo builds must go to dist/")
+	}
+	if _, err := os.Stat(filepath.Join(w.dir, "dist", "cargo")); err != nil {
+		t.Error("the builds are under dist/cargo")
 	}
 	if out := w.mnci(true, "doctor"); !strings.Contains(out, "the Cargo workspace lists apps/cli") {
 		t.Fatalf("doctor:\n%s", out)

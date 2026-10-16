@@ -17,7 +17,7 @@ func StarterSpec(workspaceRoot string, params protocol.GenerateParams, module st
 		return nil
 	}
 	return map[string]string{"src/greeting/greet.use-case.spec.ts": `import { describe, expect, it } from '` + module + `'
-import { greet } from './greet.use-case'
+import { greet } from './greet.use-case.ts'
 
 describe('greet', () => {
   it('greets by name', () => {

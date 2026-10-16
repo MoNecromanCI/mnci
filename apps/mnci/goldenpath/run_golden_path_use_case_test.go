@@ -162,7 +162,7 @@ func TestGoldenPath(t *testing.T) {
 	}
 
 	// 3. Imports between projects work immediately.
-	w.write("apps/web/src/main.ts", "import { greet as ui } from '@acme/ui'\nimport { greet } from './greeting'\n\nprocess.stdout.write(greet('world').message + ' ' + ui('ui').message + '\\n')\n")
+	w.write("apps/web/src/main.ts", "import { greet as ui } from '@acme/ui'\nimport { greet } from './greeting/index.ts'\n\nprocess.stdout.write(greet('world').message + ' ' + ui('ui').message + '\\n')\n")
 	w.write("apps/api/main.go", "package main\n\nimport (\n\t\"fmt\"\n\n\t\"example.com/acme/apps/api/greeting\"\n\tcore \"example.com/acme/libs/core/greeting\"\n)\n\nfunc main() {\n\tfmt.Println(greeting.Greet(\"world\").Message, core.Greet(\"core\").Message)\n}\n")
 	w.write("apps/worker/src/acme_worker/__main__.py", "from acme_pyutil.greeting import greet as util\n\nfrom .greeting import greet\n\nprint(greet(\"world\").message, util(\"util\").message)\n")
 	graph := w.mnci(true, "graph", "--format", "json")
@@ -369,8 +369,8 @@ func TestGoldenPath(t *testing.T) {
 	// the built code, the Go binary, the Python wheel.
 	drop := filepath.Join(w.dir, "dist", "drop")
 	tarball := filepath.Join(drop, "acme-web-0.0.0.tgz")
-	if !tarContains(t, tarball, "package/dist/main.js") {
-		t.Fatalf("%s lacks the built app", tarball)
+	if !tarContains(t, tarball, "package/main.js") || tarContains(t, tarball, "package/src/main.ts") {
+		t.Fatalf("%s must hold the built app, staged from dist/apps/web, and not its sources", tarball)
 	}
 	exe := ""
 	if runtime.GOOS == "windows" {

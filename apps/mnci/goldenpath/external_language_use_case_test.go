@@ -41,7 +41,7 @@ func TestExternalLanguagePlugin(t *testing.T) {
 		t.Fatalf("plugin check:\n%s", out)
 	}
 	ignore, _ := os.ReadFile(filepath.Join(w.dir, ".gitignore"))
-	w.write(".gitignore", string(ignore)+".kiwi-registry\nout/\n")
+	w.write(".gitignore", string(ignore)+".kiwi-registry\n")
 
 	// Projects of the new language, one with the stack the plugin publishes.
 	w.mnci(true, "add", "package", "fruit", "--lang", "kiwi")

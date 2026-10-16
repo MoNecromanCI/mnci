@@ -37,10 +37,12 @@ func main() {
 func tool(args []string) int {
 	switch args[0] {
 	case "build":
-		if err := os.MkdirAll("out", 0o755); err != nil {
+		// Into the directory mnci gives it: the workspace's dist/<project dir>.
+		out := args[1]
+		if err := os.MkdirAll(out, 0o755); err != nil {
 			return 1
 		}
-		if err := os.WriteFile(filepath.Join("out", "built.txt"), []byte("kiwi\n"), 0o644); err != nil {
+		if err := os.WriteFile(filepath.Join(out, "built.txt"), []byte("kiwi\n"), 0o644); err != nil {
 			return 1
 		}
 		fmt.Println("kiwi built")
@@ -102,7 +104,7 @@ func (k *kiwi) Discover(params protocol.DiscoverParams) (protocol.DiscoverResult
 			Name: m["name"], Root: path.Dir(rel), Language: "kiwi", Kind: protocol.ProjectKind(m["kind"]),
 			Version: m["version"], Stack: m["stack"], Exports: []string{"kiwi:" + m["name"]},
 			Tasks: map[string]protocol.Task{
-				"build": {Command: []string{self(), "build"}, Outputs: []string{"out"}, DependsOn: []string{"^build"}, Cache: true},
+				"build": {Command: []string{self(), "build", "{workspaceRoot}/" + protocol.ProjectBuildDir(path.Dir(rel))}, Outputs: []string{protocol.BuildDirFromProject(path.Dir(rel))}, DependsOn: []string{"^build"}, Cache: true},
 				"test":  {Command: []string{self(), "test"}, DependsOn: []string{"build"}, Cache: true},
 			},
 		}

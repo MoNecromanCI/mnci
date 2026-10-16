@@ -10,7 +10,7 @@ var inputs = []string{"**/*", "{workspaceRoot}/requirements-dev.txt", "{workspac
 // Tasks returns the tasks of a Python project. Every project is installed in
 // the venv in editable mode, so none needs another project built first. A
 // project that configures mypy ([tool.mypy]) is also type-checked.
-func Tasks(kind protocol.ProjectKind, importName string, mypy bool) map[string]protocol.Task {
+func Tasks(root string, kind protocol.ProjectKind, importName string, mypy bool) map[string]protocol.Task {
 	py := venv.Interpreter()
 	tasks := map[string]protocol.Task{
 		"lint": {Command: []string{py, "-m", "ruff", "check", "."}, Inputs: inputs, Cache: true, Description: "ruff check"},
@@ -21,7 +21,8 @@ func Tasks(kind protocol.ProjectKind, importName string, mypy bool) map[string]p
 	}
 	switch kind {
 	case protocol.ProjectPackage:
-		tasks["build"] = protocol.Task{Command: []string{py, "-m", "build", "--outdir", "dist", "."}, Inputs: inputs, Outputs: []string{"dist"}, Cache: true, Description: "Build the wheel and sdist into dist/"}
+		// Into the workspace's dist/, like every build: nothing in the source tree.
+		tasks["build"] = protocol.Task{Command: []string{py, "-m", "build", "--outdir", "{workspaceRoot}/" + protocol.ProjectBuildDir(root), "."}, Inputs: inputs, Outputs: []string{protocol.BuildDirFromProject(root)}, Cache: true, Description: "Build the wheel and sdist into " + protocol.ProjectBuildDir(root) + "/"}
 	case protocol.ProjectApp:
 		tasks["start"] = protocol.Task{Command: []string{py, "-m", importName}, Description: "Run the app"}
 		tasks["package"] = protocol.Task{

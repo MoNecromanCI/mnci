@@ -68,3 +68,8 @@ func (g *Go) Install(params protocol.InstallParams) (protocol.DependencyResult, 
 func (g *Go) Uninstall(params protocol.UninstallParams) (protocol.DependencyResult, error) {
 	return dependencies.Uninstall(g.root, params)
 }
+
+// Latest implements serve.LatestReader: the tools the plugin pins.
+func (g *Go) Latest(params protocol.LatestParams) (protocol.LatestResult, error) {
+	return dependencies.Latest(g.root, params)
+}

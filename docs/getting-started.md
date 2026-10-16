@@ -116,6 +116,23 @@ compound ranges) are left alone, and the ones that disagree are reported. Go
 is not compared: a `go.work` builds every module with the highest version any
 of them requires.
 
+`mnci up` lists every declared dependency with a newer release, grouped as
+patch, minor and major, with the projects that declare each one:
+
+```sh
+mnci up            # pick in the terminal (patch and minor start selected)
+mnci up zod jest   # exactly these, no prompt
+mnci up --yes      # everything
+mnci up --check    # report only (the default without a terminal)
+```
+
+Each chosen declaration keeps its operator (`^`, `~`, `>=`…) and moves to the
+latest version, then the workspace is installed again. Npm is asked through
+`npm view`, so `.npmrc` applies. Python uses the index pip uses
+(`PIP_INDEX_URL`, else PyPI). A final section compares the tools mnci pins
+(Node.js LTS, Python, the Go version in `go.work`, golangci-lint) with their
+newest releases.
+
 ## Run tasks
 
 ```sh

@@ -75,4 +75,6 @@ type Capabilities struct {
 	Dependencies bool `json:"dependencies,omitempty"`
 	// Declarations lists and rewrites declared dependency specs (sync, up).
 	Declarations bool `json:"declarations,omitempty"`
+	// Latest reports the newest releases of dependencies and pinned tools.
+	Latest bool `json:"latest,omitempty"`
 }

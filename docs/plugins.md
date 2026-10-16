@@ -146,6 +146,7 @@ Content-Length: 85\r\n
 | `dependencies/uninstall` | a project, packages → the files changed, notes | `dependencies` |
 | `dependencies/declared` | the plugin's projects → every dependency their manifests declare (spec, section, peer, rewritable), and the versions installed | `declarations` |
 | `dependencies/rewrite` | declarations and their new specs → the files changed | `declarations` |
+| `dependencies/latest` | names, tools → each name's newest stable release, the names the registry could not be asked about, and the pinned tools against their newest releases | `latest` |
 | `contribute` | the projects whose stack includes the plugin, or a convention applies to → new tasks, replaced tasks and extra task dependencies, by project | `contribute` |
 | `shutdown` | → `{}`; the plugin then exits | always |
 

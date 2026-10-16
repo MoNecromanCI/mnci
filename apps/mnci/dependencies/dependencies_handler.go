@@ -2,12 +2,17 @@ package dependencies
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
-// Commands are `mnci install`, `mnci uninstall` and `mnci sync`.
+// Commands are `mnci install`, `mnci uninstall`, `mnci sync` and `mnci up`.
 func Commands(version string) []*cobra.Command {
 	var targets []string
 	var dev bool
@@ -56,7 +61,84 @@ uninstall -w <project> <package>.`,
 		},
 	}
 	uninstall.Flags().StringArrayVarP(&from, "workspace", "w", nil, "target project, by name or directory; repeat it for several")
-	return []*cobra.Command{install, uninstall, syncCommand(version)}
+	return []*cobra.Command{install, uninstall, syncCommand(version), upCommand(version)}
+}
+
+func upCommand(version string) *cobra.Command {
+	var check, yes, asJSON, noInstall bool
+	cmd := &cobra.Command{
+		Use:   "up [packages...]",
+		Short: "Show dependencies with newer releases and update the ones you pick",
+		Long: `Show every declared dependency with a newer release, grouped patch, minor and
+major, with the projects declaring it, then update the ones you pick: each
+declaration keeps its operator and moves to the latest version, and the
+workspace is installed again so lockfiles and the venv follow. Named packages
+are updated without a prompt; --yes takes every update. Without a terminal
+(or with --check) up only reports. A last section compares the tools mnci
+pins (Node.js, Python, Go, golangci-lint) with their newest releases.`,
+		Example: `  mnci up              # pick in the terminal
+  mnci up zod jest     # exactly these
+  mnci up --yes        # everything
+  mnci up --json`,
+		RunE: func(cmd *cobra.Command, names []string) error {
+			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})
+			if err != nil {
+				return err
+			}
+			defer s.Close()
+			report, err := FindAvailable(s)
+			if err != nil {
+				return err
+			}
+			out := cmd.OutOrStdout()
+			if asJSON {
+				enc := json.NewEncoder(out)
+				enc.SetIndent("", "  ")
+				return enc.Encode(report)
+			}
+			PrintUp(out, report)
+			chosen := report.Updates
+			switch {
+			case len(report.Updates) == 0:
+				return nil
+			case len(names) > 0:
+				var unknown []string
+				chosen, unknown = Choose(report.Updates, names)
+				if len(unknown) > 0 {
+					return fmt.Errorf("no update for %s", strings.Join(unknown, ", "))
+				}
+			case yes:
+			case check || !interactive():
+				fmt.Fprintln(out, "\nReport only: pick with mnci up in a terminal, name packages, or pass --yes.")
+				return nil
+			default:
+				final, err := tea.NewProgram(newPicker(report.Updates), tea.WithOutput(out)).Run()
+				if err != nil {
+					return err
+				}
+				if chosen = final.(picker).Chosen(); len(chosen) == 0 {
+					fmt.Fprintln(out, "Nothing updated.")
+					return nil
+				}
+			}
+			files, err := Apply(s, chosen, !noInstall)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintf(out, "✔ %d updated (%s)\n", len(chosen), strings.Join(files, ", "))
+			return nil
+		},
+	}
+	cmd.Flags().BoolVar(&check, "check", false, "report only; never prompt, never write")
+	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "take every update without prompting")
+	cmd.Flags().BoolVar(&asJSON, "json", false, "print the updates and tools as JSON; never write")
+	cmd.Flags().BoolVar(&noInstall, "no-install", false, "rewrite the manifests without installing")
+	return cmd
+}
+
+// interactive reports whether up can ask: a terminal on both ends, not CI.
+func interactive() bool {
+	return term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stdout.Fd())) && os.Getenv("CI") == ""
 }
 
 func syncCommand(version string) *cobra.Command {

@@ -27,18 +27,30 @@ func Published(params protocol.PublishedParams) (protocol.PublishedResult, error
 	}
 	index := SimpleIndexURL(registry)
 	result := protocol.PublishedResult{Registry: index}
-	page, err := httpGet(index + normalise(project) + "/")
+	version, err := NewestOn(index, project)
 	if err != nil {
 		result.Unreachable = true
 		result.Detail = err.Error()
 		return result, nil
 	}
+	result.Version = version
+	return result, nil
+}
+
+// NewestOn returns the newest release a simple index has of a distribution
+// (pre-releases aside), "" when it has none.
+func NewestOn(index, distribution string) (string, error) {
+	page, err := httpGet(index + normalise(distribution) + "/")
+	if err != nil {
+		return "", err
+	}
+	newest := ""
 	for _, m := range distFile.FindAllStringSubmatch(page, -1) {
-		if result.Version == "" || newer(m[1], result.Version) {
-			result.Version = m[1]
+		if newest == "" || newer(m[1], newest) {
+			newest = m[1]
 		}
 	}
-	return result, nil
+	return newest, nil
 }
 
 // newer compares dotted numeric versions.

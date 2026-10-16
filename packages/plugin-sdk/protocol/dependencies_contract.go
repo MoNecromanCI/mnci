@@ -73,3 +73,30 @@ type Rewrite struct {
 	Declaration Declaration `json:"declaration"`
 	Spec        string      `json:"spec"`
 }
+
+// LatestParams asks for the newest stable release of each dependency, and,
+// with Tools, how the tools the plugin pins compare with their latest.
+type LatestParams struct {
+	Names []string `json:"names,omitempty"`
+	Tools bool     `json:"tools,omitempty"`
+}
+
+// LatestResult maps each name to its newest stable version. A name the
+// registry could not be asked about is in Unreachable, with the reason; a
+// name the registry does not have is in neither.
+type LatestResult struct {
+	Latest      map[string]string `json:"latest,omitempty"`
+	Unreachable map[string]string `json:"unreachable,omitempty"`
+	Tools       []ToolPin         `json:"tools,omitempty"`
+}
+
+// ToolPin is a tool the plugin installs at a pinned version (in CI, the dev
+// container, the venv) against the newest release; informational.
+type ToolPin struct {
+	Name   string `json:"name"`
+	Pinned string `json:"pinned"`
+	// Latest is empty when its release feed could not be reached.
+	Latest string `json:"latest,omitempty"`
+	// Newer is true when Latest is a release the pin does not cover.
+	Newer bool `json:"newer,omitempty"`
+}

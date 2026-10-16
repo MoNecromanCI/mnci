@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -203,6 +204,24 @@ func TestGoldenPath(t *testing.T) {
 	}
 	w.write("apps/worker/pyproject.toml", string(pyproject))
 	w.write("packages/pykit/pyproject.toml", string(pykit))
+	// up reports; offline its registries and feeds answer nothing, but every
+	// language still lists the tools it pins.
+	upOut := w.mnci(true, "up", "--json")
+	var up struct {
+		Tools []struct{ Plugin, Name string }
+	}
+	if err := json.Unmarshal([]byte(upOut[strings.Index(upOut, "{"):]), &up); err != nil {
+		t.Fatalf("up --json: %v\n%s", err, upOut)
+	}
+	var tools []string
+	for _, tool := range up.Tools {
+		tools = append(tools, tool.Plugin+":"+tool.Name)
+	}
+	for _, want := range []string{"node:Node.js (LTS)", "python:Python", "go:Go", "go:golangci-lint"} {
+		if !slices.Contains(tools, want) {
+			t.Fatalf("up lists no %s: %v", want, tools)
+		}
+	}
 
 	// 4. Everything lints, type-checks, tests and builds; a re-run is all cache.
 	out := w.mnci(true, "run", "lint", "typecheck", "test", "build")

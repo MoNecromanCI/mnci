@@ -12,7 +12,11 @@ $dir = if ($env:MNCI_INSTALL_DIR) { $env:MNCI_INSTALL_DIR } else { Join-Path $HO
 $arch = if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'arm64' } else { 'amd64' }
 
 if ($Version -eq 'latest') {
-  $release = (Invoke-RestMethod "https://api.github.com/repos/$repo/releases?per_page=50") |
+  # GitHub limits anonymous API calls per address, which shared CI runners
+  # exhaust; a token (CI provides one) lifts the limit.
+  $headers = @{}
+  if ($env:GITHUB_TOKEN) { $headers['Authorization'] = "Bearer $env:GITHUB_TOKEN" }
+  $release = (Invoke-RestMethod -Headers $headers "https://api.github.com/repos/$repo/releases?per_page=50") |
     Where-Object { $_.tag_name -like 'mnci@*' } | Select-Object -First 1
   if (-not $release) { throw 'no mnci release found' }
   $Version = $release.tag_name.Substring(5)

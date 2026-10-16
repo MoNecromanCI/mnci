@@ -31,7 +31,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          for m in apps/mnci libs/plugin-node libs/plugin-node-toolchains libs/plugin-go libs/plugin-python libs/plugin-vertical-slices packages/plugin-sdk; do
+          for m in apps/mnci libs/plugin-node libs/plugin-node-toolchains libs/plugin-go libs/plugin-python libs/plugin-rust libs/plugin-vertical-slices packages/plugin-sdk; do
             echo "::group::$m"
             (cd "$m" && go vet ./... && go test -race=false ./...)
             echo "::endgroup::"
@@ -60,7 +60,7 @@ jobs:
           python-version: '3.12'
       - name: New workspace, every kind in every language, build, test, release
         working-directory: apps/mnci
-        run: go test -tags e2e -timeout 40m -v -run 'TestGoldenPath|TestExternalLanguagePlugin' ./goldenpath
+        run: go test -tags e2e -timeout 40m -v -skip 'TestConvert' ./goldenpath
 
   convert:
     name: convert (${{ matrix.os }})

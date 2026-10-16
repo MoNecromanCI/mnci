@@ -1,0 +1,106 @@
+package releasing
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/toolrun"
+)
+
+// CargoRunner runs cargo; tests replace it.
+var CargoRunner = func(dir string, argv []string) error { return toolrun.Run(dir, argv) }
+
+// WriteVersion records a release's version in the crate's Cargo.toml and the
+// requirement on it in every dependency the plugin was told of.
+func WriteVersion(workspaceRoot string, params protocol.VersionParams) (protocol.VersionResult, error) {
+	rel := params.Project.Root + "/Cargo.toml"
+	path := filepath.Join(workspaceRoot, filepath.FromSlash(rel))
+	src, err := os.ReadFile(path)
+	if err != nil {
+		return protocol.VersionResult{}, err
+	}
+	out, changed := SetPackageVersion(string(src), params.Version)
+	out, depsChanged := SetDependencyVersions(out, params.Dependencies)
+	if !changed && !depsChanged {
+		return protocol.VersionResult{Files: []string{}}, nil
+	}
+	if !params.DryRun {
+		if err := os.WriteFile(path, []byte(out), 0o644); err != nil {
+			return protocol.VersionResult{}, err
+		}
+	}
+	return protocol.VersionResult{Files: []string{rel}}, nil
+}
+
+// Publish publishes a package crate to its registry with cargo publish
+// (CARGO_REGISTRY_TOKEN). Apps and libraries are released by their tag.
+func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.PublishResult, error) {
+	if params.Assets != nil {
+		return protocol.PublishResult{Skipped: "Rust release assets are not built yet: the app is released by its tag"}, nil
+	}
+	if params.Project.Kind != protocol.ProjectPackage {
+		return protocol.PublishResult{Skipped: "released by its tag"}, nil
+	}
+	crate := params.Project.Name
+	if len(params.Project.Exports) > 0 {
+		crate = params.Project.Exports[0]
+	}
+	// The manifests carry the release's versions while mnci releases, and
+	// are restored after: cargo would refuse the dirty tree.
+	argv := []string{"cargo", "publish", "-p", crate, "--allow-dirty"}
+	if params.DryRun {
+		argv = append(argv, "--dry-run")
+	}
+	if err := CargoRunner(workspaceRoot, argv); err != nil {
+		return protocol.PublishResult{}, err
+	}
+	return protocol.PublishResult{Published: !params.DryRun, Registry: "crates.io"}, nil
+}
+
+// CratesAPI is crates.io's API root; tests replace it.
+var CratesAPI = "https://crates.io/api/v1"
+
+// Published asks crates.io for a crate's newest stable version.
+func Published(params protocol.PublishedParams) (protocol.PublishedResult, error) {
+	if params.Project.Kind != protocol.ProjectPackage || len(params.Project.Exports) == 0 {
+		return protocol.PublishedResult{}, nil
+	}
+	result := protocol.PublishedResult{Registry: "crates.io"}
+	req, _ := http.NewRequest(http.MethodGet, CratesAPI+"/crates/"+params.Project.Exports[0], nil)
+	// crates.io refuses requests without a User-Agent that says who asks.
+	req.Header.Set("User-Agent", "mnci (https://github.com/MoNecromanCI/mnci)")
+	resp, err := (&http.Client{Timeout: 15 * time.Second}).Do(req)
+	if err != nil {
+		result.Unreachable, result.Detail = true, err.Error()
+		return result, nil
+	}
+	defer func() { _ = resp.Body.Close() }()
+	switch {
+	case resp.StatusCode == http.StatusNotFound:
+		return result, nil
+	case resp.StatusCode != http.StatusOK:
+		result.Unreachable, result.Detail = true, resp.Status
+		return result, nil
+	}
+	var body struct {
+		Crate struct {
+			MaxStableVersion string `json:"max_stable_version"`
+			MaxVersion       string `json:"max_version"`
+		} `json:"crate"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		result.Unreachable, result.Detail = true, fmt.Sprintf("unreadable answer: %v", err)
+		return result, nil
+	}
+	result.Version = body.Crate.MaxStableVersion
+	if result.Version == "" && !strings.Contains(body.Crate.MaxVersion, "-") {
+		result.Version = body.Crate.MaxVersion
+	}
+	return result, nil
+}

@@ -1,0 +1,95 @@
+package dependencies
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/MoNecromanCI/mnci/libs/plugin-python/releasing"
+	"github.com/MoNecromanCI/mnci/libs/plugin-python/venv"
+	"github.com/MoNecromanCI/mnci/packages/plugin-sdk/protocol"
+)
+
+// Newest asks a simple index for a distribution's newest release; tests
+// replace it.
+var Newest = releasing.NewestOn
+
+// FetchJSON reads a JSON document over HTTP; tests replace it.
+var FetchJSON = func(url string, v any) error {
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(url)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("%s: %s", url, resp.Status)
+	}
+	return json.NewDecoder(resp.Body).Decode(v)
+}
+
+// index is where pip installs from: PIP_INDEX_URL, else PyPI.
+func index() string {
+	if u := os.Getenv("PIP_INDEX_URL"); u != "" {
+		return strings.TrimSuffix(u, "/") + "/"
+	}
+	return "https://pypi.org/simple/"
+}
+
+// Latest asks the index pip uses for each distribution's newest release, a
+// few at a time, and compares the Python mnci pins with the newest release
+// series.
+func Latest(_ string, params protocol.LatestParams) (protocol.LatestResult, error) {
+	res := protocol.LatestResult{Latest: map[string]string{}, Unreachable: map[string]string{}}
+	idx := index()
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	slots := make(chan struct{}, 8)
+	for _, name := range params.Names {
+		wg.Add(1)
+		slots <- struct{}{}
+		go func(name string) {
+			defer func() { <-slots; wg.Done() }()
+			v, err := Newest(idx, name)
+			mu.Lock()
+			defer mu.Unlock()
+			switch {
+			case err != nil:
+				res.Unreachable[name] = err.Error()
+			case v != "":
+				res.Latest[name] = v
+			}
+		}(name)
+	}
+	wg.Wait()
+	if params.Tools {
+		res.Tools = append(res.Tools, pythonRelease())
+	}
+	return res, nil
+}
+
+func pythonRelease() protocol.ToolPin {
+	pin := protocol.ToolPin{Name: "Python", Pinned: venv.PythonVersion}
+	var cycles []struct {
+		Cycle string `json:"cycle"`
+	}
+	if FetchJSON("https://endoflife.date/api/python.json", &cycles) != nil || len(cycles) == 0 {
+		return pin
+	}
+	pin.Latest = cycles[0].Cycle
+	minor := func(v string) int {
+		parts := strings.SplitN(v, ".", 3)
+		if len(parts) < 2 {
+			return 0
+		}
+		n, _ := strconv.Atoi(parts[1])
+		return n
+	}
+	pin.Newer = minor(pin.Latest) > minor(pin.Pinned)
+	return pin
+}

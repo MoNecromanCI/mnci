@@ -26,4 +26,6 @@ const (
 	MethodDeclared = "dependencies/declared"
 	// MethodRewrite changes declared specs in place.
 	MethodRewrite = "dependencies/rewrite"
+	// MethodLatest asks registries for the newest releases (mnci up).
+	MethodLatest = "dependencies/latest"
 )

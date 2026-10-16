@@ -88,3 +88,8 @@ func (n *Node) Declared(params protocol.DeclaredParams) (protocol.DeclaredResult
 func (n *Node) Rewrite(params protocol.RewriteParams) (protocol.DependencyResult, error) {
 	return dependencies.Rewrite(n.root, params)
 }
+
+// Latest implements serve.LatestReader.
+func (n *Node) Latest(params protocol.LatestParams) (protocol.LatestResult, error) {
+	return dependencies.Latest(n.root, params)
+}

@@ -63,6 +63,12 @@ type DeclarationEditor interface {
 	Rewrite(params protocol.RewriteParams) (protocol.DependencyResult, error)
 }
 
+// LatestReader asks registries and release feeds for the newest versions
+// (mnci up).
+type LatestReader interface {
+	Latest(params protocol.LatestParams) (protocol.LatestResult, error)
+}
+
 // Contributor is a convention: it adds tasks to the projects it applies to.
 type Contributor interface {
 	Contribute(params protocol.ContributeParams) (protocol.ContributeResult, error)

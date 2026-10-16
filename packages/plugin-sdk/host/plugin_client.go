@@ -186,6 +186,8 @@ func (c *Client) Supports(method string) bool {
 		return caps.Dependencies
 	case protocol.MethodDeclared, protocol.MethodRewrite:
 		return caps.Declarations
+	case protocol.MethodLatest:
+		return caps.Latest
 	}
 	return method == protocol.MethodInitialize || method == protocol.MethodShutdown
 }

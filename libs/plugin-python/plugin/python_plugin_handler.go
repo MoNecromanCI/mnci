@@ -88,3 +88,8 @@ func (p *Python) Declared(params protocol.DeclaredParams) (protocol.DeclaredResu
 func (p *Python) Rewrite(params protocol.RewriteParams) (protocol.DependencyResult, error) {
 	return dependencies.Rewrite(p.root, params)
 }
+
+// Latest implements serve.LatestReader.
+func (p *Python) Latest(params protocol.LatestParams) (protocol.LatestResult, error) {
+	return dependencies.Latest(p.root, params)
+}

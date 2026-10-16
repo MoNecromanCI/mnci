@@ -52,6 +52,9 @@ func Rendered(cfg workspace.Config, m Model) map[string]string {
 			out[AzurePath] = RenderAzure(m)
 		}
 	}
+	if cfg.CI.Devcontainer {
+		out[DevcontainerPath] = RenderDevcontainer(cfg.Workspace.Name, m)
+	}
 	return out
 }
 

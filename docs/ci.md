@@ -50,6 +50,24 @@ GitHub (the workflow grants `pull-requests: write` and passes
 token, so its preview stays in the log and the job summary; failing to post
 is a warning, never a failure.
 
+## Pinned versions and the dev container
+
+Nothing installs "latest". Each plugin pins what it installs: Node.js 24,
+Python 3.12 and its tools (`requirements-dev.txt`), Go at the version
+`go.work` names and golangci-lint 2.14.0; actions are pinned to a major.
+Generated pipelines install mnci at the version that generated them.
+
+With `[ci] devcontainer = true` (which `mnci new` sets), mnci also writes
+`.devcontainer/devcontainer.json`: a base image plus one dev container
+feature per toolchain, at the versions CI installs, and a post-create command
+that installs the same mnci and runs `mnci ci setup`. Like the pipelines, it
+is rewritten by `mnci add` and `mnci ci generate`, and `ci generate --check`
+and doctor report it when it is out of date.
+
+`mnci doctor` compares the tools on your machine with the pins: an older Go
+than `go.work` requires fails; a different Node.js major, venv Python or
+golangci-lint warns, since results may then differ from CI's.
+
 ## Installing mnci in CI
 
 Generated pipelines install the mnci version that generated them with the

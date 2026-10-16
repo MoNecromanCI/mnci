@@ -81,7 +81,7 @@ func TestGoldenPath(t *testing.T) {
 	// 1. A new workspace is committed and CI-ready.
 	w.mnci(true, "new", "acme", "--ci", "github,azure")
 	w.dir = filepath.Join(base, "acme")
-	for _, f := range []string{"mnci.toml", ".github/workflows/ci.yml", "azure-pipelines.yml"} {
+	for _, f := range []string{"mnci.toml", ".github/workflows/ci.yml", "azure-pipelines.yml", ".devcontainer/devcontainer.json"} {
 		if _, err := os.Stat(filepath.Join(w.dir, filepath.FromSlash(f))); err != nil {
 			t.Fatalf("new did not write %s", f)
 		}
@@ -172,6 +172,13 @@ func TestGoldenPath(t *testing.T) {
 		}
 	}
 	w.mnci(true, "doctor")
+	// The dev container installs what CI installs, at the same versions.
+	devcontainer, _ := os.ReadFile(filepath.Join(w.dir, ".devcontainer", "devcontainer.json"))
+	for _, want := range []string{"features/node:1", "features/go:1", "features/python:1", `"golangciLintVersion": "2.14.0"`, "&& ", "/.local/bin/mnci", ` ci setup"`} {
+		if !strings.Contains(string(devcontainer), want) {
+			t.Fatalf("devcontainer lacks %s:\n%s", want, devcontainer)
+		}
+	}
 	w.mnci(true, "ci", "generate", "--check")
 
 	// The phases the generated pipeline runs, exactly as CI runs them.

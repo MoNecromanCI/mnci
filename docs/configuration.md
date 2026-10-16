@@ -14,6 +14,7 @@ module_prefix = "github.com/acme/acme"  # Go module path prefix
 
 [ci]
 providers = ["github"]                # "github", "azure", or both
+devcontainer = true                   # write .devcontainer/devcontainer.json with CI's toolchains (docs/ci.md)
 
 [release]
 branch = "main"                       # real releases run only here

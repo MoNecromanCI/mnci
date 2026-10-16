@@ -73,4 +73,6 @@ type Capabilities struct {
 	Published bool `json:"published,omitempty"`
 	// Dependencies installs and uninstalls packages in its projects.
 	Dependencies bool `json:"dependencies,omitempty"`
+	// Declarations lists and rewrites declared dependency specs (sync, up).
+	Declarations bool `json:"declarations,omitempty"`
 }

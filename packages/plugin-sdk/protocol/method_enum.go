@@ -22,4 +22,8 @@ const (
 	MethodInstall = "dependencies/install"
 	// MethodUninstall removes packages from a project.
 	MethodUninstall = "dependencies/uninstall"
+	// MethodDeclared lists the dependencies manifests declare.
+	MethodDeclared = "dependencies/declared"
+	// MethodRewrite changes declared specs in place.
+	MethodRewrite = "dependencies/rewrite"
 )

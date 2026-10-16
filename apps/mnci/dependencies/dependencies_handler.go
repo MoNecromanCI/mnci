@@ -1,11 +1,13 @@
 package dependencies
 
 import (
+	"encoding/json"
+
 	"github.com/MoNecromanCI/mnci/apps/mnci/session"
 	"github.com/spf13/cobra"
 )
 
-// Commands are `mnci install` and `mnci uninstall`.
+// Commands are `mnci install`, `mnci uninstall` and `mnci sync`.
 func Commands(version string) []*cobra.Command {
 	var targets []string
 	var dev bool
@@ -54,5 +56,45 @@ uninstall -w <project> <package>.`,
 		},
 	}
 	uninstall.Flags().StringArrayVarP(&from, "workspace", "w", nil, "target project, by name or directory; repeat it for several")
-	return []*cobra.Command{install, uninstall}
+	return []*cobra.Command{install, uninstall, syncCommand(version)}
+}
+
+func syncCommand(version string) *cobra.Command {
+	var check, asJSON, noInstall bool
+	cmd := &cobra.Command{
+		Use:   "sync",
+		Short: "Make every project declare a shared dependency at the same version",
+		Long: `Make every project declare a shared dependency at the same spec, language by
+language. The target is the version installed, with the operator most
+declarations use; when nothing says what is installed, the highest version
+declared. Peer dependencies and the workspace's own packages are left alone,
+and so is a spec mnci does not understand well enough to rewrite (a URL, a git
+ref, a compound range): sync reports those. After rewriting it installs, so
+lockfiles and the venv follow.`,
+		Example: `  mnci sync --check   # in CI: fail when declarations disagree
+  mnci sync`,
+		Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			s, err := session.Open(session.Options{Dir: ".", Version: version, Log: cmd.ErrOrStderr()})
+			if err != nil {
+				return err
+			}
+			defer s.Close()
+			report, err := Sync(s, check, !noInstall)
+			if asJSON {
+				enc := json.NewEncoder(cmd.OutOrStdout())
+				enc.SetIndent("", "  ")
+				if encErr := enc.Encode(report); encErr != nil {
+					return encErr
+				}
+			} else {
+				PrintSync(cmd.OutOrStdout(), report, check)
+			}
+			return err
+		},
+	}
+	cmd.Flags().BoolVar(&check, "check", false, "report only; fail when declarations disagree")
+	cmd.Flags().BoolVar(&asJSON, "json", false, "print the report as JSON")
+	cmd.Flags().BoolVar(&noInstall, "no-install", false, "rewrite the manifests without installing")
+	return cmd
 }

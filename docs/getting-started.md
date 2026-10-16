@@ -106,6 +106,16 @@ needs: `npm install`, the Python venv with every project in it, and
 `go mod download`. Without `-w`, a package is refused instead of being added
 at the root.
 
+When projects declare the same dependency at different versions, `mnci sync`
+makes them agree, language by language. The target is the version installed,
+with the operator most declarations use, or else the highest version declared.
+Sync then installs, so lockfiles and the venv follow. `mnci sync --check`
+only reports, and fails, which makes it a CI check. Peer dependencies, the
+workspace's own packages and specs mnci cannot safely rewrite (URLs, git refs,
+compound ranges) are left alone, and the ones that disagree are reported. Go
+is not compared: a `go.work` builds every module with the highest version any
+of them requires.
+
 ## Run tasks
 
 ```sh

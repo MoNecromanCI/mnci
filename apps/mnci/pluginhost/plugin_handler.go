@@ -31,13 +31,15 @@ func Command(version string) *cobra.Command {
 	var asJSON bool
 	list := &cobra.Command{
 		Use:   "list",
-		Short: "List the built-in plugins and what each can do",
+		Short: "List the built-in plugins and the ones installed on the plugin search path",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			type row struct {
 				Name         string          `json:"name"`
-				Roles        []protocol.Role `json:"roles"`
+				Version      string          `json:"version,omitempty"`
+				Source       string          `json:"source"`
+				Roles        []protocol.Role `json:"roles,omitempty"`
 				Provides     []string        `json:"provides,omitempty"`
-				Capabilities any             `json:"capabilities"`
+				Capabilities any             `json:"capabilities,omitempty"`
 			}
 			var rows []row
 			for _, name := range append(BuiltinNames(), sortedNames(BuiltinAddons)...) {
@@ -47,25 +49,44 @@ func Command(version string) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				rows = append(rows, row{name, info.EffectiveRoles(), info.Provides, serve.CapabilitiesOf(p)})
+				rows = append(rows, row{Name: name, Source: "built-in", Roles: info.EffectiveRoles(), Provides: info.Provides, Capabilities: serve.CapabilitiesOf(p)})
 			}
+			root, _ := workspace.FindRoot(".")
+			installed, err := FindInstalled(root)
+			if err != nil {
+				return err
+			}
+			for _, p := range installed {
+				rows = append(rows, row{Name: p.Name, Version: p.Version, Source: p.Dir})
+			}
+			out := cmd.OutOrStdout()
 			if asJSON {
-				enc := json.NewEncoder(cmd.OutOrStdout())
+				enc := json.NewEncoder(out)
 				enc.SetIndent("", "  ")
 				return enc.Encode(rows)
 			}
 			for _, r := range rows {
+				if r.Source != "built-in" {
+					continue
+				}
 				roles := make([]string, len(r.Roles))
 				for i, role := range r.Roles {
 					roles[i] = string(role)
 				}
-				fmt.Fprintf(cmd.OutOrStdout(), "%-16s %-28s %+v\n", r.Name, strings.Join(roles, ","), r.Capabilities)
+				fmt.Fprintf(out, "%-16s %-28s %+v\n", r.Name, strings.Join(roles, ","), r.Capabilities)
+			}
+			fmt.Fprintf(out, "\nInstalled (search path: %s):\n", strings.Join(SearchPath(root), ", "))
+			if len(installed) == 0 {
+				fmt.Fprintln(out, "  none")
+			}
+			for _, p := range installed {
+				fmt.Fprintf(out, "  %-14s %-10s %s\n", p.Name, p.Version, p.Dir)
 			}
 			return nil
 		},
 	}
 	list.Flags().BoolVar(&asJSON, "json", false, "print JSON")
-	cmd.AddCommand(list)
+	cmd.AddCommand(list, checkCommand(version))
 	for _, enable := range []bool{true, false} {
 		verb := map[bool]string{true: "enable", false: "disable"}[enable]
 		cmd.AddCommand(&cobra.Command{

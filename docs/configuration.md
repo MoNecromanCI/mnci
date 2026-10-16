@@ -44,6 +44,9 @@ stack = "node-vitest"                 # replaces the stack web's manifest record
 languages = ["go"]                    # default: every language it supports
 exclude = ["legacy"]                  # projects it leaves alone
 
+[plugins.external.kiwi]
+version = "^1"                        # installed on the plugin search path (docs/plugins.md)
+
 [plugins.external.rust]
 command = ["mnci-plugin-rust"]        # any executable speaking the protocol
 ```

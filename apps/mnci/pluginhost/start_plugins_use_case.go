@@ -41,6 +41,9 @@ func Start(opts Options) (*PluginSet, error) {
 		if _, ok := Builtins[name]; !ok {
 			return nil, fmt.Errorf("mnci.toml enables unknown plugin %q; built-in plugins are %v", name, BuiltinNames())
 		}
+		if _, replaced := opts.Config.Plugins.External[name]; replaced {
+			continue
+		}
 		launches = append(launches, launch{name, []string{self, "plugin", "serve", name}})
 	}
 	external := make([]string, 0, len(opts.Config.Plugins.External))
@@ -49,7 +52,11 @@ func Start(opts Options) (*PluginSet, error) {
 	}
 	sort.Strings(external)
 	for _, name := range external {
-		launches = append(launches, launch{name, opts.Config.Plugins.External[name].Command})
+		command, err := LaunchCommand(opts.WorkspaceRoot, opts.Config.Plugins.External, name)
+		if err != nil {
+			return nil, fmt.Errorf("mnci.toml [plugins.external.%s]: %w", name, err)
+		}
+		launches = append(launches, launch{name, command})
 	}
 	for _, name := range sortedNames(opts.Config.Conventions) {
 		_, external := opts.Config.Plugins.External[name]
@@ -95,5 +102,28 @@ func Start(opts Options) (*PluginSet, error) {
 		}
 		set.Clients = append(set.Clients, c)
 	}
+	for _, name := range external {
+		if err := checkExternal(set, name, opts.Config.Plugins.External[name]); err != nil {
+			set.Close()
+			return nil, err
+		}
+	}
 	return set, nil
+}
+
+// checkExternal checks that an external plugin answered with the name it is
+// declared under and a version mnci.toml accepts.
+func checkExternal(set *PluginSet, name string, cfg workspace.ExternalPlugin) error {
+	c := set.Get(name)
+	if c == nil {
+		return fmt.Errorf("mnci.toml [plugins.external.%s]: the plugin calls itself something else; declare it under its own name", name)
+	}
+	ok, err := Satisfies(c.Info.Plugin.Version, cfg.Version)
+	if err != nil {
+		return fmt.Errorf("mnci.toml [plugins.external.%s]: %w", name, err)
+	}
+	if !ok {
+		return fmt.Errorf("mnci.toml [plugins.external.%s] wants version %s, but the plugin is %s", name, cfg.Version, c.Info.Plugin.Version)
+	}
+	return nil
 }

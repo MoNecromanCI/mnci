@@ -41,7 +41,9 @@ A task's **key** is a SHA-256 over a versioned, canonical encoding of:
 - the content of every input file
 - the sources of every project it depends on, transitively
 - the keys of the tasks it depends on
-- the OS/architecture and the mnci and plugin versions
+- the OS/architecture, the mnci version, and the version of every plugin
+  that shapes the project (its language plugin, its stack's plugins, its
+  conventions)
 
 On a hit, mnci replaces the task's output directories with the cached files and
 replays its log. On a miss it clears the outputs, runs the task, and stores the

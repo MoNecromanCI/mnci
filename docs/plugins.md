@@ -27,12 +27,64 @@ plugin does. `mnci plugin list` shows each one's roles and capabilities, and
 ## Writing a plugin
 
 A plugin is any executable that speaks the protocol on stdin/stdout; anything
-it wants the user to see goes to stderr. Register it in `mnci.toml`:
+it wants the user to see goes to stderr. Declare it in `mnci.toml`, with its
+command, or by name alone when it is installed:
 
 ```toml
 [plugins.external.rust]
-command = ["mnci-plugin-rust"]
+command = ["mnci-plugin-rust"]   # any executable; on PATH, or a path
+
+[plugins.external.kiwi]
+version = "^1.2"                 # installed on the search path; "1.2.3", "~1.2", ">=1.2" also work
 ```
+
+An external plugin with the name of a built-in one replaces it.
+
+### Installing a plugin
+
+An installed plugin is a directory holding a `plugin.json`:
+
+```json
+{
+  "name": "kiwi",
+  "version": "1.2.0",
+  "description": "the kiwi language",
+  "command": ["./bin/mnci-plugin-kiwi-{os}-{arch}{exe}"]
+}
+```
+
+A command path starting with `./` or `../` is relative to that directory;
+`{os}`, `{arch}` and `{exe}` (`.exe` on Windows) are filled in, so one
+directory can carry a binary per platform. mnci looks for
+`<dir>/<name>/plugin.json` in these directories, the first match winning:
+
+1. the workspace's `.mnci/plugins`
+2. each directory of `MNCI_PLUGIN_PATH`
+3. `$MNCI_HOME/plugins` (`MNCI_HOME` defaults to `~/.mnci`)
+
+None of it depends on how mnci itself was installed. `mnci plugin list` shows
+the built-in plugins, the search path and what is installed on it.
+Installing by name from a registry (Homebrew/Yeoman style) is planned (#164);
+it will put directories like these on the search path.
+
+A project's cache keys include the version of every plugin that shapes it,
+so upgrading a plugin re-runs its tasks.
+
+### Checking a plugin
+
+```sh
+mnci plugin check kiwi --generate
+mnci plugin check ./bin/mnci-plugin-kiwi
+```
+
+runs the conformance suite: the plugin names itself, its roles match what it
+implements, its stacks are complete, and every method it advertises answers.
+With `--generate`, a plugin that generates projects makes an app, a lib and a
+package in a temporary directory, and a language plugin must discover them as
+generated, with their kinds, the stack they were asked to record, and tasks
+that have commands. In Go, run the same checks in your tests with
+`conformance.Check` (`packages/plugin-sdk/conformance`) over an in-process
+connection. Every built-in plugin passes it.
 
 In Go, the SDK (`github.com/MoNecromanCI/mnci/packages/plugin-sdk`) does the
 protocol for you:

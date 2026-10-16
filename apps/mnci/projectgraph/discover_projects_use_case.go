@@ -4,6 +4,7 @@ import (
 	"path"
 	"slices"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/MoNecromanCI/mnci/apps/mnci/pluginhost"
@@ -60,6 +61,7 @@ func Discover(files []string, plugins *pluginhost.PluginSet, catalog *pluginhost
 	}
 	for _, p := range projects {
 		sort.Strings(p.Conventions)
+		p.toolset = toolset(p, plugins)
 		if err := ApplyOverrides(p, cfg); err != nil {
 			return nil, err
 		}
@@ -72,4 +74,24 @@ func Discover(files []string, plugins *pluginhost.PluginSet, catalog *pluginhost
 		return nil, err
 	}
 	return g, nil
+}
+
+// toolset is the language plugin, then the project's other plugins sorted,
+// each with the version it reported.
+func toolset(p *Project, plugins *pluginhost.PluginSet) string {
+	others := map[string]bool{}
+	for _, n := range append(append([]string(nil), p.stackPlugins...), p.Conventions...) {
+		if n != p.Plugin {
+			others[n] = true
+		}
+	}
+	names := append([]string{p.Plugin}, sortedTaskNames(others)...)
+	parts := make([]string, len(names))
+	for i, n := range names {
+		parts[i] = n
+		if c := plugins.Get(n); c != nil {
+			parts[i] += "@" + c.Info.Plugin.Version
+		}
+	}
+	return strings.Join(parts, "+")
 }

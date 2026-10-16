@@ -28,7 +28,7 @@ Core slices in `apps/mnci`:
 | Slice | Outcome |
 |---|---|
 | `workspace` | find the root, load `mnci.toml` |
-| `pluginhost` | start plugins, route calls, the stack catalog, `mnci plugin` |
+| `pluginhost` | find and start plugins (the search path, `plugin.json`), route calls, the stack catalog, `mnci plugin list/check` |
 | `projectgraph` | projects, edges from imports, overrides with provenance, selection |
 | `taskgraph` | expand requested tasks with their dependencies |
 | `taskcache` | cache keys, the `Storage` interface and local backend, save/restore/prune |

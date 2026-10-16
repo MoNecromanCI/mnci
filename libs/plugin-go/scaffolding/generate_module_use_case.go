@@ -22,18 +22,39 @@ type templateData struct {
 	Dir, Name, Module, Package string
 }
 
-// Generate scaffolds one Go module and adds it to go.work (creating go.work the
-// first time).
+// Generate scaffolds one Go module from the greeting starter and adds it to
+// go.work (creating go.work the first time).
 func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.GenerateResult, error) {
-	dir := filepath.Join(workspaceRoot, filepath.FromSlash(params.Directory))
-	if _, err := os.Stat(dir); err == nil {
-		return protocol.GenerateResult{}, fmt.Errorf("%s already exists", params.Directory)
+	templates := maps.Clone(sliceTemplates)
+	if params.Kind == protocol.ProjectApp {
+		maps.Copy(templates, appTemplates)
+	} else {
+		maps.Copy(templates, libTemplates)
 	}
+	res, err := GenerateFrom(workspaceRoot, params, templates, nil)
+	if err == nil {
+		res.Notes = append(res.Notes, "Import it from another Go project as "+modulePath(params)+"/<slice>.")
+	}
+	return res, err
+}
+
+func modulePath(params protocol.GenerateParams) string {
 	prefix := params.Workspace.ModulePrefix
 	if prefix == "" {
 		prefix = "example.com/" + strings.ToLower(params.Workspace.Name)
 	}
-	data := templateData{Dir: params.Directory, Name: params.Name, Module: prefix + "/" + params.Directory, Package: PackageName(params.Name)}
+	return prefix + "/" + params.Directory
+}
+
+// GenerateFrom scaffolds one Go module from templates (paths and contents use
+// [[.Dir]], [[.Name]], [[.Module]] and [[.Package]]), requires the modules
+// listed ("path@version"), and adds it to go.work.
+func GenerateFrom(workspaceRoot string, params protocol.GenerateParams, templates map[string]string, require []string) (protocol.GenerateResult, error) {
+	dir := filepath.Join(workspaceRoot, filepath.FromSlash(params.Directory))
+	if _, err := os.Stat(dir); err == nil {
+		return protocol.GenerateResult{}, fmt.Errorf("%s already exists", params.Directory)
+	}
+	data := templateData{Dir: params.Directory, Name: params.Name, Module: modulePath(params), Package: PackageName(params.Name)}
 
 	var files []string
 	if _, err := os.Stat(filepath.Join(workspaceRoot, "go.work")); errors.Is(err, fs.ErrNotExist) {
@@ -53,21 +74,26 @@ func Generate(workspaceRoot string, params protocol.GenerateParams) (protocol.Ge
 	}
 	files = append(files, params.Directory+"/go.mod")
 
-	templates := maps.Clone(sliceTemplates)
-	if params.Kind == protocol.ProjectApp {
-		maps.Copy(templates, appTemplates)
-	} else {
-		maps.Copy(templates, libTemplates)
-	}
 	written, err := templating.Write(workspaceRoot, templates, data)
 	if err != nil {
 		return protocol.GenerateResult{}, err
 	}
 	files = append(files, written...)
+	for _, module := range require {
+		if err := GoRunner(dir, []string{"go", "get", module}); err != nil {
+			return protocol.GenerateResult{Files: files}, err
+		}
+	}
+	if len(require) > 0 {
+		if err := GoRunner(dir, []string{"go", "mod", "tidy"}); err != nil {
+			return protocol.GenerateResult{Files: files}, err
+		}
+		files = append(files, params.Directory+"/go.sum")
+	}
 	if err := GoRunner(workspaceRoot, []string{"go", "work", "use", "./" + params.Directory}); err != nil {
 		return protocol.GenerateResult{}, err
 	}
-	return protocol.GenerateResult{Files: files, Notes: []string{"Import it from another Go project as " + data.Module + "/<slice>."}}, nil
+	return protocol.GenerateResult{Files: files}, nil
 }
 
 // declareKind records the kind, and the stack when there is one, as the

@@ -104,6 +104,7 @@ add: a file, script, setting or dependency that already exists is kept.
 | `node-ts` | node | `typescript` | `typescript` | `typescript` |
 | `node-jest` | node | `typescript` | `typescript`, `eslint` (`@mnci/eslint-config`), `jest` | `jest` |
 | `node-vitest` | node | `typescript` | `typescript`, `eslint` (`@mnci/eslint-config`), `vitest` | `vitest` |
+| `go-mnci-plugin` | go | `go-mnci-plugin` | — | `go-mnci-plugin`: an mnci plugin written in Go (see plugins) |
 
 `mnci new` makes `node-jest` the default for Node. The `node` plugin alone
 scaffolds plain JavaScript (CommonJS), with nothing to compile. The

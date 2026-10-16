@@ -94,6 +94,17 @@ func TestExternalLanguagePlugin(t *testing.T) {
 	if tags := w.git("ls-remote", "--tags", "origin"); !strings.Contains(tags, "fruit@0.1.0") {
 		t.Fatalf("tags:\n%s", tags)
 	}
+
+	// A plugin of your own, in Go: scaffolded, conformant, then in use.
+	w.mnci(true, "add", "app", "hello-rules", "--stack", "go-mnci-plugin")
+	if out := w.mnci(true, "run", "test", "-p", "hello-rules"); !strings.Contains(out, "hello-rules:test ✔") {
+		t.Fatalf("the scaffolded plugin's conformance test:\n%s", out)
+	}
+	toml, _ = os.ReadFile(filepath.Join(w.dir, "mnci.toml"))
+	w.write("mnci.toml", string(toml)+"\n[plugins.external.hello-rules]\ncommand = [\"go\", \"run\", \"./apps/hello-rules\"]\n\n[conventions.hello-rules]\nlanguages = [\"go\"]\n")
+	if out := w.mnci(true, "run", "hello", "-p", "hello-rules"); !strings.Contains(out, "hello-rules:hello ✔") {
+		t.Fatalf("the plugin's task:\n%s", out)
+	}
 }
 
 func quote(s string) string { return `"` + s + `"` }

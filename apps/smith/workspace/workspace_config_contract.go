@@ -160,6 +160,10 @@ type ProjectRelease struct {
 	// PyPI is the PyPI project the app is published as, one wheel per
 	// platform. Publishing needs PYPI_TOKEN.
 	PyPI string `toml:"pypi"`
+	// NuGet is the .NET tool package the app is published as, with one
+	// <NuGet>.<rid> package per platform holding the binary. Publishing
+	// needs NUGET_API_KEY.
+	NuGet string `toml:"nuget"`
 	// Description, Homepage and License describe the app in those manifests
 	// and packages.
 	Description string `toml:"description"`

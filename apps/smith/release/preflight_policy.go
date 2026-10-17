@@ -71,7 +71,7 @@ func Preflight(s *session.Session, plan Plan) error {
 }
 
 // DistributionCredentials are the secrets publishing an app's binaries to
-// npm and PyPI needs.
+// npm, PyPI and NuGet needs.
 func DistributionCredentials(r *workspace.ProjectRelease) []protocol.Credential {
 	var creds []protocol.Credential
 	if r == nil {
@@ -82,6 +82,9 @@ func DistributionCredentials(r *workspace.ProjectRelease) []protocol.Credential 
 	}
 	if r.PyPI != "" {
 		creds = append(creds, protocol.Credential{Env: "PYPI_TOKEN", Description: "PyPI API token that can upload " + r.PyPI, Required: true})
+	}
+	if r.NuGet != "" {
+		creds = append(creds, protocol.Credential{Env: "NUGET_API_KEY", Description: "NuGet API key that can push " + r.NuGet + " and " + r.NuGet + ".*", Required: true})
 	}
 	return creds
 }

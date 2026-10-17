@@ -85,22 +85,24 @@ be copied into a tap, a bucket or winget-pkgs as it is. A manager whose
 platforms the release has no archive for is skipped, and the release says so.
 Native apps attach one archive per OS from separate jobs and get no manifests.
 
-## npm and PyPI
+## npm, PyPI and NuGet
 
-An app released with assets can also be published to npm and PyPI from the
-same archives, so people install it with the package manager of their
+An app released with assets can also be published to npm, PyPI and NuGet from
+the same archives, so people install it with the package manager of their
 language, and nothing is downloaded after install:
 
 ```toml
 [projects.cli.release]
 npm = ["@acme/cli", "acme"]   # npm install --global acme
 pypi = "acme"                 # pipx install acme, uvx acme
+nuget = "acme"                # dotnet tool install -g acme
 ```
 
 | Registry | Packages | Secret |
 |---|---|---|
 | npm | One package per platform, named after the first name (`@acme/cli-linux-x64`, `@acme/cli-win32-arm64`, ...), holding the binary and limited to its `os` and `cpu`. Then every listed name as a package whose `bin` runs the binary that npm installed from its optional dependencies. | `NODE_AUTH_TOKEN` |
 | PyPI | One wheel per platform, the binary in its scripts, so pip, pipx and uv put it on PATH with no Python in between. One Linux wheel serves glibc and musl. | `PYPI_TOKEN` |
+| NuGet | One package per platform (`acme.linux-x64`, `acme.win-arm64`, ...) holding the binary, then the .NET tool package `acme`, which points at them. `dotnet tool install` (.NET 10 SDK and later) picks the platform's package and the command runs the binary itself, with no .NET runtime. Set `NUGET_PUSH_URL` to push to another feed's v2 endpoint. | `NUGET_API_KEY` |
 
 They are published after the archives are built and before the tag, platform
 packages before the packages that depend on them. A version a registry
@@ -108,7 +110,7 @@ already has is skipped, so a re-run completes a release. On GitHub Actions
 npm packages carry [provenance](https://docs.npmjs.com/generating-provenance-statements):
 the generated workflow gets `id-token: write` for it. Publishing to npm needs
 the `npm` CLI on the runner (GitHub's and Azure's hosted images have it). A
-prerelease goes to npm's `next` tag, and to PyPI as `1.0.0rc1`; only `-alpha.N`,
+prerelease goes to npm's `next` tag, to NuGet as is, and to PyPI as `1.0.0rc1`; only `-alpha.N`,
 `-beta.N` and `-rc.N` have a Python spelling. Native apps are not published
 this way.
 

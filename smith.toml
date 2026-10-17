@@ -27,9 +27,11 @@ product = "monosmith"
 # Attached to each GitHub Release, ready for a tap, a bucket and winget-pkgs.
 package_managers = ["homebrew", "scoop", "winget"]
 # Published from the same archives, each installing the smith command:
-# npm i -g monosmith, and pipx install monosmith / uvx --from monosmith smith.
+# npm i -g monosmith, pipx install monosmith / uvx --from monosmith smith, and
+# dotnet tool install -g monosmith.
 npm = ["@monosmith/cli", "monosmith"]
 pypi = "monosmith"
+nuget = "monosmith"
 description = "Runs a monorepo in Node, Go and Python: tasks from a cache, CI and releases"
 license = "MIT"
 

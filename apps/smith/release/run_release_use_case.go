@@ -15,6 +15,7 @@ import (
 
 	"github.com/monosmith-app/monosmith/apps/smith/githubrelease"
 	"github.com/monosmith-app/monosmith/apps/smith/npmbinaries"
+	"github.com/monosmith-app/monosmith/apps/smith/nugettool"
 	"github.com/monosmith-app/monosmith/apps/smith/packagemanifests"
 	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
 	"github.com/monosmith-app/monosmith/apps/smith/pypiwheels"
@@ -238,16 +239,17 @@ func deploy(s *session.Session, p *projectgraph.Project, item Item, dryRun bool,
 	return nil
 }
 
-// distribute publishes an app's binaries as npm packages and PyPI wheels,
-// made from the archives its plugin built, before the app is tagged: a
-// failure stops the release, and the re-run skips what the registries have.
+// distribute publishes an app's binaries as npm packages, PyPI wheels and a
+// .NET tool, made from the archives its plugin built, before the app is
+// tagged: a failure stops the release, and the re-run skips what the
+// registries have.
 func distribute(s *session.Session, p *projectgraph.Project, item Item, pr protocol.PublishResult, dryRun bool, res *ReportResult, say func(string, ...any)) error {
 	r := p.Release
-	if r == nil || (len(r.NPM) == 0 && r.PyPI == "") {
+	if r == nil || (len(r.NPM) == 0 && r.PyPI == "" && r.NuGet == "") {
 		return nil
 	}
 	if Native(p) {
-		say("no npm or PyPI packages: a native app's archives are built on separate runners")
+		say("no npm, PyPI or NuGet packages: a native app's archives are built on separate runners")
 		return nil
 	}
 	binary := pr.Binary
@@ -305,6 +307,20 @@ func distribute(s *session.Session, p *projectgraph.Project, item Item, pr proto
 		report("PyPI", result.Published, result.Existing, result.Skipped)
 		if err != nil {
 			return fmt.Errorf("PyPI: %w", err)
+		}
+	}
+	if r.NuGet != "" {
+		release := nugettool.Release{ID: r.NuGet, Binary: binary, Version: item.Next, Description: r.Description, License: r.License, Homepage: homepage, Repository: repository, OutDir: out + "/nuget"}
+		if repo, err := Repository(s); err == nil {
+			release.Authors = repo.Owner
+		}
+		for _, a := range archives {
+			release.Archives = append(release.Archives, nugettool.Archive{Path: a.path, OS: a.os, Arch: a.arch})
+		}
+		result, err := nugettool.Publish(s.Root, release, dryRun)
+		report("NuGet", result.Published, result.Existing, result.Skipped)
+		if err != nil {
+			return fmt.Errorf("NuGet: %w", err)
 		}
 	}
 	return nil

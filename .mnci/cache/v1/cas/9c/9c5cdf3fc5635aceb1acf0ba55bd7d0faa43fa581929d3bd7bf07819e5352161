@@ -1,6 +1,0 @@
-?   	github.com/MoNecromanCI/mnci/libs/plugin-go	[no test files]
-ok  	github.com/MoNecromanCI/mnci/libs/plugin-go/discovery	(cached)
-ok  	github.com/MoNecromanCI/mnci/libs/plugin-go/pipeline	(cached)
-?   	github.com/MoNecromanCI/mnci/libs/plugin-go/plugin	[no test files]
-ok  	github.com/MoNecromanCI/mnci/libs/plugin-go/releasing	(cached)
-ok  	github.com/MoNecromanCI/mnci/libs/plugin-go/scaffolding	(cached)

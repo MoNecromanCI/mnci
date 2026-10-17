@@ -1,1 +1,0 @@
-{"schema":1,"task":"mnci:build","created":"2026-10-15T16:38:02.9097503Z","outputs":[{"path":"apps/mnci/dist/mnci.exe","digest":"8d75035b6aeaac2437b4e8a219fb75237bcd29398669294cfa03739d1c44b2f4","mode":438}],"log":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","duration":3317352700}

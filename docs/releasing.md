@@ -213,11 +213,10 @@ split_repo = "acme/client-php"   # a GitHub owner/repo
 ```
 
 Each release splits the project's directory out of the history at its tag
-(`splitsh-lite` when it is on the PATH, it is much faster on a long history;
-otherwise `git subtree split`), pushes it to the mirror's `main` and tags it
-`v<version>` there, the spelling Composer expects. The monorepo keeps its own
-tag. Register the mirror with the registry once; later releases reach it by
-its tags.
+with `git subtree split`, pushes it to the mirror's `main` and tags it
+`v<version>` there (in one `--atomic` push), the spelling Composer expects.
+The monorepo keeps its own tag. Register the mirror with the registry once;
+later releases reach it by its tags.
 
 - `SPLIT_REPO_TOKEN` is a token that can push to the mirror (`GITHUB_TOKEN`
   cannot: it is scoped to the repository the workflow runs in). It is sent
@@ -226,9 +225,17 @@ its tags.
   start without it.
 - The split is taken from the pushed tag: a release whose tag was not pushed
   is not mirrored yet, and the re-run that pushes the tag mirrors it.
-- A mirror that already has the tag is left alone, so a re-run resumes.
-- Splitting needs the full history, as a release does anyway (`fetch-depth: 0`).
-- The preview says what it would push (`Would mirror client-php to acme/client-php@v1.2.0`).
+- A mirror that already has the tag is left alone, so a re-run resumes:
+  `main` and the tag are pushed together, so the tag means the mirror is done.
+- The mirror is read-only. The same history always splits into the same
+  commits, so each release fast-forwards its `main`; a commit made there by
+  hand stops the push, and the release says to reset the mirror.
+- Splitting needs the full history, as a release does anyway (`fetch-depth: 0`),
+  `git subtree` (part of git's contrib, which some git builds leave out) and
+  git 2.31 or newer: the release checks all three, and the token, before it
+  starts.
+- The preview says what it would mirror (`would mirror packages/client-php to
+  acme/client-php@v1.2.0`, and `Would mirror client-php to …` in the report).
 
 ## Tag checks
 

@@ -453,11 +453,11 @@ func mirror(s *session.Session, p *projectgraph.Project, item Item, opts Options
 	res.Mirror = out.Mirror
 	switch {
 	case opts.DryRun:
-		say("would push %s to %s", p.Root, out.Mirror)
+		say("would mirror %s to %s", p.Root, out.Mirror)
 	case out.Skipped != "":
 		say("%s", out.Skipped)
 	default:
-		say("pushed %s to %s", p.Root, out.Mirror)
+		say("mirrored %s to %s", p.Root, out.Mirror)
 	}
 	return nil
 }

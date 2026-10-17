@@ -2,7 +2,6 @@ package splitrepo
 
 import (
 	"encoding/base64"
-	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -57,9 +56,6 @@ func monorepo(t *testing.T) (repo, mirror string) {
 
 func TestMirrorPushesTheSplitAndResumes(t *testing.T) {
 	repo, mirror := monorepo(t)
-	realLook := lookPath
-	t.Cleanup(func() { lookPath = realLook })
-	lookPath = func(string) (string, error) { return "", errors.New("no splitsh-lite") }
 	g := gitclient.New(repo)
 	req := Request{Prefix: "packages/client", Ref: "client@1.2.0", Repo: "acme/client", URL: mirror, Version: "1.2.0"}
 
@@ -81,6 +77,62 @@ func TestMirrorPushesTheSplitAndResumes(t *testing.T) {
 	again, err := Mirror(g, req)
 	if err != nil || again.Skipped != "acme/client already has v1.2.0" {
 		t.Errorf("a re-run release leaves the mirror alone: %+v, %v", again, err)
+	}
+
+	// The next release fast-forwards the mirror: the same splitter makes the
+	// same commits for the history the two releases share.
+	write(t, repo, "packages/client/src/Retry.php", "<?php\n")
+	git(t, repo, "add", "-A")
+	git(t, repo, "commit", "-q", "-m", "feat: retry")
+	git(t, repo, "tag", "-a", "client@1.3.0", "-m", "client 1.3.0")
+	if _, err := Mirror(g, Request{Prefix: "packages/client", Ref: "client@1.3.0", Repo: "acme/client", URL: mirror, Version: "1.3.0"}); err != nil {
+		t.Fatal(err)
+	}
+	if git(t, mirror, "rev-parse", "main^") != git(t, mirror, "rev-parse", "v1.2.0^{commit}") {
+		t.Error("1.3.0 sits on top of 1.2.0 in the mirror")
+	}
+}
+
+func TestMirrorSaysWhyAChangedMirrorIsRefused(t *testing.T) {
+	repo, mirror := monorepo(t)
+	g := gitclient.New(repo)
+	// Someone committed to the mirror by hand.
+	other := t.TempDir()
+	git(t, other, "init", "-q", "-b", "main")
+	git(t, other, "config", "user.email", "x@example.com")
+	git(t, other, "config", "user.name", "x")
+	git(t, other, "config", "commit.gpgsign", "false")
+	write(t, other, "README.md", "hand-made\n")
+	git(t, other, "add", "-A")
+	git(t, other, "commit", "-q", "-m", "by hand")
+	git(t, other, "push", "-q", mirror, "main")
+
+	_, err := Mirror(g, Request{Prefix: "packages/client", Ref: "client@1.2.0", Repo: "acme/client", URL: mirror, Version: "1.2.0"})
+	if err == nil || !strings.Contains(err.Error(), "read-only") {
+		t.Errorf("a mirror changed outside smith: %v", err)
+	}
+	if out, _ := gitclient.New(mirror).Run("tag"); out != "" {
+		t.Errorf("--atomic: the tag is not pushed when main is refused, so it still means done: %q", out)
+	}
+}
+
+func TestReady(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("no git")
+	}
+	if problems := Ready(gitclient.New(t.TempDir())); len(problems) != 0 && !strings.Contains(strings.Join(problems, " "), "subtree") {
+		t.Errorf("this machine's git: %v", problems)
+	}
+	for version, ok := range map[string]bool{
+		"git version 2.41.0.windows.1": true,
+		"git version 2.31.0":           true,
+		"git version 2.30.9":           false,
+		"git version 3.0.0":            true,
+		"something else":               false,
+	} {
+		if atLeast(version, 2, 31) != ok {
+			t.Errorf("%q: want %v", version, ok)
+		}
 	}
 }
 

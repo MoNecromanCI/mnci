@@ -56,11 +56,16 @@ func Run(ctx context.Context, s *session.Session, out io.Writer) error {
 	if !summary.OK() {
 		return taskrun.ErrTasksFailed
 	}
-	if !releasePush(s) {
+	github, azure := releasePush(s), azureReleasePush(s)
+	if !github && !azure {
 		return nil
 	}
 	if err := publishPackages(s, native, out); err != nil {
 		return err
+	}
+	if !github {
+		// Assets go to GitHub Releases, which an Azure pipeline does not create.
+		return nil
 	}
 	return attach(s, native, out)
 }
@@ -180,4 +185,11 @@ func inCI() bool { return os.Getenv("GITHUB_ACTIONS") == "true" || os.Getenv("TF
 // releasePush reports a GitHub Actions push to the release branch.
 func releasePush(s *session.Session) bool {
 	return os.Getenv("GITHUB_ACTIONS") == "true" && os.Getenv("GITHUB_EVENT_NAME") == "push" && os.Getenv("GITHUB_REF_NAME") == s.Config.Release.Branch
+}
+
+// azureReleasePush reports an Azure Pipelines run for a push to the release
+// branch: the same condition the generated pipeline's release step has.
+func azureReleasePush(s *session.Session) bool {
+	reason := os.Getenv("BUILD_REASON")
+	return os.Getenv("TF_BUILD") != "" && (reason == "IndividualCI" || reason == "BatchedCI") && os.Getenv("BUILD_SOURCEBRANCH") == "refs/heads/"+s.Config.Release.Branch
 }

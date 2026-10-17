@@ -1,7 +1,9 @@
 package releasing
 
 import (
+	"encoding/json"
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -29,7 +31,17 @@ func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.Publ
 	// An app is deployed, never published to npm: it releases by its tag,
 	// its assets and its deploy plugins (an image).
 	if params.Project.Kind == protocol.ProjectApp {
-		return protocol.PublishResult{Skipped: "released by its tag"}, nil
+		skipped := "released by its tag"
+		// A manifest that is not private looks meant for npm: say how to get there.
+		if raw, err := os.ReadFile(filepath.Join(workspaceRoot, filepath.FromSlash(params.Project.Root), "package.json")); err == nil {
+			var m struct {
+				Private bool `json:"private"`
+			}
+			if json.Unmarshal(raw, &m) == nil && !m.Private {
+				skipped += `; it is not private, but an app is never sent to npm: to publish it there, make it a package ("smith": {"kind": "package"})`
+			}
+		}
+		return protocol.PublishResult{Skipped: skipped}, nil
 	}
 	if len(params.Project.Exports) == 0 {
 		return protocol.PublishResult{}, errors.New("package.json has no name")

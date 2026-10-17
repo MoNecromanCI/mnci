@@ -135,8 +135,10 @@ push that released it, each native job stamps the version, publishes its own
 platform's build and restores the manifest. A VS Code extension is published
 with `vsce publish --target` (`win32-x64`, `darwin-arm64`, `linux-x64`, …), so
 the Marketplace gets one build per platform. The native job is given the
-release credentials (`VSCE_PAT`, `NODE_AUTH_TOKEN`, …) for this. This happens
-on GitHub Actions only, as attaching assets does.
+release credentials (`VSCE_PAT`, `NODE_AUTH_TOKEN`, …) for this, on GitHub
+Actions and on Azure Pipelines alike (a push to the release branch, the
+condition the release step has). Attaching a native app's assets needs a
+GitHub Release, so it happens on GitHub Actions only.
 
 ```toml
 [ci]

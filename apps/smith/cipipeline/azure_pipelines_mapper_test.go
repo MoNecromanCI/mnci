@@ -59,6 +59,16 @@ func TestANativePackagePublishesFromTheNativeJob(t *testing.T) {
 	if strings.Count(step, "GITHUB_TOKEN:") != 1 {
 		t.Errorf("GITHUB_TOKEN once:\n%s", step)
 	}
+	az := RenderAzure(m)
+	job := az[strings.Index(az, "  - job: native\n"):]
+	azStep := job[strings.Index(job, "      - bash: smith ci native\n"):strings.Index(job, "      - publish: dist/drop\n")]
+	if !strings.Contains(azStep, "        env:\n") || !strings.Contains(azStep, "          NODE_AUTH_TOKEN: $(NODE_AUTH_TOKEN)\n") {
+		t.Errorf("the Azure native job publishes too, with the release credentials:\n%s", azStep)
+	}
+	m.NativePublish = false
+	if az := RenderAzure(m); strings.Contains(az[strings.Index(az, "  - job: native\n"):], "NODE_AUTH_TOKEN") {
+		t.Error("an Azure native job that publishes nothing gets no secret")
+	}
 }
 
 // A team step kept in a slot follows the slot when the Azure pipeline nests

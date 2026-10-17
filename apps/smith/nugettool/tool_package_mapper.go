@@ -40,12 +40,15 @@ type Metadata struct {
 // DotnetToolRidPackage for the per-platform packages it points at.
 func nuspec(m Metadata, packageType string) string {
 	var b strings.Builder
-	b.WriteString("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">\n  <metadata>\n")
+	b.WriteString("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<package xmlns=\"http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd\">\n  <metadata>\n")
 	element(&b, "id", m.ID)
 	element(&b, "version", m.Version)
 	element(&b, "authors", m.Authors)
 	if m.License != "" {
 		fmt.Fprintf(&b, "    <license type=\"expression\">%s</license>\n", escape(m.License))
+		// nuget.org refuses a license expression without the URL older
+		// clients show, as dotnet pack writes it.
+		element(&b, "licenseUrl", "https://licenses.nuget.org/"+m.License)
 	}
 	if m.ProjectURL != "" {
 		element(&b, "projectUrl", m.ProjectURL)

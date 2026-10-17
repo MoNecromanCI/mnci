@@ -60,7 +60,7 @@ something that behaves differently.
 | a root `jest.config.ts` listing projects for Nx | removed; smith runs each project's tests |
 | a project's `jest.config` using `@nx/react/plugins/jest` and `@nx/react/babel` | the transformer written out as `jest.asset-transform.cjs` at the root, and the Babel presets `@nx/react/babel` stood for (`preset-env`, `preset-typescript`, `preset-react`) |
 | an ESLint config using `@nx/eslint-plugin` presets | `@eslint/js` and `typescript-eslint`, which those presets wrap; the module-boundary and dependency-check rules read the Nx graph, so they are removed |
-| a library built by `@nx/rollup`'s `withNx` (it needs the Nx graph) | `esbuild` for the bundle and `tsc` for the declarations, into the same files `package.json` already publishes |
+| a library built by `@nx/rollup`'s `withNx` (it needs the Nx graph) | `esbuild` for the bundle and `tsc` for the declarations, into the same files `package.json` already publishes; then `declaration-specifiers.mjs` (written at the root) gives each relative specifier in the declarations its file (`./hooks` → `./hooks.js` or `./hooks/index.js`), as the old mnci's rollup plugin did, so a `nodenext` consumer can follow them |
 
 Then it removes `nx.json`, `.nx/`, every `project.json` of a converted project,
 the `nx` fields of `package.json` files, and the `nx`, `@nx/*`, `@nx-go/*` and

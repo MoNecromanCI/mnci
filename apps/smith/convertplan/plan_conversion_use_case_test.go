@@ -127,7 +127,7 @@ func TestPlanLegacyWorkspace(t *testing.T) {
 	}
 
 	kit := plan.Project("kit")
-	if !strings.HasPrefix(kit.Scripts["build"], "esbuild src/index.ts --bundle --packages=external --format=esm --outfile=dist/index.esm.js") || !strings.Contains(kit.Scripts["build"], "--declarationDir dist/src --tsBuildInfoFile dist/src/tsconfig.lib.tsbuildinfo") {
+	if !strings.HasPrefix(kit.Scripts["build"], "esbuild src/index.ts --bundle --packages=external --format=esm --outfile=dist/index.esm.js") || !strings.Contains(kit.Scripts["build"], "--declarationDir dist/src --tsBuildInfoFile dist/src/tsconfig.lib.tsbuildinfo && node ../../"+DeclarationSpecifiersFile+" dist/src") || plan.Write[DeclarationSpecifiersFile] != DeclarationSpecifiers {
 		t.Fatalf("rollup build %q", kit.Scripts["build"])
 	}
 	if kit.Scripts["test"] != "jest --passWithNoTests" || plan.Config.Projects["kit"].Tasks["test"].Env["TS_NODE"] != "1" {

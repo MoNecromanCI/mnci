@@ -212,8 +212,15 @@ func replaceRollup(plan *Plan, w *nxworkspace.Workspace, file, text string) bool
 	// would make `tsc --build` (typecheck) think the library is built when
 	// its own outputs are missing.
 	declarations := path.Dir(types)
-	build := fmt.Sprintf("esbuild %s --bundle --packages=external --format=%s --outfile=%s --sourcemap && tsc -p %s --emitDeclarationOnly --declaration --declarationDir %s --tsBuildInfoFile %s/tsconfig.lib.tsbuildinfo",
-		entry, format, out, strings.TrimPrefix(tsconfig[1], "./"), declarations, declarations)
+	up := strings.Repeat("../", strings.Count(path.Clean(root), "/")+1)
+	if root == "." {
+		up = ""
+	}
+	// Then each relative specifier in the declarations names its file, as
+	// mnci's rollup plugin did, so nodenext consumers can follow them.
+	build := fmt.Sprintf("esbuild %s --bundle --packages=external --format=%s --outfile=%s --sourcemap && tsc -p %s --emitDeclarationOnly --declaration --declarationDir %s --tsBuildInfoFile %s/tsconfig.lib.tsbuildinfo && node %s%s %s",
+		entry, format, out, strings.TrimPrefix(tsconfig[1], "./"), declarations, declarations, up, DeclarationSpecifiersFile, declarations)
+	plan.WriteFile(DeclarationSpecifiersFile, DeclarationSpecifiers)
 	if pp.Scripts == nil {
 		pp.Scripts = map[string]string{}
 	}
@@ -223,7 +230,7 @@ func replaceRollup(plan *Plan, w *nxworkspace.Workspace, file, text string) bool
 	}
 	plan.AddDevDependencies["esbuild"] = ""
 	plan.DeletePath(file)
-	plan.Add(Changed, pp.Name, "build", "Rollup with @nx/rollup becomes esbuild plus tsc declarations, into the same "+out+" and "+types+": "+build)
+	plan.Add(Changed, pp.Name, "build", "Rollup with @nx/rollup becomes esbuild plus tsc declarations, into the same "+out+" and "+types+", whose relative specifiers "+DeclarationSpecifiersFile+" gives their .js files (as the old mnci's rollup plugin did): "+build)
 	return true
 }
 

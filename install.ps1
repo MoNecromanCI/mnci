@@ -28,12 +28,6 @@ if ($Version -eq 'latest') {
       Sort-Object { [version]$_.tag_name.Substring($name.Length + 1) } | Select-Object -Last 1
   }
   $release = Newest 'smith'
-  if (-not $release) {
-    # Until smith@1.0.0 is released, the newest release is the tool's former
-    # name, mnci; it is installed as smith.
-    $release = Newest 'mnci'
-    $tag, $product, $packed = 'mnci', 'mnci', 'mnci.exe'
-  }
   if (-not $release) { throw 'no smith release found' }
   $Version = $release.tag_name.Substring($tag.Length + 1)
 }

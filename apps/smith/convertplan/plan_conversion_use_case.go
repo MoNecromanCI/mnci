@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/monosmith-app/monosmith/apps/smith/nxworkspace"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 	"github.com/monosmith-app/monosmith/libs/plugin-python/venv"
 	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
@@ -125,6 +126,9 @@ func planProject(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, n
 			plan.Add(Unsupported, name, "release", "releasing a "+label+" app is not supported yet; it converts as an app that does not release")
 		}
 	}
+	if p.HasFile(Dockerfile) {
+		planImage(plan, name, kind)
+	}
 	if p.HasTag("type:vscode-extension") {
 		plan.Add(Unsupported, name, "release", "publishing a VS Code extension is not supported yet")
 	}
@@ -155,6 +159,20 @@ func planProject(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, n
 		legacy = legacyTargets
 	}
 	mapTargets(plan, w, p, pp, legacy)
+}
+
+// planImage turns on the docker convention for an app with a Dockerfile, so
+// it gets an image task and its release ships the image.
+func planImage(plan *Plan, name string, kind protocol.ProjectKind) {
+	if kind != protocol.ProjectApp {
+		plan.Add(Changed, name, Dockerfile, "kept, but the docker convention builds images of apps only, and this converts as a "+string(kind))
+		return
+	}
+	if plan.Config.Conventions == nil {
+		plan.Config.Conventions = map[string]workspace.ConventionConfig{}
+	}
+	plan.Config.Conventions["docker"] = workspace.ConventionConfig{}
+	plan.Add(Changed, name, Dockerfile, "[conventions.docker] gives the app an image task (docker build after its build), and its release builds the image and pushes it to CONTAINER_REGISTRY")
 }
 
 // planRoot converts the root project's targets and the root scripts.

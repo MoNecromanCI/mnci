@@ -38,6 +38,18 @@ var plumbing = map[string]string{
 	"@nx-go/nx-go:generate":         "run go generate ./... directly",
 }
 
+// packageTask is the task smith ci pack runs into dist/drop.
+const packageTask = "package"
+
+// pluginPackages are the languages whose plugin gives every app a package
+// task, and what it makes. The old mnci's package target of such an app
+// zipped the same thing, so the plugin's task replaces it; any other package
+// target is converted like any target.
+var pluginPackages = map[string]string{
+	"go":     "binary",
+	"python": "wheel",
+}
+
 // mapTargets converts one project's targets: each either stays with the
 // language plugin, becomes a package.json script (Node), becomes an
 // smith.toml task, or is reported.
@@ -52,6 +64,12 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 		if reason, ok := legacy[name]; ok {
 			plan.Add(Dropped, pp.Name, name, reason)
 			continue
+		}
+		if name == packageTask && plan.Legacy {
+			if made, ok := pluginPackages[pp.Language]; ok {
+				plan.Add(Changed, pp.Name, name, "the "+pp.Language+" plugin's package task replaces the old mnci's: smith ci pack puts the app's "+made+" in dist/drop")
+				continue
+			}
 		}
 		if strings.Contains(name, "-ci--") {
 			plan.Add(Dropped, pp.Name, name, "Nx's per-file split of a test target for CI")
@@ -99,10 +117,21 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 					script = "start"
 				}
 			}
+			copied := false
+			if copiesAssets(p, t) {
+				var out string
+				t.Option("outputPath", &out)
+				if copy, ok := AssetCopy(p.Root, t, relativeTo(p.Root, out)); ok && out != "" {
+					line += " && " + copy
+					copied = true
+				} else {
+					plan.Add(Manual, pp.Name, name, "the build copied assets ("+t.Executor+" assets option); add the copy to the build script")
+				}
+			}
 			setScript(plan, pp, script, line, t, nil)
 			plan.Add(Changed, pp.Name, name, fmt.Sprintf("%s becomes the script %q: %s", t.Executor, script, line))
-			if copiesAssets(p, t) {
-				plan.Add(Manual, pp.Name, name, "the build copied assets ("+t.Executor+" assets option); add the copy to the build script")
+			if copied {
+				plan.Add(Changed, pp.Name, name, "its assets are copied after the build by a node one-liner, as Nx copied them (fs.globSync: Node 22 or later)")
 			}
 			continue
 		}

@@ -176,6 +176,59 @@ func TestPlanLegacyWorkspace(t *testing.T) {
 	}
 }
 
+func TestPlanKeepsPackageTargetsForSmithCIPack(t *testing.T) {
+	w, in := legacyWorkspace(t)
+	w.Projects[0].Targets["package"] = target(t, `{"executor": "nx:run-commands", "options": {"command": "node -e \"zip()\""}}`)
+	ext := project("@legacy/ext", "apps/ext", "app", []string{"package.json"}, map[string]nxworkspace.Target{
+		"package": target(t, `{"executor": "nx:run-commands", "dependsOn": ["build"], "options": {"command": "node packaging/package-vsix.mjs", "cwd": "apps/ext"}}`),
+	})
+	host := project("@legacy/host", "apps/host", "app", []string{"package.json"}, map[string]nxworkspace.Target{
+		"package": target(t, `{"executor": "nx:run-commands", "outputs": ["{workspaceRoot}/dist/drop/host.zip"], "options": {"command": "node -e \"zip()\""}}`),
+	})
+	w.Projects = append(w.Projects, ext, host)
+	plan := MakePlan(w, in)
+
+	if got := plan.Project("ext").Scripts["package"]; got != "node packaging/package-vsix.mjs" {
+		t.Fatalf("ext package script %q", got)
+	}
+	hostPackage := plan.Config.Projects["host"].Tasks["package"]
+	if strings.Join(hostPackage.Command, " ") != "node -e zip()" || hostPackage.Cwd != "." || strings.Join(hostPackage.Outputs, ",") != "../../dist/drop" {
+		t.Fatalf("host package task %+v", hostPackage)
+	}
+	if _, kept := plan.Config.Projects["tool"].Tasks["package"]; kept {
+		t.Fatal("a Go app's package task is the go plugin's")
+	}
+	changed := findings(plan, Changed)
+	if !strings.Contains(changed, "tool package: the go plugin's package task replaces the old mnci's: smith ci pack puts the app's binary in dist/drop") {
+		t.Fatalf("changed:\n%s", changed)
+	}
+	if all := findings(plan, Dropped); strings.Contains(all, "pack phase") {
+		t.Fatalf("dropped:\n%s", all)
+	}
+}
+
+func TestPlanShipsANodeAppWithADockerfileAsAnImage(t *testing.T) {
+	host := project("@acme/host", "apps/host", "app", []string{"package.json", "Dockerfile"}, nil)
+	lib := project("@acme/tools", "libs/tools", "lib", []string{"package.json", "Dockerfile"}, nil)
+	bare := project("image", "apps/image", "app", []string{"Dockerfile"}, nil)
+	w := &nxworkspace.Workspace{Projects: []*nxworkspace.Project{host, lib, bare}}
+	plan := MakePlan(w, Input{DirName: "acme", Read: func(string) string { return "" }})
+
+	if pp := plan.Project("host"); pp.Language != "node" || pp.Kind != protocol.ProjectApp {
+		t.Fatalf("host %+v", pp)
+	}
+	if _, on := plan.Config.Conventions["docker"]; !on {
+		t.Fatalf("conventions %+v", plan.Config.Conventions)
+	}
+	changed := findings(plan, Changed)
+	if !strings.Contains(changed, "host Dockerfile: [conventions.docker]") || !strings.Contains(changed, "tools Dockerfile: kept, but the docker convention builds images of apps only") {
+		t.Fatalf("changed:\n%s", changed)
+	}
+	if unsupported := findings(plan, Unsupported); !strings.Contains(unsupported, "image apps/image: a container image project") || strings.Contains(unsupported, "host") {
+		t.Fatalf("a Dockerfile with no manifest stays unsupported:\n%s", unsupported)
+	}
+}
+
 func TestPlanBlocksDuplicateDirectoryNames(t *testing.T) {
 	w := &nxworkspace.Workspace{Projects: []*nxworkspace.Project{
 		project("a-ui", "apps/ui", "app", []string{"package.json"}, nil),

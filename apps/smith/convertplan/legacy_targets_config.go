@@ -1,9 +1,9 @@
 package convertplan
 
 // legacyTargets are targets the old mnci wrote into every project of a kind,
-// replaced by what smith does itself.
+// replaced by what smith does itself. Its package targets stay: smith ci
+// pack runs every project's package task into dist/drop (see pluginPackages).
 var legacyTargets = map[string]string{
-	"package":            "zipped the app into dist/drop for the pack phase; smith has no pack phase",
 	"package-all":        "zipped every platform's binary; smith release builds an app's assets",
 	"build-all":          "built every platform's binary; smith release builds an app's assets",
 	"nx-release-publish": "smith release publishes",

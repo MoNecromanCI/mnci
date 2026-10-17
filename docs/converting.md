@@ -35,11 +35,12 @@ It is tested with Nx 23. With another major the report says so.
 | `projectType: application` | kind `app` |
 | a project `nx release` publishes (`release.projects`, or every non-private package when unset) | kind `package` |
 | any other project | kind `lib` |
+| an app with a `Dockerfile` | the same app, and `[conventions.docker]`: an `image` task, and its release pushes the image |
 | a kind its directory does not imply (`python-packages/x`, a published `libs/x`) | the kind written into the manifest (`"smith": {"kind": …}`, `[tool.smith] kind`, `// smith:kind`) |
 | a Node target running in the project root | a `package.json` script, run by the Node plugin (npm runs scripts through a shell, so nothing is lost) |
 | any other `nx:run-commands` target | an `[projects.<name>.tasks.<target>]` task in `smith.toml`: argv, cwd, inputs, outputs, `depends_on` and cache carried over |
 | Go and Python executors (`@nx-go/nx-go`, the old mnci's Python executors) | the Go and Python plugins' own tasks; settings that differ (golangci-lint instead of `go vet`, an extra `dependsOn`) are kept in `smith.toml` |
-| `@nx/esbuild:esbuild`, `@nx/js:tsc`, `@nx/jest:jest`, `@nx/vite:*`, `@nx/eslint:lint`, `@nx/js:node` | the command each stands for, as a script |
+| `@nx/esbuild:esbuild`, `@nx/js:tsc`, `@nx/jest:jest`, `@nx/vite:*`, `@nx/eslint:lint`, `@nx/js:node` | the command each stands for, as a script; a build's `assets` are copied after it by a `node -e` one-liner (Node 22 or later) |
 | `{projectName}@{version}` tags | the same tags: a project whose Nx name differs from its directory gets `tag_prefix`, so the next release continues from the last tag |
 | `release.changelog…createRelease: "github"` | `[release] github_releases = true` |
 | a root target | a root `package.json` script (smith runs projects, not the root) |
@@ -55,6 +56,7 @@ something that behaves differently.
 |---|---|
 | `jest.preset.js` re-exporting `@nx/jest/preset` | the same preset values written out, with a mapper for `./x.js` imports of TypeScript files (the only thing Nx's resolver was needed for) |
 | a root `jest.config.ts` listing projects for Nx | removed; smith runs each project's tests |
+| a project's `jest.config` using `@nx/react/plugins/jest` and `@nx/react/babel` | the transformer written out as `jest.asset-transform.cjs` at the root, and the Babel presets `@nx/react/babel` stood for (`preset-env`, `preset-typescript`, `preset-react`) |
 | an ESLint config using `@nx/eslint-plugin` presets | `@eslint/js` and `typescript-eslint`, which those presets wrap; the module-boundary and dependency-check rules read the Nx graph, so they are removed |
 | a library built by `@nx/rollup`'s `withNx` (it needs the Nx graph) | `esbuild` for the bundle and `tsc` for the declarations, into the same files `package.json` already publishes |
 
@@ -76,10 +78,12 @@ On top of the above, a workspace made by mnci 4.x gets:
   The release builds their per-platform zips under the same names
   (`release.asset` in `project.json`, or `go-app-<app>-<os>-<arch>.zip`) and
   attaches them to the GitHub Release.
-- the targets it generated for its pack phase and for Nx release
-  (`package`, `package-all`, `build-all`, `nx-release-publish`, and the
-  `tools/*-version-actions.cjs` and `tools/go-app-release.cjs` hooks) removed,
-  because smith does that itself
+- the targets it generated for Nx release (`package-all`, `build-all`,
+  `nx-release-publish`, and the `tools/*-version-actions.cjs` and
+  `tools/go-app-release.cjs` hooks) removed, because smith does that itself
+- `package` targets kept as `package` tasks, which `smith ci pack` runs into
+  `dist/drop`; a Go or Python app's uses the plugin's own instead (the binary,
+  the wheel)
 - the per-project root scripts (`<project>:test`, …) removed in favour of
   `smith run <task> -p <project>`
 - pipeline slots kept: `after-install` becomes `before-setup` and

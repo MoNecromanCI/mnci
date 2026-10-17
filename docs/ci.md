@@ -17,7 +17,10 @@ Each plugin contributes, for its own projects:
   is left as a comment in the pipeline, to fill through the `before-setup`
   slot.
 - **setup** — e.g. `npm ci`, the Python venv and editable installs, `go mod download`
-- **audit** — `npm audit` (blocking), `pip-audit` and `govulncheck` (reported)
+- **audit** — `npm audit` (blocking only on a production advisory at moderate
+  or above that `npm audit fix` can apply; advisories with no fix, a
+  semver-major-only fix, or only in dev dependencies are printed as notes),
+  `pip-audit` and `govulncheck` (reported)
 - **credentials** — the secrets publishing needs (`NODE_AUTH_TOKEN`, `PYPI_TOKEN`, `NUGET_API_KEY`)
 
 smith merges them into one provider-neutral model, and a renderer per provider

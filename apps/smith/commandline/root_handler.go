@@ -6,6 +6,7 @@ import (
 	"github.com/monosmith-app/monosmith/apps/smith/adoption"
 	"github.com/monosmith-app/monosmith/apps/smith/devservers"
 	"github.com/monosmith-app/monosmith/apps/smith/mcpserver"
+	"github.com/monosmith-app/monosmith/apps/smith/npmaudit"
 	"github.com/monosmith-app/monosmith/apps/smith/npmpack"
 	"github.com/monosmith-app/monosmith/apps/smith/pipelinetemplate"
 	"os"
@@ -56,7 +57,7 @@ generates CI pipelines, and releases packages from conventional commits.`,
 	add("start", scaffold.NewCommand(version), scaffold.AddCommand(version), scaffold.RemoveCommand(version), convert.Command(version), configedit.Command(), upgrade.Command(version), adoption.Command(version))
 	add("work", taskrun.Commands(version)...)
 	add("work", devservers.Command(version))
-	root.AddCommand(npmpack.Command())
+	root.AddCommand(npmpack.Command(), npmaudit.Command())
 	add("work", dependencies.Commands(version)...)
 	add("ship", release.Command(version), cipipeline.Command(version), pipelinetemplate.Command(version))
 	add("inspect", graphview.Commands(version)...)

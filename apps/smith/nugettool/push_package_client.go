@@ -17,6 +17,10 @@ import (
 // uses).
 const DefaultPushURL = "https://www.nuget.org/api/v2/package"
 
+// clientVersion is the NuGet client version the push claims, the one the
+// .NET 10 SDK ships.
+const clientVersion = "7.0.0"
+
 // ErrExists is returned for a package version the feed already has.
 var ErrExists = errors.New("the feed already has this version")
 
@@ -65,6 +69,8 @@ func (p Pusher) Push(pkg Package) error {
 	}
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 	req.Header.Set("X-NuGet-ApiKey", p.APIKey)
+	// nuget.org refuses a push from a client older than 4.1.0.
+	req.Header.Set("X-NuGet-Client-Version", clientVersion)
 	resp, err := p.Client.Do(req)
 	if err != nil {
 		return err

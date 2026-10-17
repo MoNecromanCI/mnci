@@ -37,6 +37,16 @@ func ConfigText(cfg workspace.Config) string {
 			b.WriteString("github_releases = true\n")
 		}
 	}
+	for _, name := range sortedKeys(cfg.Conventions) {
+		c := cfg.Conventions[name]
+		fmt.Fprintf(&b, "\n[conventions.%s]\n", key(name))
+		if len(c.Languages) > 0 {
+			fmt.Fprintf(&b, "languages = %s\n", list(c.Languages))
+		}
+		if len(c.Exclude) > 0 {
+			fmt.Fprintf(&b, "exclude = %s\n", list(c.Exclude))
+		}
+	}
 	writeTasks(&b, "tasks", cfg.Tasks)
 	for _, name := range sortedKeys(cfg.Projects) {
 		p := cfg.Projects[name]

@@ -13,7 +13,11 @@ func TestConfigTextRoundTrips(t *testing.T) {
 		Workspace: workspace.WorkspaceSection{Name: "acme", Scope: "@acme", ModulePrefix: "github.com/acme/repo"},
 		CI:        workspace.CISection{Providers: []string{"github", "azure"}},
 		Release:   workspace.ReleaseSection{GitHubReleases: true},
-		Tasks:     map[string]workspace.TaskOverride{"test": {DependsOn: []string{"^build"}}},
+		Conventions: map[string]workspace.ConventionConfig{
+			"docker":          {},
+			"vertical-slices": {Languages: []string{"go"}, Exclude: []string{"legacy"}},
+		},
+		Tasks: map[string]workspace.TaskOverride{"test": {DependsOn: []string{"^build"}}},
 		Projects: map[string]workspace.ProjectOverride{
 			"tool": {
 				Release: &workspace.ProjectRelease{AssetName: "go-app-{product}-{os}-{arch}.{ext}", Product: "tool", OSAlias: map[string]string{"darwin": "macos"}},
@@ -31,6 +35,9 @@ func TestConfigTextRoundTrips(t *testing.T) {
 	}
 	if out.Workspace != in.Workspace || !reflect.DeepEqual(out.CI.Providers, in.CI.Providers) || !out.Release.GitHubReleases {
 		t.Fatalf("sections %+v\n%s", out, text)
+	}
+	if !reflect.DeepEqual(out.Conventions, in.Conventions) {
+		t.Fatalf("conventions %+v\n%s", out.Conventions, text)
 	}
 	tool := out.Projects["tool"]
 	if tool.Release.Product != "tool" || tool.Release.OSAlias["darwin"] != "macos" || len(tool.Release.Platforms) != 6 {

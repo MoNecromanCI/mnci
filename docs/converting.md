@@ -35,6 +35,7 @@ It is tested with Nx 23. With another major the report says so.
 | `projectType: application` | kind `app` |
 | a project `nx release` publishes (`release.projects`, or every non-private package when unset) | kind `package` |
 | any other project | kind `lib` |
+| an app with a `Dockerfile` | the same app, and `[conventions.docker]`: an `image` task, and its release pushes the image |
 | a kind its directory does not imply (`python-packages/x`, a published `libs/x`) | the kind written into the manifest (`"smith": {"kind": …}`, `[tool.smith] kind`, `// smith:kind`) |
 | a Node target running in the project root | a `package.json` script, run by the Node plugin (npm runs scripts through a shell, so nothing is lost) |
 | any other `nx:run-commands` target | an `[projects.<name>.tasks.<target>]` task in `smith.toml`: argv, cwd, inputs, outputs, `depends_on` and cache carried over |

@@ -17,8 +17,12 @@ var otherEcosystems = []struct{ suffix, label string }{
 	{"pubspec.yaml", "Flutter/Dart"}, {".csproj", ".NET"}, {".fsproj", ".NET"}, {"Cargo.toml", "Rust"},
 	{"pom.xml", "Java (Maven)"}, {"build.gradle.kts", "JVM (Gradle)"}, {"build.gradle", "JVM (Gradle)"},
 	{"composer.json", "PHP"}, {"Gemfile", "Ruby"}, {"CMakeLists.txt", "C++ (CMake)"}, {".bicep", "Bicep"},
-	{"Dockerfile", "a container image"}, {"requirements.txt", "Python without a pyproject.toml"},
+	{Dockerfile, "a container image"}, {"requirements.txt", "Python without a pyproject.toml"},
 }
+
+// Dockerfile makes an app ship as an image, which the docker convention
+// builds and releases.
+const Dockerfile = "Dockerfile"
 
 // Language decides which smith plugin owns a project, from the manifest at its
 // root. label names the ecosystem when no plugin does.
@@ -30,6 +34,10 @@ func Language(p *nxworkspace.Project) (lang, label string) {
 		return "python", "Python"
 	}
 	for _, e := range otherEcosystems {
+		if e.suffix == Dockerfile && p.HasFile("package.json") {
+			// A Node app shipped as an image: the docker convention builds it.
+			continue
+		}
 		for _, f := range p.Files {
 			if path.Dir(f) == p.Root && strings.HasSuffix(f, e.suffix) {
 				return "", e.label

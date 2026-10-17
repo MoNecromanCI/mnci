@@ -207,6 +207,28 @@ func TestPlanKeepsPackageTargetsForSmithCIPack(t *testing.T) {
 	}
 }
 
+func TestPlanShipsANodeAppWithADockerfileAsAnImage(t *testing.T) {
+	host := project("@acme/host", "apps/host", "app", []string{"package.json", "Dockerfile"}, nil)
+	lib := project("@acme/tools", "libs/tools", "lib", []string{"package.json", "Dockerfile"}, nil)
+	bare := project("image", "apps/image", "app", []string{"Dockerfile"}, nil)
+	w := &nxworkspace.Workspace{Projects: []*nxworkspace.Project{host, lib, bare}}
+	plan := MakePlan(w, Input{DirName: "acme", Read: func(string) string { return "" }})
+
+	if pp := plan.Project("host"); pp.Language != "node" || pp.Kind != protocol.ProjectApp {
+		t.Fatalf("host %+v", pp)
+	}
+	if _, on := plan.Config.Conventions["docker"]; !on {
+		t.Fatalf("conventions %+v", plan.Config.Conventions)
+	}
+	changed := findings(plan, Changed)
+	if !strings.Contains(changed, "host Dockerfile: [conventions.docker]") || !strings.Contains(changed, "tools Dockerfile: kept, but the docker convention builds images of apps only") {
+		t.Fatalf("changed:\n%s", changed)
+	}
+	if unsupported := findings(plan, Unsupported); !strings.Contains(unsupported, "image apps/image: a container image project") || strings.Contains(unsupported, "host") {
+		t.Fatalf("a Dockerfile with no manifest stays unsupported:\n%s", unsupported)
+	}
+}
+
 func TestPlanBlocksDuplicateDirectoryNames(t *testing.T) {
 	w := &nxworkspace.Workspace{Projects: []*nxworkspace.Project{
 		project("a-ui", "apps/ui", "app", []string{"package.json"}, nil),

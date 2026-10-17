@@ -38,7 +38,8 @@ type DependsOn struct {
 	Target string
 	// Dependencies means the target of every dependency ("^target").
 	Dependencies bool
-	// Projects names other projects; conversions cannot express it.
+	// Projects names the projects whose Target runs first: Nx names,
+	// "self", "dependencies", or patterns.
 	Projects []string
 }
 

@@ -207,6 +207,34 @@ func TestPlanKeepsPackageTargetsForSmithCIPack(t *testing.T) {
 	}
 }
 
+func TestPlanKeepsDependenciesOnOtherProjectsTargets(t *testing.T) {
+	cli := project("@acme/cli", "packages/cli", "lib", []string{"package.json"}, nil)
+	ui := project("@acme/studio-ui", "apps/studio-ui", "app", []string{"package.json"}, nil)
+	ext := project("@acme/vscode", "apps/vscode-extension", "app", []string{"package.json"}, map[string]nxworkspace.Target{
+		// OpenCraw's extension: the string form, as package.json writes it.
+		"package": target(t, `{"executor": "nx:run-commands", "dependsOn": ["build", "@acme/cli:build", "@acme/studio-ui:build"], "options": {"command": "node packaging/package-vsix.mjs", "cwd": "apps/vscode-extension"}}`),
+		// The object form nx graph normalizes it to, a scope-less name, self,
+		// and a pattern smith cannot name.
+		"e2e": target(t, `{"executor": "nx:run-commands", "dependsOn": [{"projects": ["cli", "self"], "target": "build"}, {"projects": ["tag:scope:ui"], "target": "build"}], "options": {"command": "node e2e/run.mjs"}}`),
+	})
+	w := &nxworkspace.Workspace{Projects: []*nxworkspace.Project{cli, ui, ext}}
+	plan := MakePlan(w, Input{DirName: "acme", Read: func(string) string { return "" }})
+
+	tasks := plan.Config.Projects["vscode-extension"].Tasks
+	if got := strings.Join(tasks["package"].DependsOn, ","); got != "build,cli:build,studio-ui:build" {
+		t.Fatalf("package depends on %s", got)
+	}
+	if got := strings.Join(tasks["e2e"].DependsOn, ","); got != "cli:build,build" {
+		t.Fatalf("e2e depends on %s", got)
+	}
+	if manual := findings(plan, Manual); !strings.Contains(manual, `vscode-extension e2e: Nx ran tag:scope:ui's build first; smith cannot name that project, so add it to depends_on by hand ("<project>:build")`) {
+		t.Fatalf("manual:\n%s", manual)
+	}
+	if mapped := findings(plan, Mapped); !strings.Contains(mapped, "vscode-extension package: runs after cli:build, studio-ui:build, as Nx did (depends_on)") {
+		t.Fatalf("mapped:\n%s", mapped)
+	}
+}
+
 func TestPlanShipsANodeAppWithADockerfileAsAnImage(t *testing.T) {
 	host := project("@acme/host", "apps/host", "app", []string{"package.json", "Dockerfile"}, nil)
 	lib := project("@acme/tools", "libs/tools", "lib", []string{"package.json", "Dockerfile"}, nil)

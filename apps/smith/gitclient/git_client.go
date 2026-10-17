@@ -3,6 +3,7 @@ package gitclient
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"sort"
 	"strings"
@@ -22,10 +23,22 @@ func (g *Git) Run(args ...string) (string, error) {
 	return strings.TrimRight(out, "\r\n"), err
 }
 
-func (g *Git) raw(args ...string) (string, error) {
+// RunWithEnv is Run with extra environment variables. A secret goes here,
+// never in args: an error message repeats the arguments.
+func (g *Git) RunWithEnv(env []string, args ...string) (string, error) {
+	out, err := g.rawEnv(env, args...)
+	return strings.TrimRight(out, "\r\n"), err
+}
+
+func (g *Git) raw(args ...string) (string, error) { return g.rawEnv(nil, args...) }
+
+func (g *Git) rawEnv(env []string, args ...string) (string, error) {
 	full := append([]string{"-c", "core.quotepath=off", "--no-optional-locks"}, args...)
 	cmd := exec.Command("git", full...)
 	cmd.Dir = g.Dir
+	if len(env) > 0 {
+		cmd.Env = append(os.Environ(), env...)
+	}
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

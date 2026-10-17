@@ -41,6 +41,7 @@ Core slices in `apps/smith`:
 | `taskrun` | the scheduler, process trees, `smith run/build/test/lint/typecheck` |
 | `affected` | changed projects and their dependents |
 | `release` | plan and execute releases, `smith release` |
+| `splitrepo` | mirror a released project to a repository of its own (`split_repo`) |
 | `releaselineage` | decide whether release tags can be trusted: old names, published but untagged, behind the registry |
 | `releasepreview` | post the release preview on the pull request (GitHub, Azure Repos) |
 | `cipipeline` | pipeline model, renderers, `smith ci` |

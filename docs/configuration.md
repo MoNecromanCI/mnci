@@ -139,6 +139,10 @@ web:build — Compile to dist/
 [projects.kit]
 tag_prefix = "@acme/kit@"
 
+# mirror each release to a repository of its own (see releasing.md, Split repositories)
+[projects.client-php]
+split_repo = "acme/client-php"
+
 # make an app release: versioned by its tag, with per-platform binaries
 [projects.cli.release]
 asset_name = "{product}_{version}_{os}_{arch}.{ext}"   # the default

@@ -114,6 +114,7 @@
         "properties": {
           "tag_prefix": { "type": "string", "description": "Replaces the release tag prefix (<name>@ by default)." },
           "stack": { "type": "string", "description": "Replaces the stack the project's manifest records." },
+          "split_repo": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", "description": "A GitHub repository (owner/repo) each release is mirrored to: the project's directory split out, pushed to its main branch and tagged vX.Y.Z, for a registry that reads a package at a repository root (Packagist). Needs SPLIT_REPO_TOKEN." },
           "release": {
             "type": "object",
             "description": "Makes an app releasable: versioned by its tag, its assets built and attached.",

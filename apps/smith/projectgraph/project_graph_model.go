@@ -23,6 +23,9 @@ type Project struct {
 	// Release is set for an app that releases (smith.toml
 	// [projects.<name>.release]).
 	Release *workspace.ProjectRelease `json:"release,omitempty"`
+	// SplitRepo is the repository each release is mirrored to (smith.toml
+	// [projects.<name>] split_repo), or empty.
+	SplitRepo string `json:"splitRepo,omitempty"`
 	// Conventions are the conventions that apply to the project, sorted.
 	Conventions []string `json:"conventions,omitempty"`
 	// Deployers are the deploy plugins that contributed to the project (an

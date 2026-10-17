@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/monosmith-app/monosmith/apps/smith/splitrepo"
 	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
@@ -43,6 +44,12 @@ func ApplyOverrides(p *Project, cfg workspace.Config) error {
 			p.TagPrefix = po.TagPrefix
 		}
 		p.Release = po.Release
+		if po.SplitRepo != "" {
+			if err := splitrepo.Valid(po.SplitRepo); err != nil {
+				return fmt.Errorf("smith.toml [projects.%s]: %w", p.Name, err)
+			}
+			p.SplitRepo = po.SplitRepo
+		}
 		taskNames := make([]string, 0, len(po.Tasks))
 		for name := range po.Tasks {
 			taskNames = append(taskNames, name)

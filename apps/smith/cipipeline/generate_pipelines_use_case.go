@@ -11,6 +11,7 @@ import (
 
 	"github.com/monosmith-app/monosmith/apps/smith/release"
 	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/splitrepo"
 	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
@@ -46,6 +47,9 @@ func Collect(s *session.Session) (Contributions, error) {
 			continue
 		}
 		c.Add(protocol.CIResult{Credentials: release.DistributionCredentials(p.Release)})
+		if p.SplitRepo != "" {
+			c.Add(protocol.CIResult{Credentials: []protocol.Credential{splitrepo.Credential(p.SplitRepo)}})
+		}
 		if p.Release != nil && len(p.Release.NPM) > 0 {
 			c.Provenance = true
 		}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/monosmith-app/monosmith/apps/smith/githubrelease"
 	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/splitrepo"
 	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
@@ -37,6 +38,7 @@ func Preflight(s *session.Session, plan Plan) error {
 		}
 	}
 	plugins := map[string]bool{}
+	mirrored := false
 	for _, item := range plan.Items {
 		plugins[item.Plugin] = true
 		if p := s.Graph.Get(item.Project); p != nil && !Native(p) {
@@ -46,6 +48,16 @@ func Preflight(s *session.Session, plan Plan) error {
 				}
 			}
 		}
+		if p := s.Graph.Get(item.Project); p != nil && p.SplitRepo != "" {
+			if splitrepo.Token() == "" {
+				c := splitrepo.Credential(p.SplitRepo)
+				problems = append(problems, fmt.Sprintf("%s is not set: %s", c.Env, c.Description))
+			}
+			mirrored = true
+		}
+	}
+	if mirrored {
+		problems = append(problems, splitrepo.Ready(s.Git)...)
 	}
 	for name := range plugins {
 		var projects []protocol.Project

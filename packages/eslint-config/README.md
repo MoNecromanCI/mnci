@@ -1,0 +1,577 @@
+<p align="center">
+  <img src="../../assets/logo.svg" alt="mnci" width="160">
+</p>
+
+# @mnci/eslint-config
+
+> The lint **and** format opinion every `mnci`-generated monorepo uses. **One
+> ESLint config, at the root, for every language in the workspace — code
+> quality, type-aware rules and JavaScript Standard Style formatting, in one
+> tool.**
+>
+> There is no Prettier and no oxfmt. `eslint --fix` is the formatter, which is
+> what makes `space-before-function-paren` — Standard's signature rule —
+> enforceable at all: every Prettier-compatible formatter rewrites
+> `function f (a)` back to `function f(a)`, so a config that both enabled the
+> rule and ran such a formatter was mutually unsatisfiable.
+
+## Why this exists
+
+`mnci` generates opinionated monorepos, and code quality is one of the opinions.
+It used to be delivered badly: `create-nx-workspace`'s bare `@nx/eslint-plugin`
+default landed at the root, each `nx g` generator dropped another
+`eslint.config.mjs` into its own project, and the richer rules the project
+actually wanted lived only in mnci's own repo — never in anything it generated.
+
+This package is that opinion, packaged. A generated workspace gets **one** file:
+
+```js
+// eslint.config.mjs
+import mnci from '@mnci/eslint-config'
+
+export default mnci({ workspaceRoot: import.meta.dirname })
+```
+
+…and nothing else. No per-project configs, and no formatter config — there is no
+second tool to configure. mnci actively **deletes** `.prettierrc`,
+`.prettierrc.json`, `.prettierrc.mjs`, `.prettierignore`, `.oxfmtrc.json` and
+`oxlint.config.ts` if an older version left one behind, because a config file no
+command line reads is still read by an editor extension.
+
+Shipping it as a package rather than as template strings means an upgrade reaches
+existing workspaces through `npm update`, the plugins are _this_ package's
+dependencies instead of two dozen devDependencies in every generated workspace,
+and the config is independently testable — which it is, against the real `eslint`
+binary.
+
+## What it covers
+
+One decision, in one package, because it used to be two.
+
+**ESLint here covers correctness, code quality, type-aware rules AND formatting.**
+There is no `eslint-config-prettier`, and removing it was load-bearing rather
+than cosmetic: that package exists to switch every stylistic rule OFF so a
+formatter can own them, so composing it after the Standard block would silently
+disable all sixty of those rules. A disabled rule reports nothing, so `lint`
+would have gone on passing while enforcing nothing at all.
+
+That arrangement is also exactly why a formatting mistake used to produce no
+squiggle, no message and no Problems entry — ESLint had been configured to have
+no opinion on formatting, so it had nothing to report.
+
+### The ESLint blocks
+
+Every block carries a `name`, which is how you find it (`eslint --inspect-config`)
+and how you override it. The generated `eslint.config.mjs` ships this same table
+as a comment, so it is readable without opening node_modules.
+
+| Block name                               | Covers                                                                                         |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `mnci/ignores`                           | paths never linted — `dist`, `coverage`, `.venv`, `__pycache__`, `.dart_tool`                  |
+| `mnci/base`                              | JS/TS correctness — `@eslint/js`, `eslint-plugin-unicorn`, `-promise`, `-n`, `-unused-imports` |
+| `typescript-eslint/*`                    | `typescript-eslint`'s own recommended blocks (its names, not ours)                             |
+| `mnci/typescript`, `…/declarations`      | TS rules on top of them, no type information needed                                            |
+| `mnci/type-aware`, `…/declarations`      | the rules that DO read types — see below                                                       |
+| `mnci/import-graph`                      | import cycles — `eslint-plugin-import-x`                                                       |
+| `mnci/react`                             | JSX/TSX — `@eslint-react/eslint-plugin`, `-react-hooks`, `-react-refresh`, `-jsx-a11y`         |
+| `mnci/regexp/recommended`, `mnci/regexp` | regex correctness incl. catastrophic backtracking — `eslint-plugin-regexp`                     |
+| `mnci/json`, `mnci/jsonc`, `mnci/json5`  | `eslint-plugin-jsonc` — comments allowed in `.jsonc`/`tsconfig.json`, forbidden in `.json`     |
+| `mnci/yaml/recommended/*`, `mnci/yaml`   | `eslint-plugin-yml` — your CI pipeline files                                                   |
+| `mnci/toml/base/*`                       | `eslint-plugin-toml` — **parsing only**, see below                                             |
+| `mnci/markdown`                          | `@eslint/markdown` (GitHub-flavoured)                                                          |
+| `mnci/css`                               | `@eslint/css`                                                                                  |
+| `mnci/html`                              | `@html-eslint/eslint-plugin`, incl. its a11y rules                                             |
+| `mnci/svelte/*`, `mnci/svelte`           | `eslint-plugin-svelte` on `.svelte` files (recommended rules plus the compiler's a11y diagnostics) — only when `svelte` is installed, because the plugin imports it while loading |
+| `mnci/astro/*`                           | `eslint-plugin-astro` on `.astro` files and the scripts inside them (recommended rules)         |
+| `mnci/mdx`, `mnci/mdx/code-blocks`       | `eslint-plugin-mdx` on `.mdx` only (`.md` stays `mnci/markdown`), with the code fences linted as files and snippets exempt from unused-variable rules |
+| `mnci/tests`                             | `*.spec`/`*.test` relaxations — `eslint-plugin-jest`, plus Vitest's `vi`/`vitest` globals      |
+| `mnci/tests/mock-aware`                  | specs inside a project: `jest/unbound-method` replaces the base rule, which false-positives on every `expect(mock.method)` |
+| `mnci/nx-dependency-checks`              | `@nx/eslint-plugin` on publishable packages' manifests — only when `workspaceRoot` is passed   |
+| `mnci/vertical-slices`                   | Vertical feature slices: role-suffixed kebab-case files, a subfeature reached only through its index, no two subfeatures importing each other — unless `verticalSlices: false`. See below |
+| `mnci/standard`                          | JavaScript Standard Style as ~60 `@stylistic` rules — **this is the formatter.** See below     |
+| `mnci/house-style`                       | The deliberate departures from Standard: trailing commas, aligned object values, `consistent-as-needed` quote-props, a blank line before `return`, two statements per line. Composed after `mnci/standard`, so it wins |
+
+`configs/named.js` fills a name in for the blocks upstream presets ship
+anonymously, keeping any name upstream does provide. A test resolves the real
+config and fails if any block is unnamed or if two share a name; another test, in
+`@mnci/cli`, fails if the generated comment and the real config disagree.
+
+### Formatting (`configs/standard.js`)
+
+JavaScript Standard Style, as ~60 `@stylistic` **rules** rather than as a
+formatter's options. `npm run format` is `eslint . --fix`; there is no
+`format:check`, because `lint` already reports a formatting mistake as an
+ordinary error, with a squiggle and a rule name.
+
+The rules were derived **programmatically** from `neostandard` and ported to
+`@stylistic` v5, so no rule or option is mistyped by hand. `neostandard` itself
+is deliberately **not** a dependency: it pins `@stylistic` at exactly `2.11.0`,
+which calls `sourceCode.isSpaceBetweenTokens` — removed in ESLint 10 — so it
+throws on the first file. Forcing it onto v5 fails differently, since its config
+names `func-call-spacing`, which v5 dropped. An override made it *install* and it
+still did not work.
+
+**`space-before-function-paren` is ON**, which is the point of the whole
+arrangement. Standard's signature rule was unreachable for as long as any
+Prettier-compatible formatter owned formatting: Prettier and oxfmt both rewrite
+`function f (a)` back to `function f(a)`, so enabling it made `lint` and
+`format:check` mutually unsatisfiable. With no formatter, nothing contradicts it.
+
+**Do not add `eslint-config-prettier` back.** It exists to switch stylistic rules
+off so a formatter can own them, so composing it after this block would disable
+all sixty rules — and a disabled rule reports nothing, so `lint` would pass while
+enforcing nothing.
+
+`jsx-indent` was the subtle one to remove. Dropping the deprecated rule on its own
+would have left JSX indentation checked by **nothing**, because Standard also
+lists all sixteen JSX node types in `indent`'s `ignoredNodes`. Both halves go, so
+`indent` genuinely covers JSX — verified on a real `.tsx`. `TemplateLiteral *`
+stays, since it is not a JSX node and removing it false-positives inside template
+literals.
+
+### Type-aware rules (`configs/typeAware.js`)
+
+A small curated set that reads **types**, so it catches what nothing else in the
+stack can — most importantly a dropped `await`, which type-checks cleanly, passes
+any test that does not happen to race, and then loses an error in production:
+`no-floating-promises`, `no-misused-promises`, `await-thenable`,
+`no-unnecessary-type-assertion`, `unbound-method`, plus four narrow ones.
+
+Deliberately **not** `recommendedTypeChecked`. Measured against the mnci monorepo
+that preset reported 67 problems and most were not bugs — `require-await` fires on
+every Nx executor, which must be `async` to satisfy Nx's contract regardless of its
+body. The curated set reported 10, all real. A rule nobody can satisfy just teaches
+people to reach for `eslint-disable`.
+
+Two things about it are load-bearing:
+
+- **Scoped to `apps/*/src`, `libs/*/src`, `packages/*/src`** — not every `.ts`
+  file. A file belonging to no tsconfig is a **fatal parse error**, which
+  suppresses every other rule for that file _and_ fails the build. Restricting the
+  rules to the directories where generated projects live (all of which get a
+  tsconfig) makes that impossible rather than merely unlikely. A stray script at
+  the workspace root keeps all the non-type-aware rules instead of breaking.
+  `allowDefaultProject` is not used: it is fatal in the other direction too, so a
+  glob wide enough to catch real strays breaks properly configured files.
+- **`no-misused-promises` exempts JSX attributes, and only those.**
+  `onClick={async () => { await save() }}` is the universal React idiom while
+  React's prop types declare a void return, so the default setting fails a fresh
+  `react-app` on a file the user wrote normally. The sub-check that catches real
+  bugs — an async callback passed to `Array.filter` — stays on.
+
+Cost: roughly 5s → 8s on a whole-workspace lint, because it builds a real TS
+program. It therefore needs project references in order, which `nx sync:check`
+already guarantees in CI before the lint step.
+
+### Import-graph rules (`configs/importGraph.js`)
+
+`no-cycle` and `no-self-import`, scoped to project source. Specifically the
+**intra-project** gap: `@nx/enforce-module-boundaries` polices edges _between_
+projects, cycles included, but nothing looked inside a project. A cycle among one
+project's own modules runs until it doesn't — whichever module evaluates second sees
+a half-initialised namespace.
+
+Two things are load-bearing, and both fail _silently_ if changed:
+
+- **`settings['import-x/parsers']` is required for `no-cycle` to do anything at
+  all.** `languageOptions.parser` says how to parse the file being linted; it says
+  nothing about how import-x parses the files it _follows_. Without the mapping every
+  `.ts` dependency is unparseable, traversal stops at depth one, and the rule reports
+  nothing — ever. `no-unresolved` does not need it, which is why the gap is easy to
+  miss.
+- **The TypeScript resolver is not optional.** With import-x's default Node resolver
+  this reported 179 errors on the mnci monorepo, all false: Node cannot resolve an
+  extensionless relative TypeScript import. `createTypeScriptImportResolver` gets no
+  `project` option, so it finds each file's nearest tsconfig itself — a generated
+  workspace's tsconfigs cannot be enumerated up front.
+
+**`no-unresolved` is switched off deliberately**, and cannot be enabled in this
+layout. A project consumes an internal lib by scoped name (`@scope/core`); npm
+workspaces symlinks it, but its manifest points at `./dist`, which does not exist
+until that dependency is **built** — and `lint` does not depend on `build`. The `ts`
+preset has no tsconfig `paths` to fall back on either. So a completely correct
+cross-project import resolves to nothing on disk. `tsc` already reports unresolved
+_typed_ imports, and the workspace runs `typecheck` in CI.
+
+### Browser automation (`configs/browserAutomation.js`) — opt-in
+
+For Playwright and Puppeteer projects. `page.evaluate(() => document.title)`
+fails `unicorn/isolated-functions`:
+
+```
+Variable document not defined in scope of isolated function.
+Function is isolated because: callee of method named "page.evaluate"
+```
+
+The rule is right about the isolation — that callback is serialised and runs
+inside the page, so it genuinely cannot see the enclosing module — and it
+checks every free variable against the declared globals, which here are
+**Node's**. So no browser global exists for the callback and every one reports.
+Without the opt-in the choices are passing string scripts and losing type
+checking, disabling a rule that catches real scope bugs, or a red `lint`.
+
+```js
+export default mnci({ browserAutomation: true })
+// or only where the automation lives:
+export default mnci({ browserAutomation: ['packages/scraper/src/**/*.ts'] })
+```
+
+It declares browser globals; it does not make them true. A file in scope may
+now reference `document` at the **top** level without ESLint objecting, and
+that throws in Node. TypeScript is what still catches it — `document` is not in
+scope unless the project's `lib` includes `dom` — which is why this is opt-in
+and scoped by glob rather than on by default.
+
+### Vertical feature slices (`configs/verticalSlices.js`) — on by default
+
+For workspaces organised as **vertical feature slices**: each project's `src/`
+holds subfeatures, each exposing an `index`, each holding flat, role-suffixed
+files. **On by default**: vertical slices are mnci's architecture, not an option, so a
+new workspace is checked from its first commit. A workspace that is not built this
+way opts out with `verticalSlices: false` (it would otherwise fail every file).
+
+```js
+export default mnci({ workspaceRoot: import.meta.dirname, verticalSlices: false }) // opt out
+// or only for the projects that follow it:
+export default mnci({ verticalSlices: ['packages/*/src/**/*.ts'] })
+// or with extra roles, for a vocabulary the default list does not cover:
+export default mnci({
+  verticalSlices: {
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    roles: ['route', 'component', 'hook', 'section', 'style', 'content'],
+  },
+})
+```
+
+**The role list is extensible, and for a front end it has to be.** The default
+roles are the back-end vocabulary. The ADR these rules come from also allows
+`.service` (with a recorded exception) and `.middleware`, and its front-end
+amendment adds `.route`, `.component`, `.hook`, `.section`, `.style`,
+`.content`, `.mock` and `.fixture`. A React app could not opt in at all while
+the list was fixed — every component it has would report.
+
+**A `.tsx` file needs no option for the JSX roles.** A file that holds JSX is a UI
+file by construction, so `.route`, `.component`, `.section`, `.hook` and `.content`
+are accepted on `.tsx` files out of the box (the `mnci/vertical-slices-tsx`
+block). The non-JSX front-end roles (`.style`, `.mock`, `.fixture`, a `.hook.ts`)
+stay opt-in through `roles`, because a `.ts` file says nothing about being UI.
+
+`roles` **appends** to the defaults rather than replacing them: a workspace
+adding `.component.tsx` still wants `.use-case.ts`, and a replacing option
+would mean restating fourteen entries to add one. Only `file-role` takes it;
+the other two rules are about imports, which a file's suffix has no bearing on.
+
+| Rule | Reports |
+|---|---|
+| `vertical-slices/file-role` | A name not in kebab-case; a production file without its role suffix (`.use-case`, `.algorithm`, `.policy`, `.model`, `.contract`, `.mapper`, `.validator`, `.repository`, `.client`, `.store`, `.error`, `.config`, `.enum`, `.handler`); a folder nested inside a subfeature; anything but `index`/`main` at the root of `src` |
+| `vertical-slices/no-deep-import` | A sibling reached past its index (`'../billing/fee.policy'` instead of `'../billing'`), and a subfeature importing its own index |
+| `vertical-slices/no-slice-cycle` | Two subfeatures importing each other — **type-only imports included** |
+
+The cycle rule covers the gap `import-x/no-cycle` leaves. That rule sees cycles
+between *files*, and a cycle between two folders usually runs through different
+files on each side — a contract imported one way, a use case the other — so there
+is no file-level cycle for it to report. It was written for, and first caught
+three such cycles in, a real monorepo where `no-cycle` was already on.
+
+Tests (`.spec`/`.test`) are exempt from the role and cycle rules — a test is
+named for the file it tests, so it has no role suffix, and a spec is not in the
+production dependency graph a cycle would matter in.
+
+They are **not** exempt from `no-deep-import`. A test importing
+`'../billing/fee.policy'` is reported, exactly as production code would be:
+that rule is about respecting a sibling's public API, and a test that reaches
+past an index couples to the sibling's internals just as tightly — rename a
+file in one slice and another slice's test breaks. Reach a sibling through its
+index from a test too, or move the test beside what it is testing.
+
+### Regex and TOML
+
+**`eslint-plugin-regexp`** runs `flat/recommended` minus four rules. The value is
+`no-super-linear-backtracking`: a regex can be perfectly correct and still take
+exponential time on a crafted input, which is a real denial of service in anything
+matching user data and completely invisible to review. Nothing else here looks
+inside a regex.
+
+The four exclusions are a crash, not a preference. `no-legacy-features`,
+`no-missing-g-flag`, `no-useless-dollar-replacements` and `no-useless-flag`
+opportunistically reach for TypeScript type information and **throw** when the TS
+parser is present without type-aware services — which is the normal case for any
+`.ts` file outside `{apps,libs,packages}/<name>/src`, since that is the only scope
+`configs/typeAware.js` covers. A crash takes down linting for the whole file rather
+than reporting one problem. See `configs/regexp.js` for why they are off globally
+rather than narrowing the block's scope.
+
+**`eslint-plugin-toml` is `flat/base` — the parser and no style rules.** mnci writes
+`pyproject.toml` for every Python project and nothing read those files, so a syntax
+error only surfaced later as a confusing hatchling or pip failure. `flat/base` makes
+it a fatal parse error instead.
+
+`flat/standard` was measured and rejected: it is almost entirely formatting
+(`indent`, `key-spacing`, `quoted-keys`, `array-bracket-spacing`), which is outside
+this config's scope — and it reports **six** `toml/array-bracket-spacing` errors on
+the `pyproject.toml` that `@mnci/nx-python-pip` itself generates. Every Python
+workspace would have failed `npm run lint` on a file the user never wrote. A test
+pins the generated content as clean so that cannot be reintroduced.
+
+This does mean TOML _formatting_ is unenforced. Deliberately — no linter here has
+an opinion on a `.toml`'s layout, and the formatter that once might have was
+measured and found worse than nothing.
+
+### Why `space-before-function-paren` IS here
+
+It is Standard's signature rule, it is **on**, and for most of this project's
+history it could not be.
+
+`eslint-config-prettier` disabled it because it **conflicts** with Prettier
+rather than because it is redundant: Prettier emits `function f(a)` and rewrites
+`function f (a)` back on every run, while the rule demands the opposite.
+Enabling it alongside a formatter made `npm run lint` and `npm run format:check`
+mutually unsatisfiable — a real ping-pong, verified by round-tripping a file
+through both binaries, not a theoretical concern. Prettier closed the
+corresponding option permanently, so there was no version to wait for; oxfmt
+behaves identically.
+
+The resolution was not to find a better formatter but to stop having one.
+Turning the rule on reformatted 82 files and reported 306 problems in
+`@mnci/cli` alone, 99% of them auto-fixed.
+
+This is the single clearest reason the stack collapsed onto one tool. A
+formatter and a linter that both hold style opinions must be kept in agreement,
+and the previous arrangement avoided that only by having ESLint hold no
+stylistic opinion at all.
+
+## Usage
+
+```js
+// eslint.config.mjs
+import mnci from '@mnci/eslint-config'
+
+export default mnci({ workspaceRoot: import.meta.dirname })
+```
+
+`workspaceRoot` is optional. Passing it enables the `@nx/dependency-checks`
+block for `packages/*` and `libs/*`, which needs to scan for `private: true`
+manifests. Omit it in a workspace with no publishable npm packages.
+
+#### `@nx/dependency-checks` only runs under `nx run`
+
+It needs the Nx project graph, and outside a target it prints:
+
+```
+No cached ProjectGraph is available. The rule will be skipped.
+```
+
+So `npm run lint` (`nx run-many -t lint`) evaluates it, and **`npm run format`,
+your editor and any pre-commit hook do not**. That is worth knowing in both
+directions:
+
+- A dependency problem will not surface until you run `lint`. `format` passing
+  says nothing about it.
+- The rule is **fixable**, and `format` is `eslint . --fix`. Its being skipped
+  there is the reason a `--fix` run outside `nx` cannot reach a manifest at all.
+
+This config turns off the two checks whose fixers rewrite manifests
+(`checkObsoleteDependencies`, `checkVersionMismatches` — see below), so neither
+path is destructive now. Before that, the difference between the two commands
+was the difference between a report and a deleted runtime dependency.
+
+If you want the rule evaluated in `format` too, warm the graph first —
+`npx nx show projects > /dev/null && npm run format`. mnci does not do this by
+default: it makes every format run pay for a graph computation to enforce
+something `lint` already gates.
+
+### Where this differs from Standard
+
+`mnci/standard` is a faithful port of `neostandard`. Five deliberate departures
+live in `mnci/house-style`, composed after it so they win:
+
+| Rule | Standard | Here |
+| --- | --- | --- |
+| `comma-dangle` | `never` | `always-multiline` |
+| `key-spacing` | no alignment | aligned on `value` |
+| `quote-props` | `as-needed` | `consistent-as-needed` |
+| `max-statements-per-line` | 1 (@stylistic default) | 2 |
+| blank line before `return` | not enforced | required |
+
+Two of those interact, and it is the thing to know before touching either.
+**Aligning object values needs `key-spacing`'s `align` *and* an exception in
+`no-multi-spaces`** — alignment is more than one space, which `no-multi-spaces`
+otherwise rejects. Move one without the other and the config contradicts itself:
+one rule reports what the other requires, and no `--fix` can satisfy both.
+`mnci/house-style` also re-lists @stylistic's own default exceptions
+(`Property`, `ImportAttribute`), because supplying `exceptions` **replaces** the
+default object rather than merging into it.
+
+The blank line before `return` is `padding-line-between-statements`, not
+`newline-before-return`. The latter is the rule most people reach for and is a
+trap: deprecated since ESLint 4, with `availableUntil: "11.0.0"` in its own
+metadata. The two were compared on the same fixtures and report identically.
+
+There is no second file to add. Formatting comes from the `mnci/standard` block
+inside this same config.
+
+## Overriding a rule
+
+Do this in your own config. **Do not edit this package inside `node_modules`, and
+do not fork it** — it is a dependency, so `npm update` carries rule fixes in the
+way it carries any other, and an override survives that while an edit does not.
+
+Flat config is order-dependent and later blocks win, so an override is a block
+appended after the spread. Name it, so the config inspector shows where the change
+came from:
+
+```js
+import mnci from '@mnci/eslint-config'
+
+export default [
+  ...mnci({ workspaceRoot: import.meta.dirname }),
+  {
+    name: 'local/legacy-app-allows-any',
+    files: ['apps/legacy/**/*.ts'],
+    rules: { '@typescript-eslint/no-explicit-any': 'off' }
+  }
+]
+```
+
+### Options are replaced, not merged
+
+Switching a rule off is one thing; **re-configuring one is a trap**. ESLint
+replaces a rule's options wholesale — it does not merge yours into the ones
+already set — so an override that passes an options object discards every
+option this package gave that rule.
+
+`@nx/dependency-checks` is where this bites, because most of its configuration
+here is exclusions. Override it without spreading and you lose `ignoredFiles`,
+and the first symptom reads like a real finding: `rollup.config.cjs` does
+`require('@nx/rollup/with-nx')`, so the rule reports `@nx/rollup` as missing
+from the `dependencies` of a package that must never declare it.
+
+So spread the exported options rather than restating them:
+
+```js
+import mnci, { dependencyChecksOptions } from '@mnci/eslint-config'
+
+export default [
+  ...mnci({ workspaceRoot: import.meta.dirname }),
+  {
+    name:  'local/dependency-checks',
+    files: ['packages/*/package.json'],
+    rules: {
+      '@nx/dependency-checks': [
+        'error',
+        { ...dependencyChecksOptions(import.meta.dirname), checkObsoleteDependencies: true },
+      ],
+    },
+  },
+]
+```
+
+It takes `workspaceRoot` because `ignoredDependencies` is computed by scanning
+for `private: true` manifests — a hardcoded list goes stale the next time an
+internal lib is added.
+
+To find out which block turned a rule on in the first place:
+
+```bash
+npx eslint --inspect-config              # every block, by name
+npx eslint --print-config path/to/file   # the merged result for one file
+```
+
+Individual blocks are exported too, if you need to recompose rather than append:
+
+```js
+import { base, typescript, react, ignores } from '@mnci/eslint-config'
+```
+
+Formatting is overridden the same way as anything else, because it is made of
+rules. To widen the line limit, for instance:
+
+```js
+export default [
+  ...mnci({ workspaceRoot: import.meta.dirname }),
+  {
+    name: 'local/wider-lines',
+    rules: { '@stylistic/max-len': ['error', { code: 120 }] }
+  }
+]
+```
+
+### The one thing that cannot work
+
+**Adding a formatter.** Prettier, oxfmt, dprint — whichever is chosen will
+disagree with `mnci/standard`, and because a formatter runs on save it wins
+silently, leaving `lint` to fail on files nobody edited by hand.
+
+Installing the editor extension is enough on its own: neither
+`esbenp.prettier-vscode` nor `oxc.oxc-vscode` needs a config file, and with none
+present they format against their own defaults — semicolons and double quotes,
+the exact inverse of Standard. That is why `mnci upgrade` deletes every retired
+formatter config rather than merely not writing one, and why `mnci doctor`
+reports a leftover as a failure.
+
+## ESLint 10
+
+The stack is on ESLint **10** and `eslint-plugin-unicorn` **v72**. Getting there
+was never about ESLint — it was about two plugins, and both were resolved by
+measurement rather than by waiting.
+
+**`eslint-plugin-react` is gone.** React correctness comes from
+`@eslint-react/eslint-plugin`, a maintained rewrite whose peer range is
+`eslint: "*"`. The incumbent had no ESLint 10 release at all: its peer range
+stopped at `^9.7`, and on 10 it threw `contextOrFilename.getFilename is not a
+function` while loading `react/display-name`, killing linting for every `.tsx`
+file in the workspace.
+
+Hooks stay with `eslint-plugin-react-hooks`. `@eslint-react` reimplements them
+and ships a config to switch the React team's plugin off in favour of its own;
+this config does the reverse, and switches off the two `@eslint-react` rules
+that duplicate it so a single defect is never reported twice.
+
+**`eslint-plugin-jsx-a11y` stays, on a peer override.** Its latest release
+(6.10.2) peers at `^3 … ^9`, so `npm install` ERESOLVEs on ESLint 10 — but the
+cap is **stale, not a real incompatibility**. Measured on `eslint@10.8.0`: with
+
+```json
+"overrides": { "eslint-plugin-jsx-a11y": { "eslint": "$eslint" } }
+```
+
+in the **root** manifest (npm ignores `overrides` anywhere else, which is why a
+config package cannot fix this for itself and mnci writes it), the plugin
+installs and its rules still fire. `mnci` generates that entry; remove it the
+moment jsx-a11y ships a release declaring ESLint 10.
+
+**Four unicorn v72 rules are off, and the reasons are counts, not taste.** The
+upgrade surfaced 92 problems on this repo and not one was a defect:
+`name-replacements` (35), `no-top-level-assignment-in-function` (19) and
+`consistent-boolean-name` (13) rename a team's own vocabulary or condemn the
+standard per-test fixture idiom — all three were predicted in `configs/base.js`
+before they could fire. `no-incorrect-template-string-interpolation` (10) reads
+Nx's own `{workspaceRoot}` tokens as forgotten `${...}`, so it cannot be right
+about any code that writes Nx config. The remaining 25 findings were **fixed**,
+not switched off.
+
+Three unicorn rules this config would otherwise switch off —
+`name-replacements`, `consistent-boolean-name` and
+`no-top-level-assignment-in-function` — do not exist in v61, so they are not
+listed: ESLint rejects a config that names a rule its plugin does not have.
+`configs/base.js` says which, so a future upgrade re-adds them deliberately
+instead of rediscovering why they suddenly fire.
+
+## Notes
+
+- **No build step.** This is plain ESM that consumers load directly. Compiling
+  it would only create a way for the published config to drift from the source.
+- **`@nx/eslint-plugin` is an optional peer.** Its version has to track the
+  workspace's own Nx version, and the `dependency-checks` block is skipped
+  entirely when it is absent — so the config still works outside Nx.
+- **Tests shell out to the real `eslint` binary.** Asserting on a flat config's
+  object shape proves nothing, because a later block can silently disable an
+  earlier rule — which is exactly the failure `eslint-config-prettier` would
+  cause if it came back. Every test runs a real fixture through the real binary
+  and asserts on what came back.
+- **No formatter is a dependency, a peer, or anything else.** `prettier` used to
+  be a dependency here on the reasoning that a workspace should not have to
+  declare a formatter to be formatted correctly. That reasoning inverted once
+  ESLint owned formatting: the declaration is precisely what lets
+  `esbenp.prettier-vscode` resolve a prettier and reformat on save against an
+  opinion no gate checks.

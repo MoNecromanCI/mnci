@@ -19,6 +19,10 @@ func TestExcludedCoversTheMatchedDirectoriesAndBelow(t *testing.T) {
 			t.Errorf("Excluded(%s) = %v, want %v", file, got, want)
 		}
 	}
+	deep := Config{Workspace: WorkspaceSection{Exclude: []string{"examples/**"}}}
+	if !deep.Excluded("examples/README.md") || !deep.Excluded("examples/movies/package.json") {
+		t.Error("examples/** must cover examples itself and everything below")
+	}
 	if (Config{}).Excluded("examples/movies/package.json") {
 		t.Error("nothing is excluded without [workspace] exclude")
 	}

@@ -14,7 +14,8 @@ import (
 )
 
 // Discover asks every plugin to describe the manifests it claims among the
-// workspace's files (tracked, or untracked and not ignored), then resolves
+// workspace's files (tracked, or untracked and not ignored, outside
+// [workspace] exclude), then resolves
 // edges, applies each project's stack, the configured conventions and then
 // smith.toml overrides.
 func Discover(files []string, plugins *pluginhost.PluginSet, catalog *pluginhost.Catalog, cfg workspace.Config) (*Graph, error) {
@@ -25,7 +26,7 @@ func Discover(files []string, plugins *pluginhost.PluginSet, catalog *pluginhost
 		}
 		var manifests []string
 		for _, f := range files {
-			if protocol.IsManifest(c.Info.Manifests, path.Base(f)) {
+			if protocol.IsManifest(c.Info.Manifests, path.Base(f)) && !cfg.Excluded(f) {
 				manifests = append(manifests, f)
 			}
 		}
@@ -79,6 +80,7 @@ func Discover(files []string, plugins *pluginhost.PluginSet, catalog *pluginhost
 	if _, err := g.Order(); err != nil {
 		return nil, err
 	}
+	g.SetExcluded(cfg.Excluded)
 	return g, nil
 }
 

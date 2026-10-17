@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -81,6 +83,11 @@ func Validate(cfg *Config) error {
 	}
 	if strings.TrimSpace(cfg.Workspace.Name) == "" {
 		return fmt.Errorf("%s: [workspace] name is required", FileName)
+	}
+	for _, glob := range cfg.Workspace.Exclude {
+		if !doublestar.ValidatePattern(glob) || path.IsAbs(glob) || strings.Contains(glob, `\`) {
+			return fmt.Errorf("%s: [workspace] exclude: %q is not a workspace-relative glob with forward slashes", FileName, glob)
+		}
 	}
 	for name, st := range cfg.Stacks {
 		if strings.TrimSpace(st.Language) == "" {

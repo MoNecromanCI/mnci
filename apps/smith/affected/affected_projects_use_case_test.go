@@ -8,6 +8,7 @@ import (
 
 	"github.com/monosmith-app/monosmith/apps/smith/gitclient"
 	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
+	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
@@ -46,6 +47,17 @@ func TestAffectedFollowsDependents(t *testing.T) {
 	r := Compute(g, pg, "base")
 	if r.All || !reflect.DeepEqual(r.Projects, []string{"ui", "web"}) {
 		t.Fatalf("result %+v", r)
+	}
+}
+
+func TestAChangeInAnExcludedDirectoryAffectsNothing(t *testing.T) {
+	g, pg := setup(t)
+	pg.SetExcluded(workspace.Config{Workspace: workspace.WorkspaceSection{Exclude: []string{"examples/*"}}}.Excluded)
+	p := filepath.Join(g.Dir, "examples", "movies", "run.mjs")
+	_ = os.MkdirAll(filepath.Dir(p), 0o755)
+	_ = os.WriteFile(p, []byte("changed"), 0o644)
+	if r := Compute(g, pg, "base"); r.All || len(r.Projects) != 0 {
+		t.Fatalf("an excluded directory's change affected %+v", r)
 	}
 }
 

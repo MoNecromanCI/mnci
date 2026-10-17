@@ -45,6 +45,10 @@ type WorkspaceSection struct {
 	Scope string `toml:"scope"`
 	// ModulePrefix is the Go module path prefix, e.g. github.com/acme/repo.
 	ModulePrefix string `toml:"module_prefix"`
+	// Exclude are workspace-relative globs ("examples/**") of directories
+	// whose manifests are not projects: discovery leaves them out in every
+	// language, and a change there affects no project.
+	Exclude []string `toml:"exclude"`
 }
 
 // CISection chooses which pipelines smith generates.

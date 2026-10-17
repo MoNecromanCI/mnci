@@ -10,8 +10,9 @@ import (
 )
 
 // Doctor checks that Node.js is the version CI installs (nodeVersion), that
-// dependencies are installed and that every Node project is covered by the
-// root package.json workspaces.
+// dependencies are installed, that every Node project is covered by the
+// root package.json workspaces, and that a built package has every file
+// its package.json names.
 func Doctor(workspaceRoot string, params protocol.DoctorParams, nodeVersion string) protocol.DoctorResult {
 	var findings []protocol.Finding
 	if len(params.Projects) == 0 {
@@ -47,6 +48,9 @@ func Doctor(workspaceRoot string, params protocol.DoctorParams, nodeVersion stri
 			Remedy: "add \"" + path.Dir(p.Root) + "/*\" to \"workspaces\" in the root package.json, then run `npm install`; or, if " + p.Root + " is deliberately standalone, leave it out of the workspace with `exclude = [\"" + p.Root + "\"]` under [workspace] in smith.toml",
 		})
 		if f, ok := CheckBuildDir(workspaceRoot, p); ok {
+			findings = append(findings, f)
+		}
+		if f, ok := CheckEntryFiles(workspaceRoot, p); ok {
 			findings = append(findings, f)
 		}
 	}

@@ -2,7 +2,7 @@
 
 ```sh
 smith release --dry-run    # the plan; changes nothing
-smith release --dry-run --comment   # in a pull request build: also post the plan on it (docs/ci.md)
+smith release --dry-run --comment   # in a pull request build: also post the plan on it (docs/reference/ci.md)
 smith release              # asks before releasing (CI: smith ci release)
 ```
 

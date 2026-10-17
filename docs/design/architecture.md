@@ -2,7 +2,7 @@
 
 How smith is built today. The decisions behind it are in
 [decisions.md](decisions.md); the plugin protocol in detail is in
-[plugins.md](plugins.md).
+[plugins.md](../reference/plugins.md).
 
 ## The repository
 
@@ -14,7 +14,7 @@ releases this repository itself.
 | `apps/smith` | the `smith` command: the core, the CLI, the TUI, and every built-in plugin linked in |
 | `libs/plugin-<name>` | one built-in plugin each: `node`, `node-toolchains` (typescript, eslint, jest, vitest, vite, angular, astro, vscode), `python`, `go`, `dart`, `dotnet`, `rust`, `ruby`, `php`, `jvm`, `cpp`, `bicep`, `docker`, `vertical-slices` |
 | `packages/plugin-sdk` | the protocol types (`protocol`), a server loop for plugins (`serve`), a client for hosts (`host`), framing (`transport`), the conformance suite (`conformance`), and helpers for templates and tool runs. Published as its own Go module (`packages/plugin-sdk/vX.Y.Z` tags) |
-| `docs/` | the user documentation, these notes, and the research the project started from (`docs/research/`) |
+| `docs/` | the user documentation, these notes, and the research the project started from (`docs/design/research/`) |
 | `install.sh`, `install.ps1` | install the newest `smith@` GitHub Release |
 
 ## The core
@@ -76,8 +76,8 @@ flowchart LR
   cache <--> remote["remotecache"]
 ```
 
-The methods, roles and stacks are described in [plugins.md](plugins.md) and
-[stacks.md](stacks.md). How plugins are distributed, installed by name and
+The methods, roles and stacks are described in [plugins.md](../reference/plugins.md) and
+[stacks.md](../reference/stacks.md). How plugins are distributed, installed by name and
 where they live is not decided yet, see #164.
 
 ## Data flow

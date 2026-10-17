@@ -38,6 +38,18 @@ var plumbing = map[string]string{
 	"@nx-go/nx-go:generate":         "run go generate ./... directly",
 }
 
+// packageTask is the task smith ci pack runs into dist/drop.
+const packageTask = "package"
+
+// pluginPackages are the languages whose plugin gives every app a package
+// task, and what it makes. The old mnci's package target of such an app
+// zipped the same thing, so the plugin's task replaces it; any other package
+// target is converted like any target.
+var pluginPackages = map[string]string{
+	"go":     "binary",
+	"python": "wheel",
+}
+
 // mapTargets converts one project's targets: each either stays with the
 // language plugin, becomes a package.json script (Node), becomes an
 // smith.toml task, or is reported.
@@ -52,6 +64,12 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 		if reason, ok := legacy[name]; ok {
 			plan.Add(Dropped, pp.Name, name, reason)
 			continue
+		}
+		if name == packageTask && plan.Legacy {
+			if made, ok := pluginPackages[pp.Language]; ok {
+				plan.Add(Changed, pp.Name, name, "the "+pp.Language+" plugin's package task replaces the old mnci's: smith ci pack puts the app's "+made+" in dist/drop")
+				continue
+			}
 		}
 		if strings.Contains(name, "-ci--") {
 			plan.Add(Dropped, pp.Name, name, "Nx's per-file split of a test target for CI")

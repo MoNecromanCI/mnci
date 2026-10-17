@@ -76,10 +76,12 @@ On top of the above, a workspace made by mnci 4.x gets:
   The release builds their per-platform zips under the same names
   (`release.asset` in `project.json`, or `go-app-<app>-<os>-<arch>.zip`) and
   attaches them to the GitHub Release.
-- the targets it generated for its pack phase and for Nx release
-  (`package`, `package-all`, `build-all`, `nx-release-publish`, and the
-  `tools/*-version-actions.cjs` and `tools/go-app-release.cjs` hooks) removed,
-  because smith does that itself
+- the targets it generated for Nx release (`package-all`, `build-all`,
+  `nx-release-publish`, and the `tools/*-version-actions.cjs` and
+  `tools/go-app-release.cjs` hooks) removed, because smith does that itself
+- `package` targets kept as `package` tasks, which `smith ci pack` runs into
+  `dist/drop`; a Go or Python app's uses the plugin's own instead (the binary,
+  the wheel)
 - the per-project root scripts (`<project>:test`, …) removed in favour of
   `smith run <task> -p <project>`
 - pipeline slots kept: `after-install` becomes `before-setup` and

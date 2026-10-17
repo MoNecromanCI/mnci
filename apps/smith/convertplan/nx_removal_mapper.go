@@ -109,6 +109,10 @@ func planNxRemoval(plan *Plan, w *nxworkspace.Workspace, files []string, read fu
 		case "yarn.lock":
 			plan.Add(Unsupported, "", f, "yarn workspaces: the smith Node plugin runs npm; switch to npm workspaces (npm install creates package-lock.json)")
 		}
+		if tsconfigFile(f) {
+			planNxReactTypings(plan, f, read(f), files)
+			continue
+		}
 		if !configFile(f) {
 			continue
 		}
@@ -212,8 +216,15 @@ func replaceRollup(plan *Plan, w *nxworkspace.Workspace, file, text string) bool
 	// would make `tsc --build` (typecheck) think the library is built when
 	// its own outputs are missing.
 	declarations := path.Dir(types)
-	build := fmt.Sprintf("esbuild %s --bundle --packages=external --format=%s --outfile=%s --sourcemap && tsc -p %s --emitDeclarationOnly --declaration --declarationDir %s --tsBuildInfoFile %s/tsconfig.lib.tsbuildinfo",
-		entry, format, out, strings.TrimPrefix(tsconfig[1], "./"), declarations, declarations)
+	up := strings.Repeat("../", strings.Count(path.Clean(root), "/")+1)
+	if root == "." {
+		up = ""
+	}
+	// Then each relative specifier in the declarations names its file, as
+	// mnci's rollup plugin did, so nodenext consumers can follow them.
+	build := fmt.Sprintf("esbuild %s --bundle --packages=external --format=%s --outfile=%s --sourcemap && tsc -p %s --emitDeclarationOnly --declaration --declarationDir %s --tsBuildInfoFile %s/tsconfig.lib.tsbuildinfo && node %s%s %s",
+		entry, format, out, strings.TrimPrefix(tsconfig[1], "./"), declarations, declarations, up, DeclarationSpecifiersFile, declarations)
+	plan.WriteFile(DeclarationSpecifiersFile, DeclarationSpecifiers)
 	if pp.Scripts == nil {
 		pp.Scripts = map[string]string{}
 	}
@@ -223,8 +234,38 @@ func replaceRollup(plan *Plan, w *nxworkspace.Workspace, file, text string) bool
 	}
 	plan.AddDevDependencies["esbuild"] = ""
 	plan.DeletePath(file)
-	plan.Add(Changed, pp.Name, "build", "Rollup with @nx/rollup becomes esbuild plus tsc declarations, into the same "+out+" and "+types+": "+build)
+	plan.Add(Changed, pp.Name, "build", "Rollup with @nx/rollup becomes esbuild plus tsc declarations, into the same "+out+" and "+types+", whose relative specifiers "+DeclarationSpecifiersFile+" gives their .js files (as the old mnci's rollup plugin did): "+build)
 	return true
+}
+
+// tsconfigFile reports whether a file is a tsconfig outside node_modules.
+func tsconfigFile(f string) bool {
+	base := path.Base(f)
+	return strings.HasPrefix(base, "tsconfig") && strings.HasSuffix(base, ".json") &&
+		!strings.HasPrefix(f, "node_modules/") && !strings.Contains(f, "/node_modules/")
+}
+
+// planNxReactTypings rewrites a tsconfig that lists @nx/react's typings,
+// which go with @nx/react. A Vite project gets vite/client, which declares
+// the same CSS-module and image imports.
+func planNxReactTypings(plan *Plan, f, text string, files []string) {
+	if !strings.Contains(text, nxReactTypings) {
+		return
+	}
+	dir := path.Dir(f)
+	vite := false
+	for _, other := range files {
+		if path.Dir(other) == dir && strings.HasPrefix(path.Base(other), "vite.config.") {
+			vite = true
+		}
+	}
+	rewritten, ok := RewriteNxReactTypings(text)
+	if !vite || !ok {
+		plan.Add(Manual, "", f, "lists @nx/react's typings ("+nxReactTypings+"*.d.ts), which go with @nx/react; declare the CSS-module and image imports in the project instead")
+		return
+	}
+	plan.WriteFile(f, rewritten)
+	plan.Add(Changed, "", f, "@nx/react's typings become vite/client, which declares the same CSS-module and image imports; an SVG import is its URL only (no ReactComponent export)")
 }
 
 func pathDeleted(plan *Plan, f string) bool {

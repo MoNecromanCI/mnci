@@ -45,3 +45,37 @@ func TestScanImportsSkipsBuildOutput(t *testing.T) {
 		t.Fatalf("got %v", got)
 	}
 }
+
+func TestPackageNamesSkipsComments(t *testing.T) {
+	src := "// the old config did require('@nx/rollup/with-nx')\n" +
+		"/**\n * `import ... from 'chromium-bidi/x'` failed\n */\n" +
+		"const url = 'https://example.com/a' // trailing\n" +
+		"const tpl = `// not a comment ${x}`\n" +
+		"import { z } from 'zod' /* inline */ import y from \"yaml\"\n" +
+		"const s = 'it\\'s' ; const r = require('lodash')\n"
+	got := PackageNames(src)
+	want := []string{"zod", "yaml", "lodash"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v want %v", got, want)
+	}
+}
+
+func TestScanFileImportsNamesEachFile(t *testing.T) {
+	dir := t.TempDir()
+	write := func(rel, body string) {
+		p := filepath.Join(dir, filepath.FromSlash(rel))
+		_ = os.MkdirAll(filepath.Dir(p), 0o755)
+		_ = os.WriteFile(p, []byte(body), 0o644)
+	}
+	write("src/main.ts", "import { x } from '@acme/ui'\nimport { y } from '#internal/y'")
+	write("src/util/fmt.ts", "import type { Z } from 'zod'")
+	write("README.md", "import nothing from 'here'")
+	got, err := ScanFileImports(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string][]string{"src/main.ts": {"@acme/ui"}, "src/util/fmt.ts": {"zod"}}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v want %v", got, want)
+	}
+}

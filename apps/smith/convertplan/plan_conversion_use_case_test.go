@@ -235,6 +235,35 @@ func TestPlanKeepsDependenciesOnOtherProjectsTargets(t *testing.T) {
 	}
 }
 
+func TestPlanConvertsAnUnbundledEsbuildBuild(t *testing.T) {
+	// OpenCraw's azure-host: ESM, bundle: false.
+	host := project("@acme/host", "apps/host", "app", []string{"package.json"}, map[string]nxworkspace.Target{
+		"build": target(t, `{"executor": "@nx/esbuild:esbuild", "options": {"platform": "node", "outputPath": "apps/host/dist", "format": ["esm"], "bundle": false, "main": "apps/host/src/main.ts", "tsConfig": "apps/host/tsconfig.app.json"}}`),
+	})
+	api := project("@acme/api", "apps/api", "app", []string{"package.json"}, map[string]nxworkspace.Target{
+		"build": target(t, `{"executor": "@nx/esbuild:esbuild", "options": {"outputPath": "apps/api/dist", "bundle": false, "main": "apps/api/src/main.ts", "tsConfig": "apps/api/tsconfig.app.json"}}`),
+	})
+	w := &nxworkspace.Workspace{Projects: []*nxworkspace.Project{host, api}}
+	plan := MakePlan(w, Input{DirName: "acme", Read: func(string) string { return "" }})
+
+	build := plan.Project("host").Scripts["build"]
+	if !strings.Contains(build, "getParsedCommandLineOfConfigFile('tsconfig.app.json'") || !strings.Contains(build, "outdir:'dist',platform:'node',format:'esm'") || strings.Contains(build, "--bundle") {
+		t.Fatalf("host build %q", build)
+	}
+	if _, ok := plan.AddDevDependencies["typescript"]; !ok {
+		t.Fatalf("dev dependencies %v", plan.AddDevDependencies)
+	}
+	if changed := findings(plan, Changed); !strings.Contains(changed, "host build: bundle: false: like Nx, it transpiles each file the tsconfig includes") {
+		t.Fatalf("changed:\n%s", changed)
+	}
+	if _, converted := plan.Project("api").Scripts["build"]; converted {
+		t.Fatal("a Node CommonJS build with bundle: false needs Nx's loader; it is not converted")
+	}
+	if manual := findings(plan, Manual); !strings.Contains(manual, "api build: with bundle: false for Node CommonJS, Nx also transpiles the workspace libraries") {
+		t.Fatalf("manual:\n%s", manual)
+	}
+}
+
 func TestPlanShipsANodeAppWithADockerfileAsAnImage(t *testing.T) {
 	host := project("@acme/host", "apps/host", "app", []string{"package.json", "Dockerfile"}, nil)
 	lib := project("@acme/tools", "libs/tools", "lib", []string{"package.json", "Dockerfile"}, nil)

@@ -104,6 +104,10 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 			commandTarget(plan, pp, name, t, line, cwd, env)
 			continue
 		}
+		if why := executorGap(t); why != "" {
+			plan.Add(Manual, pp.Name, name, why)
+			continue
+		}
 		if line, needs, ok := executorCommand(w, p, t); ok && pp.Language == "node" {
 			for _, n := range needs {
 				if plan.AddDevDependencies == nil {
@@ -130,6 +134,9 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 			}
 			setScript(plan, pp, script, line, t, nil)
 			plan.Add(Changed, pp.Name, name, fmt.Sprintf("%s becomes the script %q: %s", t.Executor, script, line))
+			if t.Executor == "@nx/esbuild:esbuild" && !esbuildBundles(t) {
+				plan.Add(Changed, pp.Name, name, "bundle: false: like Nx, it transpiles each file the tsconfig includes into the same place under the output, bundling nothing")
+			}
 			if copied {
 				plan.Add(Changed, pp.Name, name, "its assets are copied after the build by a node one-liner, as Nx copied them (fs.globSync: Node 22 or later)")
 			}

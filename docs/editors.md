@@ -1,8 +1,8 @@
 # Editors
 
 Editors and tools build on four commands whose `--json` output is a stable
-contract. They keep the shapes the smith VS Code extension reads, which was
-written against the TypeScript smith.
+contract. They keep the shapes the mnci VS Code extension reads, which was
+written against the old TypeScript mnci.
 
 | Command | Prints |
 |---|---|

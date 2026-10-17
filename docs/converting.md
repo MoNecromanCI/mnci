@@ -102,7 +102,7 @@ Every finding has a severity:
 |---|---|
 | **Blocking** | stops the conversion (two projects that would get the same name) |
 | **Needs you** | something convert could not do; it says what to do instead |
-| **Not supported yet** | a project in a language smith has no plugin for yet (Flutter, .NET, Rust, JVM, …), pnpm or yarn workspaces, publishing a VS Code extension. These projects keep their files and `project.json`, but nothing builds or releases them. |
+| **Not supported yet** | a project convert does not map: it maps Node, Go and Python projects only, so a Flutter/Dart, .NET, Rust, JVM, PHP, Ruby, C++ or Bicep project is reported here even though smith has a plugin for its language. Also pnpm or yarn workspaces, releasing an app that is not Go, and publishing a VS Code extension. These projects keep their files and `project.json`; bringing them under smith is by hand for now (their language's workspace file, see [plugins](plugins.md)). |
 | **Behaves differently** | a change you should know about |
 | **Converted** / **Dropped** | what moved where, and the Nx-only plumbing that went |
 

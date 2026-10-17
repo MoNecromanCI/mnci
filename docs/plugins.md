@@ -82,8 +82,8 @@ directory can carry a binary per platform. smith looks for
 
 None of it depends on how smith itself was installed. `smith plugin list` shows
 the built-in plugins, the search path and what is installed on it.
-Installing by name from a registry (Homebrew/Yeoman style) is planned (#164);
-it will put directories like these on the search path.
+How plugins are published, found and installed by name (a registry,
+Homebrew/Yeoman style) is not decided yet (#164).
 
 A project's cache keys include the version of every plugin that shapes it,
 so upgrading a plugin re-runs its tasks.

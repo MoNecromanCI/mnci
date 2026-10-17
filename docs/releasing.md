@@ -40,9 +40,11 @@ asset_name = "{product}_{version}_{os}_{arch}.{ext}"
 ```
 
 It is versioned by its tag (`cli@1.2.0`) only. Its plugin builds the release
-assets: the Go plugin cross-compiles every platform with `CGO_ENABLED=0`,
-stamps the version into `main.version` (`-ldflags -X`), zips each binary and
-writes `checksums.txt`, all under `dist/release/<app>/`. The settings are in
+assets. Today only the Go plugin builds them: it cross-compiles every platform
+with `CGO_ENABLED=0`, stamps the version into `main.version` (`-ldflags -X`),
+zips each binary and writes `checksums.txt`, all under `dist/release/<app>/`.
+An app in another language with a release section is tagged and gets a GitHub
+Release, without assets. The settings are in
 [Configuration](configuration.md#a-projects-release-settings).
 
 ## GitHub Releases
@@ -121,8 +123,8 @@ this way.
 
 | Language | Tag | Why |
 |---|---|---|
-| Node, Python, apps | `<name>@<version>` | override with `tag_prefix` |
-| Go | `<dir>/v<version>` (e.g. `packages/gokit/v0.1.0`) | how `go get` finds a nested module's version |
+| every language but Go, and every app | `<name>@<version>` | override with `tag_prefix` |
+| Go packages | `<dir>/v<version>` (e.g. `packages/gokit/v0.1.0`) | how `go get` finds a nested module's version |
 
 The model is **tag-only**: nothing is committed back to the branch. For each
 package, in dependency order, smith:
@@ -148,7 +150,9 @@ release, because the plan's versions would be wrong:
 | The newest tag is lower than the registry's version | the release would propose a version the registry refuses | tag the commit that published the registry's version |
 
 The registry is asked through the project's plugin (`npm view` for Node, the
-PEP 503 index for Python; a Go module's tags are its registry). An unreachable
+PEP 503 index for Python, and likewise crates.io, NuGet, RubyGems, pub.dev,
+Packagist and the Maven repository; a Go module's tags are its registry, and
+C++ and Bicep projects have none). An unreachable
 registry is a warning, not a stop. `smith doctor` runs the same checks without
 fetching.
 
@@ -176,4 +180,4 @@ GitHub Actions, a summary table:
   "unchanged": ["gokit"] }
 ```
 
-Changelog files are planned (#64).
+There are no changelog files: the release notes go to the GitHub Release.

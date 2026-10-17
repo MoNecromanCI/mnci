@@ -117,10 +117,21 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 					script = "start"
 				}
 			}
+			copied := false
+			if copiesAssets(p, t) {
+				var out string
+				t.Option("outputPath", &out)
+				if copy, ok := AssetCopy(p.Root, t, relativeTo(p.Root, out)); ok && out != "" {
+					line += " && " + copy
+					copied = true
+				} else {
+					plan.Add(Manual, pp.Name, name, "the build copied assets ("+t.Executor+" assets option); add the copy to the build script")
+				}
+			}
 			setScript(plan, pp, script, line, t, nil)
 			plan.Add(Changed, pp.Name, name, fmt.Sprintf("%s becomes the script %q: %s", t.Executor, script, line))
-			if copiesAssets(p, t) {
-				plan.Add(Manual, pp.Name, name, "the build copied assets ("+t.Executor+" assets option); add the copy to the build script")
+			if copied {
+				plan.Add(Changed, pp.Name, name, "its assets are copied after the build by a node one-liner, as Nx copied them (fs.globSync: Node 22 or later)")
 			}
 			continue
 		}

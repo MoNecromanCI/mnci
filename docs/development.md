@@ -83,11 +83,13 @@ cd apps/smith && go test -tags e2e -timeout 40m -v -skip '^(TestConvert.*|TestGo
 cd apps/smith && go test -tags e2e -timeout 85m -v -run TestConvert ./goldenpath                          # converting Nx and old-mnci workspaces
 ```
 
-CI runs the same: `unit` and the two golden-path suites on Linux, macOS and
-Windows for every pull request (`.github/workflows/golden-path.yml`). The
-convert suite builds real Nx and old-mnci workspaces and takes over half an
-hour on Windows, so it runs only when started by hand (Actions → golden-path →
-Run workflow).
+CI runs the same on Linux, macOS and Windows
+(`.github/workflows/golden-path.yml`): `unit` on every pull request and push,
+and the two golden-path suites once a day (03:00 UTC) and when started by hand
+(Actions → golden-path → Run workflow). Run them by hand before merging a
+change the unit tests can't judge, such as a plugin's scaffold or the release.
+The convert suite builds real Nx and old-mnci workspaces and takes over half
+an hour on Windows, so it runs only when started by hand.
 
 `smith run lint test build` runs the same through the workspace (lint includes
 the vertical-slices convention's `slice-check`), with the cache. Use the smith you are working on:

@@ -147,7 +147,8 @@ adds between `smith:slot` markers survive regeneration.
 The repository was bootstrapped by the old, Nx-based mnci, then converted to
 smith. Since then smith runs its own CI: `.github/workflows/ci.yml` is generated
 by `smith ci generate`, and `golden-path.yml` (written by hand) runs the unit
-tests and the end-to-end suites on Linux, macOS and Windows. A merge to `main`
+tests on every pull request and the end-to-end suites once a day, on Linux,
+macOS and Windows. A merge to `main`
 releases: the `smith` app as `smith@<version>` (archives for six platforms,
 npm, PyPI, NuGet, RubyGems, the GitHub Release) and the plugin SDK as
 `packages/plugin-sdk/v<version>`.

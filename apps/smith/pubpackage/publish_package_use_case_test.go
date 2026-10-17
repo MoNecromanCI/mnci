@@ -2,6 +2,7 @@ package pubpackage
 
 import (
 	"archive/zip"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -49,6 +50,13 @@ func TestPublishBuildsThePackageAndPublishesIt(t *testing.T) {
 	var ran []string
 	fake(t, []string{"0.9.0"}, func(dir string, args ...string) (string, string, error) {
 		ran = append(ran, strings.Join(args, " "))
+		// It publishes a copy outside the workspace, whose dist/ git ignores.
+		if strings.HasPrefix(dir, root) {
+			t.Errorf("published from %s, inside the workspace", dir)
+		}
+		if _, err := os.Stat(filepath.Join(dir, "pubspec.yaml")); err != nil {
+			t.Errorf("the published copy has no pubspec.yaml")
+		}
 		return "", "", nil
 	})
 	res, err := Publish(root, release(t, root), false)
@@ -62,6 +70,17 @@ func TestPublishBuildsThePackageAndPublishesIt(t *testing.T) {
 		if _, err := os.Stat(filepath.Join(root, "pub", filepath.FromSlash(file))); err != nil {
 			t.Errorf("the package has no %s", file)
 		}
+	}
+}
+
+func TestPublishShowsDartsValidationErrors(t *testing.T) {
+	root := t.TempDir()
+	fake(t, nil, func(string, ...string) (string, string, error) {
+		return "* You must have a LICENSE file in the root directory.", "", errors.New("exit status 65")
+	})
+	_, err := Publish(root, release(t, root), false)
+	if err == nil || !strings.Contains(err.Error(), "You must have a LICENSE file") {
+		t.Errorf("err = %v", err)
 	}
 }
 

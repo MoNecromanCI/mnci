@@ -210,6 +210,8 @@ func planRoot(plan *Plan, w *nxworkspace.Workspace, names map[string]string) {
 		if rewritten, ok := RewriteScript(cmd, names); ok {
 			plan.RootScripts[k] = rewritten
 			plan.Add(Mapped, "", "script "+k, rewritten)
+		} else if gap := ScriptGap(cmd); gap != "" {
+			plan.Add(Manual, "", "script "+k, gap+": "+cmd)
 		} else {
 			plan.Add(Manual, "", "script "+k, "runs Nx in a way smith cannot translate: "+cmd)
 		}

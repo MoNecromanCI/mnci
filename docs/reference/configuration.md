@@ -45,6 +45,7 @@ schema = 1
 name = "acme"                         # required
 scope = "@acme"                       # npm scope for Node projects
 module_prefix = "github.com/acme/acme"  # Go module path prefix
+exclude = ["examples/*"]              # directories whose manifests are not projects (below)
 
 [ci]
 providers = ["github"]                # "github", "azure", "gitlab", or several
@@ -90,6 +91,32 @@ version = "^1"                        # installed on the plugin search path (doc
 [plugins.external.rust]
 command = ["smith-plugin-rust"]        # any executable speaking the protocol
 ```
+
+## Leaving directories out
+
+smith makes a project of every manifest it finds (`package.json`, `go.mod`,
+`pyproject.toml`, `Cargo.toml`, …). `[workspace] exclude` lists the
+directories that are not projects, as workspace-relative globs with forward
+slashes:
+
+```toml
+[workspace]
+exclude = ["examples/*", "tools/scratch"]
+```
+
+A manifest is left out when its directory, or a directory above it, matches a
+glob: `examples/*` covers `examples/movies/package.json` and everything under
+`examples/movies`. No plugin sees those manifests, so they have no tasks, and
+the graph, `smith run`, `smith doctor` and CI ignore them. A change inside an
+excluded directory affects no project. Files directly in `examples/` (a
+README) are not covered by `examples/*`; use `examples/**` to cover them too.
+
+Use it for folders a repository keeps standalone on purpose, such as
+examples users copy and install on their own. A Node package outside the root
+`package.json` `"workspaces"` is a typical case: npm does not install it with
+the workspace, so `smith doctor` asks you to either add it to `"workspaces"`
+or exclude it. `smith convert` excludes such packages itself when Nx knew
+them only through their `package.json`.
 
 ## Overriding a task
 

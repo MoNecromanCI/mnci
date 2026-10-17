@@ -35,6 +35,7 @@ It is tested with Nx 23. With another major the report says so.
 | `projectType: application` | kind `app` |
 | a project `nx release` publishes (`release.projects`, or every non-private package when unset) | kind `package` |
 | any other project | kind `lib` |
+| a Node package outside the root `package.json` `"workspaces"`, known to Nx only by its `package.json` (no `project.json`, not released) | no project: its directory goes into `[workspace] exclude` (`<parent>/*` when every project there is like it), as npm leaves it out of the workspace |
 | an app with a `Dockerfile` | the same app, and `[conventions.docker]`: an `image` task, and its release pushes the image |
 | a kind its directory does not imply (`python-packages/x`, a published `libs/x`) | the kind written into the manifest (`"smith": {"kind": …}`, `[tool.smith] kind`, `// smith:kind`) |
 | a Node target running in the project root | a `package.json` script, run by the Node plugin (npm runs scripts through a shell, so nothing is lost) |

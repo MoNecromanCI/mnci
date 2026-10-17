@@ -78,6 +78,19 @@ func (p *Project) ServedBy(plugin string) bool {
 type Graph struct {
 	Projects []*Project
 	byName   map[string]*Project
+	// excluded reports a file in a [workspace] exclude directory.
+	excluded func(string) bool
+}
+
+// SetExcluded sets what Excluded reports, from [workspace] exclude.
+func (g *Graph) SetExcluded(excluded func(string) bool) {
+	g.excluded = excluded
+}
+
+// Excluded reports whether a workspace-relative file lies in a directory
+// [workspace] exclude leaves out of the workspace's projects.
+func (g *Graph) Excluded(file string) bool {
+	return g.excluded != nil && g.excluded(file)
 }
 
 // New indexes projects by name. Names must be unique.

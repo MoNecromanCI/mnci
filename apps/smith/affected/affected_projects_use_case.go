@@ -75,7 +75,8 @@ func Compute(git *gitclient.Git, graph *projectgraph.Graph, base string) Result 
 			touched[owner.Name] = true
 			continue
 		}
-		if !neutral(f) {
+		// A file in an excluded directory belongs to no project.
+		if !neutral(f) && !graph.Excluded(f) {
 			r := all("workspace file " + f + " changed")
 			r.Changed = changed
 			return r

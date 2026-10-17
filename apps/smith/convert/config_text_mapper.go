@@ -22,6 +22,10 @@ func ConfigText(cfg workspace.Config) string {
 	if cfg.Workspace.ModulePrefix != "" {
 		fmt.Fprintf(&b, "module_prefix = %s\n", q(cfg.Workspace.ModulePrefix))
 	}
+	if len(cfg.Workspace.Exclude) > 0 {
+		b.WriteString("# Not projects: standalone folders outside the npm workspaces.\n")
+		fmt.Fprintf(&b, "exclude = %s\n", list(cfg.Workspace.Exclude))
+	}
 	if len(cfg.CI.Providers) > 0 {
 		fmt.Fprintf(&b, "\n[ci]\nproviders = %s\n", list(cfg.CI.Providers))
 	}

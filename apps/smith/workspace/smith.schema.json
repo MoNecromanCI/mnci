@@ -15,7 +15,8 @@
       "properties": {
         "name": { "type": "string", "minLength": 1, "description": "The workspace's name." },
         "scope": { "type": "string", "description": "npm scope for Node packages, e.g. @acme." },
-        "module_prefix": { "type": "string", "description": "Go module path prefix, e.g. github.com/acme/repo." }
+        "module_prefix": { "type": "string", "description": "Go module path prefix, e.g. github.com/acme/repo." },
+        "exclude": { "type": "array", "items": { "type": "string" }, "description": "Workspace-relative globs (examples/**) of directories whose manifests are not projects, in any language." }
       }
     },
     "ci": {

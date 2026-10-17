@@ -10,7 +10,7 @@ import (
 func TestConfigTextRoundTrips(t *testing.T) {
 	yes := true
 	in := workspace.Config{
-		Workspace: workspace.WorkspaceSection{Name: "acme", Scope: "@acme", ModulePrefix: "github.com/acme/repo"},
+		Workspace: workspace.WorkspaceSection{Name: "acme", Scope: "@acme", ModulePrefix: "github.com/acme/repo", Exclude: []string{"examples/*"}},
 		CI:        workspace.CISection{Providers: []string{"github", "azure"}},
 		Release:   workspace.ReleaseSection{GitHubReleases: true},
 		Conventions: map[string]workspace.ConventionConfig{
@@ -33,7 +33,7 @@ func TestConfigTextRoundTrips(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%v\n%s", err, text)
 	}
-	if out.Workspace != in.Workspace || !reflect.DeepEqual(out.CI.Providers, in.CI.Providers) || !out.Release.GitHubReleases {
+	if !reflect.DeepEqual(out.Workspace, in.Workspace) || !reflect.DeepEqual(out.CI.Providers, in.CI.Providers) || !out.Release.GitHubReleases {
 		t.Fatalf("sections %+v\n%s", out, text)
 	}
 	if !reflect.DeepEqual(out.Conventions, in.Conventions) {

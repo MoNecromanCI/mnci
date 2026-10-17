@@ -52,18 +52,6 @@ func MakePlan(w *nxworkspace.Workspace, in Input) *Plan {
 		plan.Config.Release.GitHubReleases = plan.Config.Release.GitHubReleases || contains(plan.Config.CI.Providers, "github")
 	}
 
-	names := map[string]string{}
-	byName := map[string]string{}
-	for _, p := range w.Projects {
-		name := path.Base(p.Root)
-		if other, dup := byName[name]; dup {
-			plan.Add(Blocker, name, p.Root, fmt.Sprintf("%s and %s would both be called %q: smith names projects after their directory, so rename one directory first", other, p.Root, name))
-		}
-		byName[name] = p.Root
-		names[p.Name] = name
-	}
-	plan.names = names
-
 	released := nxworkspace.ReleaseSet(w)
 	if plan.Legacy {
 		// The old mnci released Go libraries by their <dir>/vX.Y.Z tags,
@@ -74,9 +62,40 @@ func MakePlan(w *nxworkspace.Workspace, in Input) *Plan {
 			}
 		}
 	}
+
+	standalone := map[string]bool{}
+	var standaloneRoots, keptRoots []string
+	for _, p := range w.Projects {
+		if Standalone(w, p, released[p.Name]) {
+			standalone[p.Name] = true
+			standaloneRoots = append(standaloneRoots, p.Root)
+			plan.Add(Mapped, path.Base(p.Root), p.Root, "outside the root package.json \"workspaces\" and known to Nx only by its package.json: left out of the workspace with [workspace] exclude, as npm leaves it out; add it to \"workspaces\" instead to make it a project")
+			continue
+		}
+		keptRoots = append(keptRoots, p.Root)
+	}
+	plan.Config.Workspace.Exclude = ExcludeGlobs(standaloneRoots, keptRoots)
+
+	names := map[string]string{}
+	byName := map[string]string{}
+	for _, p := range w.Projects {
+		if standalone[p.Name] {
+			continue
+		}
+		name := path.Base(p.Root)
+		if other, dup := byName[name]; dup {
+			plan.Add(Blocker, name, p.Root, fmt.Sprintf("%s and %s would both be called %q: smith names projects after their directory, so rename one directory first", other, p.Root, name))
+		}
+		byName[name] = p.Root
+		names[p.Name] = name
+	}
+	plan.names = names
+
 	pattern := w.Nx.Release.TagPattern()
 	for _, p := range w.Projects {
-		planProject(plan, w, p, names[p.Name], released[p.Name], pattern, in)
+		if !standalone[p.Name] {
+			planProject(plan, w, p, names[p.Name], released[p.Name], pattern, in)
+		}
 	}
 	planRoot(plan, w, names)
 	if plan.Legacy {

@@ -312,3 +312,37 @@ func TestPlanPlainNxReleasesOnlyPublicPackages(t *testing.T) {
 		t.Fatalf("%+v", plan.Config.Workspace)
 	}
 }
+
+func TestPlanLeavesStandaloneNodeFoldersOutOfTheWorkspace(t *testing.T) {
+	node := func(name, root string, projectJSON bool) *nxworkspace.Project {
+		p := project(name, root, "app", []string{"package.json"}, nil)
+		p.Package = &nxworkspace.PackageJSON{Name: name, Private: true}
+		p.HasProjectJSON = projectJSON
+		return p
+	}
+	web := node("@acme/web", "apps/web", false)
+	movies := node("example-movies", "examples/movies", false)
+	shop := node("example-shop", "examples/shop", false)
+	// Declared to Nx with a project.json: kept.
+	gen := node("gen", "tools/gen", true)
+	// Standalone beside a kept project: excluded by its own path.
+	scratch := node("scratch", "tools/scratch", false)
+	w := &nxworkspace.Workspace{Projects: []*nxworkspace.Project{web, movies, shop, gen, scratch}}
+	w.RootPackage.Workspaces = json.RawMessage(`["packages/*", "apps/*"]`)
+	plan := MakePlan(w, Input{DirName: "acme", Read: func(string) string { return "" }})
+
+	if got := strings.Join(plan.Config.Workspace.Exclude, ","); got != "examples/*,tools/scratch" {
+		t.Fatalf("exclude = %s", got)
+	}
+	for _, name := range []string{"movies", "shop", "scratch"} {
+		if plan.Project(name) != nil {
+			t.Errorf("%s is still a project", name)
+		}
+	}
+	if plan.Project("web") == nil || plan.Project("gen") == nil {
+		t.Error("a workspace member or a project.json project was left out")
+	}
+	if mapped := findings(plan, Mapped); !strings.Contains(mapped, "movies examples/movies: outside the root package.json \"workspaces\"") {
+		t.Fatalf("mapped:\n%s", mapped)
+	}
+}

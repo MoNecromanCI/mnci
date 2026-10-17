@@ -35,7 +35,7 @@ npm = ["@monosmith/cli", "monosmith"]
 pypi = "monosmith"
 nuget = "monosmith"
 rubygems = "monosmith"
-description = "Runs a monorepo in Node, Go and Python: tasks from a cache, CI and releases"
+description = "Runs a monorepo in Node, Go, Python, Rust, .NET, Ruby, PHP, C++, Dart, the JVM and Bicep: tasks from a cache, CI and releases"
 license = "MIT"
 
 # The workspace's lint above is golangci-lint, for the Go projects; this Node

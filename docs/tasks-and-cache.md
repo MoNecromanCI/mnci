@@ -41,11 +41,17 @@ assets. A tool that builds the whole workspace into one directory gets its own
 folder there: Cargo builds into `dist/cargo` (`target-dir` in
 `.cargo/config.toml`, written with the first crate).
 
-| Language | Builds to `dist/<project dir>/` |
+| Language | Builds to |
 |---|---|
-| Go | the app's binary (`go build -o`) |
-| Python | a package's wheel and sdist (`python -m build --outdir`) |
-| Node (TypeScript) | an app's or a package's compiled JavaScript (`tsc`, `outDir`) |
+| Go | `dist/<project dir>/`: the app's binary (`go build -o`) |
+| Python | `dist/<project dir>/`: a package's wheel and sdist (`python -m build --outdir`) |
+| Node (TypeScript) | `dist/<project dir>/`: an app's or a package's compiled JavaScript (`tsc`, `outDir`); a Vite, Angular or Astro app's site |
+| Dart, Flutter | `dist/<project dir>/`: a Flutter web app, or a Dart app's `dart build cli` output |
+| C, C++ | `dist/<project dir>/`: the CMake build (Ninja) |
+| Bicep | `dist/<project dir>/template` and `parameters` |
+| Rust | `dist/cargo` for the whole workspace |
+| .NET | `dist/dotnet` (`bin/` and `obj/`) for the whole workspace |
+| JVM | `dist/maven` or `dist/gradle` for the whole workspace |
 
 TypeScript libraries don't build at all. A library's `package.json` exports
 its sources (`"exports": "./src/index.ts"`). TypeScript reads them, and so
@@ -103,8 +109,8 @@ dependency tasks whose keys changed, and a new smith or plugin version. It runs
 nothing; `--json` prints the same report.
 
 Everything goes through a `Storage` interface (`Has/Get/Put/Delete/Walk/Touch`)
-with a conformance test. It stores three kinds (`ac`, `cas`, `last`), so a
-remote backend (HTTP, S3, Azure Blob — #42) is an addition, not a change.
+with a conformance test. It stores three kinds (`ac`, `cas`, `last`); the
+remote backends below implement the same interface.
 
 ### Remote cache
 
@@ -145,9 +151,9 @@ smith test --affected
 
 The affected projects are those owning a changed file (since the merge base
 with the base branch, plus uncommitted and untracked files) and every project
-that depends on them. The base is `--base`, else the pull request target
-(`GITHUB_BASE_REF`, `SYSTEM_PULLREQUEST_TARGETBRANCH`, `SMITH_BASE`), else the
-release branch.
+that depends on them. The base is `--base`, else `SMITH_BASE`, else the pull
+request target (`GITHUB_BASE_REF`, `SYSTEM_PULLREQUEST_TARGETBRANCH`,
+`CI_MERGE_REQUEST_TARGET_BRANCH_NAME`), else the release branch.
 
 When smith cannot be sure it affects **everything**: no base, an unknown base, no
 common ancestor (a shallow clone), or a changed workspace-level file such as

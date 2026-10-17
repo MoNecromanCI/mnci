@@ -25,8 +25,8 @@ plugin. A project built with one stack can depend on a project built with
 another.
 
 A language plugin without explicit roles also brings a default toolchain and
-scaffold, so `node`, `go` and `python` work on their own: a project with no
-stack is built by its language plugin alone. `node` on its own is plain
+scaffold, so every built-in language plugin works on its own: a project with
+no stack is built by its language plugin alone. `node` on its own is plain
 JavaScript; TypeScript is the `typescript` plugin's, through a stack.
 
 ## Declaring a stack
@@ -67,6 +67,17 @@ The project records its stack in its manifest:
 | Node | `"smith": { "kind": "app", "stack": "ts-func" }` in `package.json` |
 | Python | `stack = "ts-func"` under `[tool.smith]` in `pyproject.toml` |
 | Go | a `// smith:stack ts-func` line at the top of `go.mod` |
+| Rust | `stack` under `[package.metadata.smith]` in `Cargo.toml` |
+| .NET | a `<SmithStack>` property in the `.csproj` or `.fsproj` |
+| Ruby | `spec.metadata['smith_stack']` in the `.gemspec` |
+| PHP | `extra.smith.stack` in `composer.json` |
+| Dart | `stack` under `smith:` in `pubspec.yaml` |
+| JVM | a `smith.stack` property in `pom.xml`, or in `gradle.properties` |
+| C, C++ | `set(SMITH_STACK ...)` in `CMakeLists.txt` |
+| Bicep | `metadata smithStack = '...'` in `main.bicep` |
+
+The project's kind sits beside it, under the same name with `kind`
+(`SmithKind`, `smith_kind`, `smith.kind`, `SMITH_KIND`, `smithKind`).
 
 A project's stack is, in order: `[projects.<name>] stack` in `smith.toml`, the
 one its manifest records, or the default for its language. `none` means
@@ -104,7 +115,16 @@ add: a file, script, setting or dependency that already exists is kept.
 | `node-ts` | node | `typescript` | `typescript` | `typescript` |
 | `node-jest` | node | `typescript` | `typescript`, `eslint` (`@mnci/eslint-config`), `jest` | `jest` |
 | `node-vitest` | node | `typescript` | `typescript`, `eslint` (`@mnci/eslint-config`), `vitest` | `vitest` |
+| `react`, `react-p5`, `vue`, `svelte`, `html` | node | `vite` | `vite`, `eslint`, `vitest` | `vite`: a browser app built with Vite |
+| `angular` | node | `angular` | `angular`, `eslint`, `vitest` | `angular` |
+| `docs-site` | node | `astro` | `astro`, `eslint` | `astro`: an Astro Starlight documentation site |
+| `vscode-extension` | node | `vscode` | `vscode`, `eslint`, `vitest` | `vscode`: bundled by esbuild, packed and published with vsce |
+| `flutter` | dart | — | — | `dart`: a Flutter app for the web |
+| `kotlin` | jvm | — | — | `jvm`: a Kotlin module built with Gradle, ktlint |
+| `android` | jvm | — | — | `jvm`: an Android app in Kotlin (AGP), ktlint and Android Lint |
 | `go-smith-plugin` | go | `go-smith-plugin` | — | `go-smith-plugin`: a smith plugin written in Go (see plugins) |
+
+`smith stacks` prints the same, with the projects using each.
 
 `smith new` makes `node-jest` the default for Node. The `node` plugin alone
 scaffolds plain JavaScript (CommonJS), with nothing to compile. The
@@ -141,4 +161,4 @@ A new language is a language plugin like any other.
 language, in about 200 lines: discovery and imports, generation, a published
 stack whose toolchain replaces a task, CI setup, doctor, versions and
 publishing. The end-to-end tests run it through all of smith. Installing
-plugins by name from a registry is planned (#164).
+plugins by name from a registry is not decided yet (#164).

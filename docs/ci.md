@@ -21,7 +21,8 @@ Each plugin contributes, for its own projects:
   or above that `npm audit fix` can apply; advisories with no fix, a
   semver-major-only fix, or only in dev dependencies are printed as notes),
   `pip-audit` and `govulncheck` (reported)
-- **credentials** — the secrets publishing needs (`NODE_AUTH_TOKEN`, `PYPI_TOKEN`, `NUGET_API_KEY`)
+- **credentials** — the secrets publishing needs (`NODE_AUTH_TOKEN`, `PYPI_TOKEN`,
+  `CARGO_REGISTRY_TOKEN`, …; see [Secrets](#secrets))
 
 smith merges them into one provider-neutral model, and a renderer per provider
 writes the YAML. Every provider carries the same phases, in the same order.
@@ -74,6 +75,7 @@ plugins give every app one:
 | Node | `npm pack` of the app, after its build: `dist/drop/<scope>-<name>-<version>.tgz` |
 | Go | the binary: `dist/drop/<name>/<name>` (a plain `smith build` writes it to `dist/<project dir>/`) |
 | Python | the app's wheel: `dist/drop/<name>-<version>-py3-none-any.whl` |
+| VS Code extension (`vscode-extension` stack) | `dist/drop/<name>-<version>.vsix` |
 
 A stack's plugin, or `[projects.<name>.tasks.package]` in `smith.toml`, can
 replace it, for example with a zip a deploy step expects.
@@ -91,9 +93,10 @@ is a warning, never a failure.
 
 ## Pinned versions and the dev container
 
-Nothing installs "latest". Each plugin pins what it installs: Node.js 24,
-Python 3.12 and its tools (`requirements-dev.txt`), Go at the version
-`go.work` names and golangci-lint 2.14.0; actions are pinned to a major.
+Nothing installs "latest". Each plugin pins what it installs: for example
+Node.js 24, Python 3.12 and its tools (`requirements-dev.txt`), Go at the
+version `go.work` names and golangci-lint, the .NET 10 SDK, a JDK 21; actions
+are pinned to a major.
 Generated pipelines install smith at the version that generated them.
 
 With `[ci] devcontainer = true` (which `smith new` sets), smith also writes
@@ -144,11 +147,18 @@ you regenerate it with a newer smith.
 |---|---|
 | `NODE_AUTH_TOKEN` | `npm publish` (the generated `.npmrc` reads it), and an app's npm packages |
 | `PYPI_TOKEN` | twine upload as `__token__` (or set `TWINE_USERNAME`/`TWINE_PASSWORD` and `TWINE_REPOSITORY_URL` for another index), and an app's wheels |
-| `NUGET_API_KEY` | an app's .NET tool packages; a nuget.org API key that can push the tool's package and `<name>.*` |
-| `GEM_HOST_API_KEY` | an app's platform gems, pushed to rubygems.org (or `RUBYGEMS_HOST`) |
+| `NUGET_API_KEY` | `dotnet nuget push` of .NET packages, and an app's .NET tool packages (a nuget.org API key that can push the tool's package and `<name>.*`) |
+| `GEM_HOST_API_KEY` | `gem push` of Ruby gems, and an app's platform gems (rubygems.org, or `RUBYGEMS_HOST`) |
+| `CARGO_REGISTRY_TOKEN` | `cargo publish` of Rust crates |
+| `PUB_TOKEN` | a Dart package whose `publish_to` names another repository; pub.dev itself publishes with GitHub's OIDC token |
+| `MAVEN_REPOSITORY_URL`, `MAVEN_USERNAME`, `MAVEN_PASSWORD` | `mvn deploy` and Gradle's `maven-publish` of JVM packages |
+| `VSCE_PAT` | `vsce publish` of a VS Code extension to the Marketplace; the generated pipeline does not pass it yet |
+| `CONTAINER_REGISTRY`, `CONTAINER_USERNAME`, `CONTAINER_PASSWORD` | the docker convention's image push |
 | `GITHUB_TOKEN` | GitHub Releases and their assets, with `[release] github_releases`; GitHub Actions provides it |
 
-Go packages are published by their tag and need no secret. On GitHub, the job
+The pipeline lists only the secrets its projects need. Go packages are
+published by their tag and need no secret; PHP packages are read by Packagist
+from the tags, and C++ and Bicep projects release by their tag only. On GitHub, the job
 has `contents: write` so it can push tags; on Azure the checkout keeps its
 credentials (`persistCredentials`).
 

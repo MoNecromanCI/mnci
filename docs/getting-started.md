@@ -2,6 +2,7 @@
 
 ## Prerequisites
 
+- **smith**: see [installing](installing.md).
 - **git**, always.
 - The toolchain of each language you use: **Node 24** (with npm), **Go 1.26**,
   **Python 3.12+**, **Rust** (with clippy and rustfmt), the **.NET 10 SDK**,
@@ -69,8 +70,11 @@ smith add package sdk --lang node
 | `lib` | `libs/<name>` | never published; imported by other projects |
 | `package` | `packages/<name>` | published when it has releasable commits |
 
-`--lang` picks the plugin (`node`, `go`, `python`). Once a workspace has only
-one language, it is the default.
+`--lang` picks the language plugin: `node`, `go`, `python`, `rust`, `dotnet`,
+`ruby`, `php`, `cpp`, `dart`, `jvm` or `bicep`. Once a workspace has only one
+language, it is the default. `--stack` picks the plugins the project is built
+with instead (`smith add app web --stack react`); `smith stacks` lists them,
+and [stacks](stacks.md) explains them.
 
 Each project starts with one worked example slice (`greeting`) laid out as
 vertical slices, and passes lint, type-check, test and build immediately.
@@ -143,9 +147,14 @@ smith uninstall -w web zod
 `-w` takes a project's name or its directory, and can be repeated. `-D` adds a
 development dependency: an npm devDependency, the Python `dev` extra, or a Go
 tool (`go get -tool`). A bare `smith install` installs everything a fresh clone
-needs: `npm install`, the Python venv with every project in it, and
-`go mod download`. Without `-w`, a package is refused instead of being added
-at the root.
+needs: `npm install`, the Python venv with every project in it,
+`go mod download`, and the same for the other languages that support it.
+Without `-w`, a package is refused instead of being added at the root.
+
+`smith install` and `smith uninstall` work for Node, Python, Go, Dart, PHP and
+Ruby projects. `smith sync` compares Node and Python declarations, and
+`smith up` checks Node, Python and Go. For the other languages, use their own
+tool (`cargo add`, `dotnet add package`, …) in the project's directory.
 
 When projects declare the same dependency at different versions, `smith sync`
 makes them agree, language by language. The target is the version installed,

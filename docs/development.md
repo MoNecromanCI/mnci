@@ -2,21 +2,27 @@
 
 ## Layout
 
-This repository was bootstrapped with the old, Nx-based smith (#19) and
+This repository was bootstrapped with the old, Nx-based mnci (#19) and
 converted with `smith convert` (#129): it is a smith workspace, built, tested and
 released by the smith it contains.
 
 ```
-apps/smith/              the CLI: the language-agnostic core, one package per slice
-packages/plugin-sdk/    the plugin protocol, framing, runtime, host client and helpers (published)
-libs/plugin-node/       the Node language plugin
-libs/plugin-go/         the Go language plugin
-libs/plugin-python/     the Python language plugin
+apps/smith/                     the CLI: the language-agnostic core, one package per slice
+packages/plugin-sdk/            the plugin protocol, framing, runtime, host client and helpers (published)
+libs/plugin-node/               the Node language plugin
+libs/plugin-node-toolchains/    the typescript, eslint, jest, vitest, vite, angular, astro and vscode plugins and their stacks
+libs/plugin-go/                 the Go language plugin, and the go-smith-plugin scaffold
+libs/plugin-python/             the Python language plugin
+libs/plugin-rust/, plugin-dotnet/, plugin-ruby/, plugin-php/, plugin-cpp/,
+  plugin-dart/, plugin-jvm/, plugin-bicep/    the other language plugins
+libs/plugin-docker/             the docker deploy plugin and convention
 libs/plugin-vertical-slices/    the vertical-slices structure plugin
-libs/plugin-node-toolchains/   the typescript, eslint, jest and vitest plugins and their stacks (node-ts, node-jest, node-vitest)
-install.sh, install.ps1 installers used by people and by generated pipelines
-docs/                   documentation, decisions and research
+install.sh, install.ps1         installers used by people and by generated pipelines
+docs/                           documentation, decisions and research
 ```
+
+Every plugin under `libs/` is built into the `smith` binary and served as a
+separate process (`smith plugin serve <name>`).
 
 Go modules are tied together by `go.work`. Code follows vertical slices: a
 package per outcome, files named `<name>_<role>.go` (`use_case`, `policy`,
@@ -43,9 +49,20 @@ Core slices in `apps/smith`:
 | `upgrade` | `smith upgrade`: migrate smith.toml, regenerate what smith owns |
 | `nxworkspace`, `convertplan`, `convert` | read an Nx workspace, plan its conversion, apply it (`smith convert`) |
 | `githubrelease` | GitHub Releases and their assets |
+| `packagemanifests` | the Homebrew, Scoop and winget manifests attached to an app's GitHub Release |
+| `npmbinaries`, `pypiwheels`, `nugettool`, `rubygems` | an app's binaries as npm packages, PyPI wheels, a .NET tool and platform gems |
+| `npmpack`, `npmaudit` | the node plugin's `smith npm-pack` and `smith npm-audit` steps |
+| `remotecache` | the shared remote cache (HTTP, S3, Azure Blob) behind the local one |
+| `adoption` | `smith adopt` |
+| `dependencies` | `smith install`, `smith uninstall`, `smith sync`, `smith up` |
+| `devservers` | `smith dev` |
+| `configedit` | `smith config` |
+| `pipelinetemplate` | `smith pipeline`: ready-made pipelines |
 | `slicecheck` | `smith slices check`, the vertical-slices convention's check |
 | `doctor`, `explain`, `whymiss`, `stackview`, `graphview` | inspection commands |
 | `clicontract` | `smith commands`, `smith kinds`, `smith info`: the --json contracts editors read |
+| `mcpserver` | `smith mcp` |
+| `tui` | the interactive shell a bare `smith` opens |
 | `session` | open a workspace for a command |
 | `gitclient` | every git call |
 | `commandline` | assemble the command tree |
@@ -54,13 +71,22 @@ Core slices in `apps/smith`:
 ## Checks
 
 ```sh
-for m in apps/smith libs/plugin-node libs/plugin-node-toolchains libs/plugin-go libs/plugin-python libs/plugin-vertical-slices packages/plugin-sdk; do
-  (cd $m && go vet ./... && go test ./... && golangci-lint run ./... && go run github.com/monosmith-app/monosmith/apps/smith slices check .)
+# every module go.work lists
+for m in $(go work edit -json | sed -n 's/.*"DiskPath": "\.\/\(.*\)".*/\1/p'); do
+  (cd $m && go vet ./... && go test ./... && golangci-lint run ./...)
 done
 
-# the golden path, end to end (needs Node 24, Go, Python 3.12 and network)
-cd apps/smith && go test -tags e2e -timeout 40m -v ./goldenpath
+# the golden path, end to end (needs every language's toolchain and network)
+cd apps/smith && go test -tags e2e -timeout 40m -v -run '^TestGoldenPath$' ./goldenpath
+cd apps/smith && go test -tags e2e -timeout 40m -v -skip '^(TestConvert.*|TestGoldenPath)$' ./goldenpath   # each language's workspace
+cd apps/smith && go test -tags e2e -timeout 85m -v -run TestConvert ./goldenpath                          # converting Nx and old-mnci workspaces
 ```
+
+CI runs the same: `unit` and the two golden-path suites on Linux, macOS and
+Windows for every pull request (`.github/workflows/golden-path.yml`). The
+convert suite builds real Nx and old-mnci workspaces and takes over half an
+hour on Windows, so it runs only when started by hand (Actions → golden-path →
+Run workflow).
 
 `smith run lint test build` runs the same through the workspace (lint includes
 the vertical-slices convention's `slice-check`), with the cache. Use the smith you are working on:
@@ -81,7 +107,13 @@ and builds six static binaries (`CGO_ENABLED=0`, `-trimpath`), as configured in
 smith releases itself. The generated pipeline builds smith from the commit (the
 `before-setup` slot of `.github/workflows/ci.yml`) and runs `smith ci release` on
 `main`. A conventional commit touching `apps/smith` (or a lib it bundles) tags
-`smith@<version>` and attaches `smith_<version>_<os>_<arch>.zip` for six platforms
-and `checksums.txt` to its GitHub Release, which is what `install.sh`
-downloads. `packages/plugin-sdk` releases as the Go module tag
-`packages/plugin-sdk/v<version>`.
+`smith@<version>` and attaches `monosmith_<version>_<os>_<arch>.zip` for six
+platforms, `checksums.txt` and the Homebrew, Scoop and winget manifests to its
+GitHub Release, which is what `install.sh` downloads. The same archives are
+published to npm (`monosmith`, `@monosmith/cli`), PyPI, NuGet and RubyGems
+(all `monosmith`); the secrets are organisation secrets of `monosmith-app`.
+pub.dev is published by hand for now. `packages/plugin-sdk` releases as the Go
+module tag `packages/plugin-sdk/v<version>`.
+
+Merging to `main` releases: check what `smith release --dry-run` (and the
+release preview on the pull request) says before merging.

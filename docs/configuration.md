@@ -60,6 +60,8 @@ github_releases = false               # a GitHub Release per tag (needs GITHUB_T
 [cache]
 dir = ".smith/cache"                   # workspace-relative, or absolute
 max_size_mb = 2048
+remote = "s3://acme-smith-cache/main"  # a shared remote cache: https://, s3://, azblob:// (docs/tasks-and-cache.md)
+remote_read_only = false               # read the remote without writing to it
 
 [plugins]
 enabled = ["node", "go", "python"]    # default: every built-in plugin
@@ -68,6 +70,7 @@ enabled = ["node", "go", "python"]    # default: every built-in plugin
 node = "node-jest"
 
 [stacks.ts-func]                      # declare a stack: the plugins a project is built with
+description = "Azure Function in TypeScript"
 language = "node"
 toolchain = ["eslint", "vitest"]
 structure = []
@@ -142,6 +145,7 @@ asset_name = "{product}_{version}_{os}_{arch}.{ext}"   # the default
 product = "acme"                                      # default: the project name
 platforms = ["linux/amd64", "darwin/arm64", "windows/amd64"]  # default: six
 os_alias = { darwin = "macos" }                       # names in file names only
+arch_alias = { amd64 = "x64" }                        # the same for architectures
 version_variable = "main.version"                     # Go: stamped with -X
 package_managers = ["homebrew", "scoop", "winget"]    # manifests attached to the GitHub Release
 linux_packages = ["deb", "rpm"]                       # Linux packages attached to the GitHub Release
@@ -149,6 +153,9 @@ npm = ["@acme/cli", "acme"]                           # npm packages; the first 
 pypi = "acme"                                         # PyPI wheels
 nuget = "acme"                                        # .NET tool packages (dotnet tool install -g acme)
 rubygems = "acme"                                     # platform gems
+description = "What the app does"                     # shown by the registries and package managers
+license = "MIT"
+homepage = "https://cli.acme.dev"                     # default: the GitHub repository
 ```
 
 See [Releasing](releasing.md#apps).
@@ -166,4 +173,9 @@ See [Releasing](releasing.md#apps).
 | `SMITH_BASE` | base branch for `--affected` and `smith ci verify` |
 | `SMITH_RELEASE_ANY_BRANCH` | allow a real release from another branch |
 | `SMITH_PYPI_SIMPLE_URL` | the simple index to check before uploading to a custom Python index |
+| `SMITH_PLUGIN_PATH` | directories to look for installed plugins in, after the workspace's `.smith/plugins` (docs/plugins.md) |
+| `SMITH_HOME` | smith's own directory, `~/.smith` by default; installed plugins go in its `plugins/` |
+| `SMITH_NO_UPDATE_CHECK` | stop `smith info` asking GitHub for the newest release |
+| `TWINE_REPOSITORY_URL` | upload Python packages and an app's wheels to another index |
 | `NUGET_PUSH_URL` | the NuGet v2 push endpoint for an app's .NET tool packages (default nuget.org) |
+| `RUBYGEMS_HOST` | the gem server for an app's platform gems (default rubygems.org) |

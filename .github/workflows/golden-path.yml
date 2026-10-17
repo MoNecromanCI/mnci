@@ -103,8 +103,12 @@ jobs:
           SUITE: ${{ matrix.suite == 'core' && '-run=^TestGoldenPath$' || '-skip=^(TestConvert.*|TestGoldenPath)$' }}
         run: go test -tags e2e -timeout 40m -v "$SUITE" ./goldenpath
 
+  # Manual only: building the old-mnci and Nx workspaces to convert takes
+  # over half an hour on Windows, and nobody else converts yet. Run it from
+  # the Actions tab after changing convert.
   convert:
     name: convert (${{ matrix.os }})
+    if: github.event_name == 'workflow_dispatch'
     needs: unit
     strategy:
       fail-fast: false

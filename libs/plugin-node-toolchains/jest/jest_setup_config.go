@@ -11,7 +11,7 @@ const Name = "jest"
 // stacks are the stacks this plugin publishes.
 var stacks = []protocol.Stack{{
 	Name:        "node-jest",
-	Description: "TypeScript on Node, linted by @mnci/eslint-config, tested with Jest",
+	Description: "TypeScript on Node, linted by @monosmith/eslint-config, tested with Jest",
 	Language:    "node",
 	Scaffold:    "typescript",
 	Toolchain:   []string{"typescript", "eslint", Name},

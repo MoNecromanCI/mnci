@@ -27,7 +27,7 @@ func TestESLintAddsConfigAndLintScript(t *testing.T) {
 	}
 	root, _ := os.ReadFile(filepath.Join(ws, "package.json"))
 	project, _ := os.ReadFile(filepath.Join(ws, "apps", "web", "package.json"))
-	if !strings.Contains(string(root), `"@mnci/eslint-config"`) || !strings.Contains(string(project), `"lint": "eslint ."`) {
+	if !strings.Contains(string(root), `"@monosmith/eslint-config"`) || !strings.Contains(string(project), `"lint": "eslint ."`) {
 		t.Fatalf("root:\n%s\nproject:\n%s", root, project)
 	}
 }

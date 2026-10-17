@@ -1,5 +1,5 @@
 // Package nodetoolchains holds the toolchain plugins that give Node projects
-// their lint and test tooling: eslint (@mnci/eslint-config, which also carries
+// their lint and test tooling: eslint (@monosmith/eslint-config, which also carries
 // the vertical-slice rules), jest and vitest. They also publish the stacks
 // node-jest and node-vitest. typescript, vite, angular and astro scaffold
 // projects and build them: vite's are browser apps (its react, react-p5,

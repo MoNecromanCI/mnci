@@ -107,10 +107,19 @@ func azureNativeJob(m Model) string {
         displayName: Setup
       - bash: smith ci native
         displayName: Native
-      - publish: dist/drop
+`, InstallScriptURL, m.SmithVersion)
+	// A native package publishes from here on a release push: the job needs
+	// the release credentials too.
+	if m.NativePublish && len(m.Credentials) > 0 {
+		b.WriteString("        env:\n")
+		for _, c := range m.Credentials {
+			fmt.Fprintf(&b, "          %s: $(%s)\n", c.Env, c.Env)
+		}
+	}
+	b.WriteString(`      - publish: dist/drop
         artifact: native-$(image)
         displayName: Keep the native builds
-`, InstallScriptURL, m.SmithVersion)
+`)
 	return b.String()
 }
 

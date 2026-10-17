@@ -16,5 +16,9 @@ type PackageManifest struct {
 	Smith struct {
 		Kind  string `json:"kind"`
 		Stack string `json:"stack"`
+		// Native: the project is built on each OS (smith ci native), because
+		// what it ships differs per platform (prebuilt addons, a bundled
+		// runtime, a per-platform VS Code extension).
+		Native bool `json:"native"`
 	} `json:"smith"`
 }

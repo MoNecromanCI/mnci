@@ -271,8 +271,12 @@ func Native(p *projectgraph.Project) bool { return slices.Contains(p.Tags, Nativ
 
 // publish asks the project's plugin to publish it; an app with a release
 // configuration gets its assets built instead, except a native app's, which
-// the native jobs build and attach.
+// the native jobs build and attach. A native package is published by the
+// native jobs too, each its own platform's build (smith ci native).
 func publish(s *session.Session, p *projectgraph.Project, item Item, dryRun bool) (protocol.PublishResult, error) {
+	if Native(p) && p.Kind == protocol.ProjectPackage {
+		return protocol.PublishResult{Skipped: "published for each platform by the native jobs"}, nil
+	}
 	spec := AssetSpec(p)
 	if Native(p) {
 		spec = nil

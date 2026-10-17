@@ -24,6 +24,10 @@ type PublishParams struct {
 	// release (an app's per-platform binaries) instead of publishing to a
 	// registry.
 	Assets *AssetSpec `json:"assets,omitempty"`
+	// Platform, when set, is the "os/arch" (Go's spelling) of the runner a
+	// native project is published from: each native job publishes its own
+	// platform's build (a VS Code extension's target) and nothing else.
+	Platform string `json:"platform,omitempty"`
 }
 
 // AssetSpec describes the release files of an app.

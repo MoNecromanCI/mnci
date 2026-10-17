@@ -114,7 +114,10 @@ golangci-lint warns, since results may then differ from CI's.
 
 A project tagged `native` must be built on each operating system rather than
 cross-compiled: a Go app using cgo, marked with a `// smith:native` line at the
-top of its `go.mod` (its tasks then build with `CGO_ENABLED=1`). `smith ci
+top of its `go.mod` (its tasks then build with `CGO_ENABLED=1`), or a Node
+project whose build differs per platform (prebuilt addons, a bundled runtime,
+a VS Code extension with a build per target), marked with `"smith": {"native":
+true}` in its `package.json`. `smith ci
 verify` and `smith ci pack` leave native projects out; the generated pipelines
 add a `native` job that runs after the ci job on each OS and calls `smith ci
 native`, which lints, tests, builds and packages them there and keeps
@@ -123,7 +126,19 @@ native`, which lints, tests, builds and packages them there and keeps
 A native app that releases (`[projects.<name>.release]`) gets no
 cross-compiled assets from the release: on a push that released it, each
 native job builds the app for its own platform and attaches the archive to
-the app's GitHub Release (GitHub Actions; the job needs `GITHUB_TOKEN`).
+the app's GitHub Release (GitHub Actions; the job needs `GITHUB_TOKEN`). A
+Node app's archive is its build directory, `dist/<project dir>`, zipped and
+named by `asset_name`.
+
+A native package is tagged by the release but not published there: on the
+push that released it, each native job stamps the version, publishes its own
+platform's build and restores the manifest. A VS Code extension is published
+with `vsce publish --target` (`win32-x64`, `darwin-arm64`, `linux-x64`, …), so
+the Marketplace gets one build per platform. The native job is given the
+release credentials (`VSCE_PAT`, `NODE_AUTH_TOKEN`, …) for this, on GitHub
+Actions and on Azure Pipelines alike (a push to the release branch, the
+condition the release step has). Attaching a native app's assets needs a
+GitHub Release, so it happens on GitHub Actions only.
 
 ```toml
 [ci]
@@ -152,7 +167,7 @@ you regenerate it with a newer smith.
 | `CARGO_REGISTRY_TOKEN` | `cargo publish` of Rust crates |
 | `PUB_TOKEN` | a Dart package whose `publish_to` names another repository; pub.dev itself publishes with GitHub's OIDC token |
 | `MAVEN_REPOSITORY_URL`, `MAVEN_USERNAME`, `MAVEN_PASSWORD` | `mvn deploy` and Gradle's `maven-publish` of JVM packages |
-| `VSCE_PAT` | `vsce publish` of a VS Code extension to the Marketplace; the generated pipeline does not pass it yet |
+| `VSCE_PAT` | `vsce publish` of a VS Code extension package to the Marketplace (on the release step, and on the native job's step for a native extension) |
 | `CONTAINER_REGISTRY`, `CONTAINER_USERNAME`, `CONTAINER_PASSWORD` | the docker convention's image push |
 | `SPLIT_REPO_TOKEN` | pushing a project with `split_repo` to its mirror repository; a token with write access to that repository (see releasing.md) |
 | `GITHUB_TOKEN` | GitHub Releases and their assets, with `[release] github_releases`; GitHub Actions provides it |

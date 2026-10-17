@@ -30,6 +30,22 @@ func model() Model {
 	return NewModel(c, "dev", "main")
 }
 
+// An extension package's plugin declares VSCE_PAT; both providers pass it
+// to the release step, where vsce publish reads it.
+func TestTheReleaseStepGetsTheMarketplaceToken(t *testing.T) {
+	var c Contributions
+	c.Add(protocol.CIResult{Toolchains: []protocol.Toolchain{runtime("node", "24", "actions/setup-node@v4", "UseNode@1", "version")}, Credentials: []protocol.Credential{{Env: "VSCE_PAT", Required: true}}})
+	m := NewModel(c, "dev", "main")
+	gh := RenderGitHub(m)
+	if release := gh[strings.Index(gh, "      - name: Release\n"):]; !strings.Contains(release, "          VSCE_PAT: ${{ secrets.VSCE_PAT }}\n") {
+		t.Errorf("GitHub release step:\n%s", release)
+	}
+	az := RenderAzure(m)
+	if release := az[strings.Index(az, "smith ci release"):]; !strings.Contains(release, "VSCE_PAT: $(VSCE_PAT)\n") {
+		t.Errorf("Azure release step:\n%s", release)
+	}
+}
+
 func TestRenderersCarryTheSameSteps(t *testing.T) {
 	m := model()
 	gh, az := RenderGitHub(m), RenderAzure(m)

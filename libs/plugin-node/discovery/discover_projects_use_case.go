@@ -52,6 +52,9 @@ func describe(workspaceRoot, root, manifest string) (protocol.Project, error) {
 		Stack:    pkg.Smith.Stack,
 		Tasks:    map[string]protocol.Task{},
 	}
+	if pkg.Smith.Native {
+		project.Tags = append(project.Tags, NativeTag)
+	}
 	if pkg.Name != "" {
 		project.Exports = []string{pkg.Name}
 	}

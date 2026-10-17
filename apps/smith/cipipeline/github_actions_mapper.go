@@ -120,12 +120,20 @@ func githubNativeJob(m Model) string {
         run: smith ci native
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v4
+`, InstallScriptURL, m.SmithVersion)
+	if m.NativePublish {
+		for _, c := range m.Credentials {
+			if c.Env != "GITHUB_TOKEN" {
+				fmt.Fprintf(&b, "          %s: ${{ secrets.%s }}\n", c.Env, c.Env)
+			}
+		}
+	}
+	b.WriteString(`      - uses: actions/upload-artifact@v4
         with:
           name: native-${{ matrix.os }}
           path: dist/drop
           if-no-files-found: ignore
-`, InstallScriptURL, m.SmithVersion)
+`)
 	return b.String()
 }
 

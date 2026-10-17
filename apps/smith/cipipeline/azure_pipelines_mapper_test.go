@@ -40,6 +40,35 @@ func TestANativeProjectAddsAJobPerOS(t *testing.T) {
 	if strings.Contains(az, "\nsteps:\n") || strings.Contains(az, "\npool:\n") {
 		t.Error("with jobs, Azure has no top-level steps or pool")
 	}
+	if native := gh[strings.Index(gh, "\n  native:\n"):]; strings.Contains(native, "NODE_AUTH_TOKEN") {
+		t.Error("a native job that publishes nothing gets no publishing secret")
+	}
+}
+
+func TestANativePackagePublishesFromTheNativeJob(t *testing.T) {
+	m := model()
+	m.Native, m.NativePublish, m.NativeRunners = true, true, DefaultNativeRunners
+	gh := RenderGitHub(m)
+	native := gh[strings.Index(gh, "\n  native:\n"):]
+	step := native[strings.Index(native, "      - name: Native\n"):strings.Index(native, "      - uses: actions/upload-artifact@v4\n")]
+	for _, want := range []string{"GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n", "NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}\n", "PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}\n"} {
+		if !strings.Contains(step, want) {
+			t.Errorf("each native job publishes its platform, with the release credentials; lacks %q:\n%s", want, step)
+		}
+	}
+	if strings.Count(step, "GITHUB_TOKEN:") != 1 {
+		t.Errorf("GITHUB_TOKEN once:\n%s", step)
+	}
+	az := RenderAzure(m)
+	job := az[strings.Index(az, "  - job: native\n"):]
+	azStep := job[strings.Index(job, "      - bash: smith ci native\n"):strings.Index(job, "      - publish: dist/drop\n")]
+	if !strings.Contains(azStep, "        env:\n") || !strings.Contains(azStep, "          NODE_AUTH_TOKEN: $(NODE_AUTH_TOKEN)\n") {
+		t.Errorf("the Azure native job publishes too, with the release credentials:\n%s", azStep)
+	}
+	m.NativePublish = false
+	if az := RenderAzure(m); strings.Contains(az[strings.Index(az, "  - job: native\n"):], "NODE_AUTH_TOKEN") {
+		t.Error("an Azure native job that publishes nothing gets no secret")
+	}
 }
 
 // A team step kept in a slot follows the slot when the Azure pipeline nests

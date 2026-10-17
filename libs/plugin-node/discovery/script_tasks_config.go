@@ -6,6 +6,11 @@ import (
 	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
 
+// NativeTag marks a project built on each OS ("smith": {"native": true}):
+// smith ci verify and pack leave it out, smith ci native builds it on every
+// runner, and each runner publishes its own platform's build.
+const NativeTag = "native"
+
 // workspaceInputs are root files every Node task depends on.
 var workspaceInputs = []string{
 	"**/*",

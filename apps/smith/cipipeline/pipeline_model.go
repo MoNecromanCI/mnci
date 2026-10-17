@@ -22,6 +22,9 @@ type Model struct {
 	// Native is true when a project is tagged native: a job per OS then runs
 	// smith ci native.
 	Native bool
+	// NativePublish is true when a native package is published from those
+	// jobs, which then need the release credentials too.
+	NativePublish bool
 	// NativeRunners and NativeLinuxPackages configure that job.
 	NativeRunners       []string
 	NativeLinuxPackages []string
@@ -46,6 +49,7 @@ type Contributions struct {
 	Pack bool
 	// Native is true when a project is tagged native.
 	Native              bool
+	NativePublish       bool
 	NativeRunners       []string
 	NativeLinuxPackages []string
 	// Provenance is true when an app is published to npm.
@@ -79,7 +83,7 @@ func NewModel(c Contributions, smithVersion, releaseBranch string) Model {
 	if smithVersion == "" || smithVersion == "dev" {
 		smithVersion = "latest"
 	}
-	m := Model{SmithVersion: smithVersion, ReleaseBranch: releaseBranch, Pack: c.Pack, Native: c.Native,
+	m := Model{SmithVersion: smithVersion, ReleaseBranch: releaseBranch, Pack: c.Pack, Native: c.Native, NativePublish: c.NativePublish,
 		NativeRunners: c.NativeRunners, NativeLinuxPackages: c.NativeLinuxPackages, Provenance: c.Provenance, Pub: c.Pub}
 	if len(m.NativeRunners) == 0 {
 		m.NativeRunners = DefaultNativeRunners

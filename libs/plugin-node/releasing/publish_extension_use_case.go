@@ -49,9 +49,18 @@ func PackExtension(staged, drop string) (string, error) {
 
 // publishExtension publishes a VS Code extension to the Marketplace with
 // the token in VSCE_PAT, from its staged build. vsce skips a version the
-// Marketplace already has.
+// Marketplace already has. With a platform (a native job's), it publishes
+// that platform's build only, as vsce --target.
 func publishExtension(workspaceRoot string, params protocol.PublishParams) (protocol.PublishResult, error) {
 	result := protocol.PublishResult{Registry: "https://marketplace.visualstudio.com"}
+	var target []string
+	if params.Platform != "" {
+		t, err := VSCodeTarget(params.Platform)
+		if err != nil {
+			return result, err
+		}
+		target = []string{"--target", t}
+	}
 	if params.DryRun {
 		result.Skipped = "dry run"
 		return result, nil
@@ -63,7 +72,7 @@ func publishExtension(workspaceRoot string, params protocol.PublishParams) (prot
 	if err != nil {
 		return result, err
 	}
-	argv := append([]string{"npx", "--no-install", "vsce", "publish"}, vsceFlags...)
+	argv := append(append([]string{"npx", "--no-install", "vsce", "publish"}, vsceFlags...), target...)
 	if err := npm.run(staged, append(argv, "--skip-duplicate")); err != nil {
 		return result, err
 	}

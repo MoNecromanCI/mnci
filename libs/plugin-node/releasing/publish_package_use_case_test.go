@@ -1,6 +1,8 @@
 package releasing
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -45,6 +47,23 @@ func TestPublishNewVersion(t *testing.T) {
 	}
 	if last := (*calls)[len(*calls)-1]; last != "npm publish --access public" {
 		t.Fatalf("last call %q", last)
+	}
+}
+
+func TestPublishNeverSendsAnAppToNpm(t *testing.T) {
+	calls := fakeNpm(t, "")
+	res, err := Publish("/ws", protocol.PublishParams{Project: protocol.Project{Root: "apps/driver", Kind: protocol.ProjectApp, Exports: []string{"@acme/driver"}}, Version: "1.0.0"})
+	if err != nil || res.Published || res.Skipped != "released by its tag" || len(*calls) != 0 {
+		t.Fatalf("an app releases by its tag and assets, not npm: %+v %v %v", res, *calls, err)
+	}
+
+	// An app whose manifest is not private looks meant for npm: the skip says how to get there.
+	ws := t.TempDir()
+	_ = os.MkdirAll(filepath.Join(ws, "apps", "cli"), 0o755)
+	_ = os.WriteFile(filepath.Join(ws, "apps", "cli", "package.json"), []byte(`{"name": "acme-cli", "bin": "main.js"}`), 0o644)
+	res, err = Publish(ws, protocol.PublishParams{Project: protocol.Project{Root: "apps/cli", Kind: protocol.ProjectApp, Exports: []string{"acme-cli"}}, Version: "1.0.0"})
+	if err != nil || res.Published || !strings.Contains(res.Skipped, `"kind": "package"`) || len(*calls) != 0 {
+		t.Errorf("a public app: %+v %v", res, err)
 	}
 }
 

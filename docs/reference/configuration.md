@@ -85,6 +85,14 @@ stack = "node-vitest"                 # replaces the stack web's manifest record
 languages = ["go"]                    # default: every language it supports
 exclude = ["legacy"]                  # projects it leaves alone
 
+[conventions.docker]                  # an image task for every app with a Dockerfile
+registry = "ghcr.io/acme"             # where release pushes the images; unset: built, never pushed
+push = true                           # default: true when a registry is set
+
+[projects.api.docker]
+image = "acme-api"                    # the image's name under the registry; default: the project's
+push = false                          # build this app's image, never push it
+
 [plugins.external.kiwi]
 version = "^1"                        # installed on the plugin search path (docs/reference/plugins.md)
 

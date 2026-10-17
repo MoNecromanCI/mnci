@@ -120,6 +120,21 @@ type ConventionConfig struct {
 	Languages []string `toml:"languages"`
 	// Exclude lists projects the convention leaves alone.
 	Exclude []string `toml:"exclude"`
+	// Registry is where the docker convention's release pushes images
+	// (ghcr.io/acme). Unset: images are built, never pushed. Docker only.
+	Registry string `toml:"registry"`
+	// Push turns the docker convention's push off for every app; default
+	// true when a registry is set. Docker only.
+	Push *bool `toml:"push"`
+}
+
+// DockerOverride is one app's docker settings ([projects.<name>.docker]).
+type DockerOverride struct {
+	// Image is the image's name under the registry; default the project's
+	// name, lowercase.
+	Image string `toml:"image"`
+	// Push false builds the image but never pushes it on release.
+	Push *bool `toml:"push"`
 }
 
 // ProjectOverride adjusts one project.
@@ -136,8 +151,10 @@ type ProjectOverride struct {
 	// project is mirrored to: its directory's history split out, pushed to
 	// the mirror's main branch and tagged vX.Y.Z there, for a registry that
 	// reads a package at a repository root (Packagist). Needs SPLIT_REPO_TOKEN.
-	SplitRepo string                  `toml:"split_repo"`
-	Tasks     map[string]TaskOverride `toml:"tasks"`
+	SplitRepo string `toml:"split_repo"`
+	// Docker is the app's settings for the docker convention.
+	Docker *DockerOverride         `toml:"docker"`
+	Tasks  map[string]TaskOverride `toml:"tasks"`
 }
 
 // DefaultPlatforms are the platforms an app's assets are built for.

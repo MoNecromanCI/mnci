@@ -41,6 +41,13 @@ func Preflight(s *session.Session, plan Plan) error {
 	mirrored := false
 	for _, item := range plan.Items {
 		plugins[item.Plugin] = true
+		// A deploy plugin (docker) publishes the project too, so its
+		// credentials are checked as well.
+		if p := s.Graph.Get(item.Project); p != nil {
+			for _, d := range p.Deployers {
+				plugins[d] = true
+			}
+		}
 		if p := s.Graph.Get(item.Project); p != nil && !Native(p) {
 			for _, c := range DistributionCredentials(p.Release) {
 				if os.Getenv(c.Env) == "" && !alternative(c.Env) {

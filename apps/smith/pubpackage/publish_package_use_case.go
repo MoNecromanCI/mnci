@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"slices"
 	"strings"
 	"time"
@@ -87,8 +88,20 @@ func Publish(root string, r Release, dryRun bool) (Result, error) {
 	if err != nil {
 		return res, err
 	}
-	if _, stderr, err := dart(dir, "pub", "publish", "--force"); err != nil {
-		return res, fmt.Errorf("dart pub publish %s: %w\n%s", id, err, strings.TrimSpace(stderr))
+	// dart pub publish leaves out what git ignores, and the package is built
+	// under dist/, which a workspace ignores: it is published from a copy
+	// outside the repository.
+	staged, err := os.MkdirTemp("", "smith-pub-")
+	if err != nil {
+		return res, err
+	}
+	defer func() { _ = os.RemoveAll(staged) }()
+	if err := os.CopyFS(staged, os.DirFS(dir)); err != nil {
+		return res, err
+	}
+	if stdout, stderr, err := dart(staged, "pub", "publish", "--force"); err != nil {
+		// dart prints the validation errors on stdout.
+		return res, fmt.Errorf("dart pub publish %s: %w\n%s", id, err, strings.TrimSpace(stdout+"\n"+stderr))
 	}
 	res.Published = id
 	return res, nil

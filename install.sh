@@ -75,7 +75,11 @@ binary=smith
 mv "$tmp/out/$packed" "$DIR/$binary"
 chmod +x "$DIR/$binary"
 
-[ -n "${GITHUB_PATH:-}" ] && echo "$DIR" >> "$GITHUB_PATH"
-[ -n "${TF_BUILD:-}" ] && echo "##vso[task.prependpath]$DIR"
+# On Windows (Git Bash) the CI path must be the Windows form of the folder, or
+# only bash steps find smith; PowerShell and cmd steps need C:\...
+ci_dir="$DIR"
+if [ "$os" = windows ] && command -v cygpath >/dev/null 2>&1; then ci_dir=$(cygpath -w "$DIR"); fi
+[ -n "${GITHUB_PATH:-}" ] && echo "$ci_dir" >> "$GITHUB_PATH"
+[ -n "${TF_BUILD:-}" ] && echo "##vso[task.prependpath]$ci_dir"
 case ":$PATH:" in *":$DIR:"*) ;; *) echo "Add $DIR to your PATH to use smith." ;; esac
 "$DIR/$binary" --version

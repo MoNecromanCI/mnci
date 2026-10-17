@@ -144,6 +144,7 @@ platforms = ["linux/amd64", "darwin/arm64", "windows/amd64"]  # default: six
 os_alias = { darwin = "macos" }                       # names in file names only
 version_variable = "main.version"                     # Go: stamped with -X
 package_managers = ["homebrew", "scoop", "winget"]    # manifests attached to the GitHub Release
+linux_packages = ["deb", "rpm"]                       # Linux packages attached to the GitHub Release
 npm = ["@acme/cli", "acme"]                           # npm packages; the first names the platform ones
 pypi = "acme"                                         # PyPI wheels
 nuget = "acme"                                        # .NET tool packages (dotnet tool install -g acme)

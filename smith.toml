@@ -26,6 +26,8 @@ asset_name = "{product}_{version}_{os}_{arch}.{ext}"
 product = "monosmith"
 # Attached to each GitHub Release, ready for a tap, a bucket and winget-pkgs.
 package_managers = ["homebrew", "scoop", "winget"]
+# Also attached: sudo apt install ./monosmith_<v>_amd64.deb, or dnf with the .rpm.
+linux_packages = ["deb", "rpm"]
 # Published from the same archives, each installing the smith command:
 # npm i -g monosmith, pipx install monosmith / uvx --from monosmith smith, and
 # dotnet tool install -g monosmith, and gem install monosmith.

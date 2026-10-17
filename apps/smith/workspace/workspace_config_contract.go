@@ -153,6 +153,9 @@ type ProjectRelease struct {
 	// PackageManagers are the manifests generated from the assets and
 	// attached to the GitHub Release: homebrew, scoop, winget.
 	PackageManagers []string `toml:"package_managers"`
+	// LinuxPackages are the Linux packages built from the linux archives
+	// and attached to the GitHub Release: deb, rpm.
+	LinuxPackages []string `toml:"linux_packages"`
 	// NPM are the npm packages the app is published as, each installing its
 	// binary; the first also names the per-platform packages holding the
 	// binaries (<first>-<os>-<cpu>). Publishing needs NODE_AUTH_TOKEN.

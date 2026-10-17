@@ -85,6 +85,27 @@ be copied into a tap, a bucket or winget-pkgs as it is. A manager whose
 platforms the release has no archive for is skipped, and the release says so.
 Native apps attach one archive per OS from separate jobs and get no manifests.
 
+### Linux packages
+
+`linux_packages` builds a .deb and an .rpm from each linux archive (amd64 and
+arm64), with the binary in `/usr/bin`, and attaches them to the GitHub
+Release with their SHA-256 in `checksums.txt`:
+
+```toml
+[projects.cli.release]
+linux_packages = ["deb", "rpm"]
+```
+
+```sh
+sudo apt install ./acme_1.2.0_amd64.deb
+sudo dnf install ./acme-1.2.0-1.x86_64.rpm
+```
+
+They are built before the app is tagged, so a failure stops the release, and
+a resumed release attaches any the GitHub Release lacks. A prerelease
+(`1.2.0-rc.1`) is versioned `1.2.0~rc.1`, which both formats order before
+`1.2.0`.
+
 ## npm, PyPI, NuGet and RubyGems
 
 An app released with assets can also be published to npm, PyPI, NuGet and

@@ -165,7 +165,7 @@ you regenerate it with a newer smith.
 | `CARGO_REGISTRY_TOKEN` | `cargo publish` of Rust crates |
 | `PUB_TOKEN` | a Dart package whose `publish_to` names another repository; pub.dev itself publishes with GitHub's OIDC token |
 | `MAVEN_REPOSITORY_URL`, `MAVEN_USERNAME`, `MAVEN_PASSWORD` | `mvn deploy` and Gradle's `maven-publish` of JVM packages |
-| `VSCE_PAT` | `vsce publish` of a VS Code extension to the Marketplace; the generated pipeline does not pass it yet |
+| `VSCE_PAT` | `vsce publish` of a VS Code extension package to the Marketplace (on the release step, and on the native job's step for a native extension) |
 | `CONTAINER_REGISTRY`, `CONTAINER_USERNAME`, `CONTAINER_PASSWORD` | the docker convention's image push |
 | `GITHUB_TOKEN` | GitHub Releases and their assets, with `[release] github_releases`; GitHub Actions provides it |
 

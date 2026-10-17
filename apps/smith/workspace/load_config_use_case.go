@@ -114,7 +114,17 @@ func Validate(cfg *Config) error {
 	if cfg.Cache.MaxSizeMB == 0 {
 		cfg.Cache.MaxSizeMB = 2048
 	}
+	for name, conv := range cfg.Conventions {
+		if name != "docker" && (conv.Registry != "" || conv.Push != nil) {
+			return fmt.Errorf("%s: [conventions.%s] registry and push are settings of the docker convention", FileName, name)
+		}
+	}
 	for name, po := range cfg.Projects {
+		if po.Docker != nil {
+			if _, ok := cfg.Conventions["docker"]; !ok {
+				return fmt.Errorf("%s: [projects.%s.docker] needs [conventions.docker]", FileName, name)
+			}
+		}
 		if po.Release == nil {
 			continue
 		}

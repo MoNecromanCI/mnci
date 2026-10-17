@@ -1,6 +1,7 @@
 package cipipeline
 
 import (
+	"slices"
 	"sort"
 
 	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
@@ -34,6 +35,9 @@ type Model struct {
 	// Pub is true when an app is published to pub.dev: on GitHub the release
 	// then starts the pub workflow (actions: write), which publishes it.
 	Pub bool
+	// Permissions are the GitHub token permissions plugins asked for
+	// ("packages: write"), sorted.
+	Permissions []string
 }
 
 // DefaultNativeRunners build native projects on each OS.
@@ -56,6 +60,8 @@ type Contributions struct {
 	Provenance bool
 	// Pub is true when an app is published to pub.dev.
 	Pub bool
+	// Permissions are the GitHub token permissions plugins asked for.
+	Permissions []string
 }
 
 // Add merges one plugin's contribution, keeping the first of duplicates.
@@ -63,6 +69,11 @@ func (c *Contributions) Add(r protocol.CIResult) {
 	for _, t := range r.Toolchains {
 		if !hasToolchain(c.Toolchains, t.Name) {
 			c.Toolchains = append(c.Toolchains, t)
+		}
+	}
+	for _, perm := range r.Permissions {
+		if !slices.Contains(c.Permissions, perm) {
+			c.Permissions = append(c.Permissions, perm)
 		}
 	}
 	c.Setup = append(c.Setup, r.Setup...)
@@ -88,6 +99,8 @@ func NewModel(c Contributions, smithVersion, releaseBranch string) Model {
 	if len(m.NativeRunners) == 0 {
 		m.NativeRunners = DefaultNativeRunners
 	}
+	m.Permissions = append(m.Permissions, c.Permissions...)
+	sort.Strings(m.Permissions)
 	m.Toolchains = append(m.Toolchains, c.Toolchains...)
 	sort.Slice(m.Toolchains, func(i, j int) bool { return m.Toolchains[i].Name < m.Toolchains[j].Name })
 	m.Credentials = append(m.Credentials, c.Credentials...)

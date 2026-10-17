@@ -148,6 +148,11 @@ func idToken(m Model) string {
 	if m.Provenance {
 		b.WriteString("  id-token: write\n")
 	}
+	// Plugins add what their publishing needs: packages: write to push
+	// images to ghcr.io.
+	for _, perm := range m.Permissions {
+		b.WriteString("  " + perm + "\n")
+	}
 	return b.String()
 }
 

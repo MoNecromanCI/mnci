@@ -22,9 +22,11 @@ func TestParseRejectsMistakes(t *testing.T) {
 	for input, want := range map[string]string{
 		"[workspace]\nname = \"a\"\nnmae = \"typo\"\n": "nmae",
 		"[workspace]\n": "name is required",
-		"[workspace]\nname = \"a\"\n[ci]\nproviders=[\"x\"]": "unknown CI provider",
-		"schema = 9\n[workspace]\nname = \"a\"\n":            "upgrade smith",
-		"[workspace\nname = \"a\"\n":                         "smith.toml:",
+		"[workspace]\nname = \"a\"\n[ci]\nproviders=[\"x\"]":                                   "unknown CI provider",
+		"schema = 9\n[workspace]\nname = \"a\"\n":                                              "upgrade smith",
+		"[workspace\nname = \"a\"\n":                                                           "smith.toml:",
+		"[workspace]\nname = \"a\"\n[conventions.vertical-slices]\nregistry = \"ghcr.io/a\"\n": "settings of the docker convention",
+		"[workspace]\nname = \"a\"\n[projects.api.docker]\nimage = \"api\"\n":                  "needs [conventions.docker]",
 	} {
 		_, err := Parse([]byte(input))
 		if err == nil || !strings.Contains(err.Error(), want) {

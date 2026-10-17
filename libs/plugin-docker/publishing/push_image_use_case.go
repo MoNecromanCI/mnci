@@ -1,7 +1,7 @@
 package publishing
 
 import (
-	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -25,38 +25,62 @@ var Docker = func(dir string, argv []string, stdin string) error {
 }
 
 // Publish builds a released app's image tagged with its version and latest
-// under CONTAINER_REGISTRY (ghcr.io/acme, 127.0.0.1:5000), and pushes both.
-// CONTAINER_USERNAME and CONTAINER_PASSWORD log in first when set; without
-// them the daemon's own login is used.
+// under the registry [conventions.docker] names, and pushes both. With no
+// registry, or push = false, the image is not pushed and the release goes
+// on. It logs in first: to ghcr.io with GITHUB_TOKEN (as GITHUB_ACTOR),
+// elsewhere with CONTAINER_USERNAME and CONTAINER_PASSWORD; without them
+// the daemon's own login is used.
 func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.PublishResult, error) {
 	if !images.Ships(workspaceRoot, params.Project) {
 		return protocol.PublishResult{Skipped: "no Dockerfile"}, nil
 	}
-	registry := strings.TrimSuffix(os.Getenv("CONTAINER_REGISTRY"), "/")
-	result := protocol.PublishResult{Registry: registry}
-	if params.DryRun {
-		result.Skipped = "dry run"
+	t := images.TargetOf(params.Project, os.Getenv)
+	result := protocol.PublishResult{Registry: t.Registry}
+	switch {
+	case t.Registry == "":
+		result.Skipped = "image built, not pushed: set [conventions.docker] registry in smith.toml to push it on release"
+		return result, nil
+	case !t.Push:
+		result.Skipped = "image not pushed: push = false in smith.toml"
 		return result, nil
 	}
-	if registry == "" {
-		return result, errors.New("set CONTAINER_REGISTRY to the registry " + params.Project.Name + "'s image is pushed to")
+	if t.Legacy {
+		_, _ = fmt.Fprintf(toolrun.Log, "docker: %s is deprecated; set [conventions.docker] registry = %q in smith.toml\n", images.LegacyRegistryEnv, t.Registry)
 	}
-	if user := os.Getenv("CONTAINER_USERNAME"); user != "" {
-		host, _, _ := strings.Cut(registry, "/")
-		if err := Docker(workspaceRoot, []string{"docker", "login", host, "-u", user, "--password-stdin"}, os.Getenv("CONTAINER_PASSWORD")); err != nil {
-			return result, err
-		}
-	}
-	image := registry + "/" + images.Name(params.Project)
+	image := t.Reference()
 	tags := []string{image + ":" + params.Version, image + ":latest"}
+	if params.DryRun {
+		result.Skipped = "would push " + tags[0] + " and " + tags[1]
+		return result, nil
+	}
+	if err := login(workspaceRoot, t); err != nil {
+		return result, err
+	}
 	if err := Docker(workspaceRoot, images.BuildArgs(params.Project, tags...), ""); err != nil {
 		return result, err
 	}
-	for _, t := range tags {
-		if err := Docker(workspaceRoot, []string{"docker", "push", t}, ""); err != nil {
+	for _, tag := range tags {
+		if err := Docker(workspaceRoot, []string{"docker", "push", tag}, ""); err != nil {
 			return result, err
 		}
 	}
 	result.Published = true
 	return result, nil
+}
+
+// login logs docker in to the target's registry with the credentials it
+// takes, or leaves the daemon's login when none are set.
+func login(workspaceRoot string, t images.Target) error {
+	host := images.Host(t.Registry)
+	if user := os.Getenv("CONTAINER_USERNAME"); user != "" {
+		return Docker(workspaceRoot, []string{"docker", "login", host, "-u", user, "--password-stdin"}, os.Getenv("CONTAINER_PASSWORD"))
+	}
+	if images.LoginFor(t.Registry) == images.LoginGitHub && os.Getenv("GITHUB_TOKEN") != "" {
+		user := os.Getenv("GITHUB_ACTOR")
+		if user == "" {
+			user = "x-access-token"
+		}
+		return Docker(workspaceRoot, []string{"docker", "login", host, "-u", user, "--password-stdin"}, os.Getenv("GITHUB_TOKEN"))
+	}
+	return nil
 }

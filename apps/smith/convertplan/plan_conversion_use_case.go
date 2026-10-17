@@ -192,7 +192,7 @@ func planImage(plan *Plan, name string, kind protocol.ProjectKind) {
 		plan.Config.Conventions = map[string]workspace.ConventionConfig{}
 	}
 	plan.Config.Conventions["docker"] = workspace.ConventionConfig{}
-	plan.Add(Changed, name, Dockerfile, "[conventions.docker] gives the app an image task (docker build after its build), and its release builds the image and pushes it to CONTAINER_REGISTRY")
+	plan.Add(Changed, name, Dockerfile, "[conventions.docker] gives the app an image task (docker build after its build), and its release pushes the image to [conventions.docker] registry once you set one")
 }
 
 // planRoot converts the root project's targets and the root scripts.

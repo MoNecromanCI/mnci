@@ -47,6 +47,34 @@ An app in another language with a release section is tagged and gets a GitHub
 Release, without assets. The settings are in
 [Configuration](configuration.md#a-projects-release-settings).
 
+## Container images
+
+With the docker convention, an app with a `Dockerfile` releases too: the
+release builds its image tagged with the version and `latest` and pushes both
+to the registry `smith.toml` names.
+
+```toml
+[conventions.docker]
+registry = "ghcr.io/acme"   # unset: the image task builds it, release never pushes
+
+[projects.api.docker]
+image = "acme-api"          # default: the project's name, lowercase
+push = false                # build api's image, never push it
+```
+
+| Registry | Logs in with | The pipeline gets |
+|---|---|---|
+| `ghcr.io/<owner>` | `GITHUB_TOKEN` as `GITHUB_ACTOR` | `packages: write` on GitHub Actions, nothing to set; on Azure Pipelines set `GITHUB_TOKEN` to a token with `write:packages` |
+| any other | `CONTAINER_USERNAME` and `CONTAINER_PASSWORD` | those two secrets |
+| on this machine (`localhost`, `127.0.0.1`) | nothing | nothing |
+
+A release that would push without its credentials stops before it starts and
+names the setting. `smith release --dry-run` names each image it would push
+(`would push ghcr.io/acme/acme-api:1.2.0 and ghcr.io/acme/acme-api:latest`).
+
+`CONTAINER_REGISTRY` still names the registry when `registry` is unset, so a
+pipeline that sets it keeps pushing; it is deprecated, and release says so.
+
 ## GitHub Releases
 
 With `[release] github_releases = true`, every released tag gets a GitHub

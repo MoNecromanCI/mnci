@@ -75,7 +75,9 @@
         "additionalProperties": false,
         "properties": {
           "languages": { "type": "array", "items": { "type": "string" }, "description": "Narrow the convention to some of the languages it supports." },
-          "exclude": { "type": "array", "items": { "type": "string" }, "description": "Projects it leaves alone." }
+          "exclude": { "type": "array", "items": { "type": "string" }, "description": "Projects it leaves alone." },
+          "registry": { "type": "string", "description": "Docker only: where release pushes the apps' images (ghcr.io/acme). Unset: images are built, never pushed. ghcr.io logs in with GITHUB_TOKEN; another registry with CONTAINER_USERNAME and CONTAINER_PASSWORD." },
+          "push": { "type": "boolean", "description": "Docker only: false builds images without pushing them on release. Default: true when a registry is set." }
         }
       }
     },
@@ -115,6 +117,15 @@
         "properties": {
           "tag_prefix": { "type": "string", "description": "Replaces the release tag prefix (<name>@ by default)." },
           "stack": { "type": "string", "description": "Replaces the stack the project's manifest records." },
+          "docker": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "The app's settings for the docker convention.",
+            "properties": {
+              "image": { "type": "string", "pattern": "^[a-z0-9]+([._/-][a-z0-9]+)*$", "description": "The image's name under the registry. Default: the project's name, lowercase." },
+              "push": { "type": "boolean", "description": "false builds the image but never pushes it on release." }
+            }
+          },
           "split_repo": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", "description": "A GitHub repository (owner/repo) each release is mirrored to: the project's directory split out, pushed to its main branch and tagged vX.Y.Z, for a registry that reads a package at a repository root (Packagist). Needs SPLIT_REPO_TOKEN." },
           "release": {
             "type": "object",

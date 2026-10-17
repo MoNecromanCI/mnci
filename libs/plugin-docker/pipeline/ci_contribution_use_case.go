@@ -17,17 +17,35 @@ func shipping(workspaceRoot string, projects []protocol.Project) []protocol.Proj
 	return out
 }
 
-// CI returns the registry an app's image is pushed to on release. Docker is
-// on GitHub's and Azure's hosted Linux images.
+// CI returns what pushing the apps' images on release needs: the
+// credentials of the registry smith.toml names (GITHUB_TOKEN with packages:
+// write for ghcr.io), or nothing when no image is pushed. An app whose
+// registry smith.toml does not name keeps CONTAINER_REGISTRY's optional
+// variables, so a pipeline that sets it still pushes. Docker is on GitHub's
+// and Azure's hosted Linux images.
 func CI(workspaceRoot string, params protocol.CIParams) protocol.CIResult {
-	if len(shipping(workspaceRoot, params.Projects)) == 0 {
-		return protocol.CIResult{}
+	var res protocol.CIResult
+	seen := map[string]bool{}
+	for _, p := range shipping(workspaceRoot, params.Projects) {
+		t := images.TargetOf(p, func(string) string { return "" })
+		if !images.Configured(p) && !images.PushOff(p) {
+			t = images.Target{Legacy: true}
+		}
+		creds, perms := images.Credentials(t)
+		for _, c := range creds {
+			if !seen[c.Env] {
+				seen[c.Env] = true
+				res.Credentials = append(res.Credentials, c)
+			}
+		}
+		for _, perm := range perms {
+			if !seen[perm] {
+				seen[perm] = true
+				res.Permissions = append(res.Permissions, perm)
+			}
+		}
 	}
-	return protocol.CIResult{Credentials: []protocol.Credential{
-		{Env: "CONTAINER_REGISTRY", Description: "Registry the apps' images are pushed to (ghcr.io/<owner>)", Required: true},
-		{Env: "CONTAINER_USERNAME", Description: "Registry user (omit to use the runner's docker login)"},
-		{Env: "CONTAINER_PASSWORD", Description: "Registry password or token"},
-	}}
+	return res
 }
 
 // probe runs a tool for its output; tests replace it.

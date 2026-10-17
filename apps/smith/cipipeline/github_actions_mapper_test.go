@@ -174,6 +174,19 @@ func TestGitHubWorkflowMayRequestAnOIDCTokenForNPMProvenance(t *testing.T) {
 	}
 }
 
+func TestGitHubWorkflowGrantsThePermissionsPluginsAskFor(t *testing.T) {
+	var c Contributions
+	c.Add(protocol.CIResult{Permissions: []string{"packages: write"}})
+	c.Add(protocol.CIResult{Permissions: []string{"packages: write"}})
+	m := NewModel(c, "1.0.0", "main")
+	if gh := RenderGitHub(m); !strings.Contains(gh, "  pull-requests: write\n  packages: write\n\nconcurrency:") {
+		t.Errorf("packages: write once, with the other permissions:\n%s", gh)
+	}
+	if strings.Contains(RenderAzure(m), "packages") {
+		t.Error("Azure Pipelines has no token permissions")
+	}
+}
+
 func TestPubWorkflowOnlyWhenAnAppPublishesToPubDev(t *testing.T) {
 	root := t.TempDir()
 	github := workspace.Config{CI: workspace.CISection{Providers: []string{"github"}}}

@@ -83,7 +83,7 @@ func TestBuildMakesOnePackagePerPlatformThenTheToolPackage(t *testing.T) {
 		t.Errorf("settings = %s", files["tools/any/linux-arm64/DotnetToolSettings.xml"])
 	}
 	nuspec := files["acme.linux-arm64.nuspec"]
-	for _, want := range []string{"<id>acme.linux-arm64</id>", "<version>5.0.0</version>", "<authors>acme-org</authors>", `<packageType name="DotnetToolRidPackage" />`, `<license type="expression">MIT</license>`} {
+	for _, want := range []string{"<id>acme.linux-arm64</id>", "<version>5.0.0</version>", "<authors>acme-org</authors>", `<packageType name="DotnetToolRidPackage" />`, `<license type="expression">MIT</license>`, `<licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>`} {
 		if !strings.Contains(nuspec, want) {
 			t.Errorf("nuspec lacks %s:\n%s", want, nuspec)
 		}

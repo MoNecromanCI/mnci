@@ -29,8 +29,26 @@ with through its [stack](stacks.md).
 | `eslint` | toolchain, provides `lint` | Node projects lint with ESLint and `@mnci/eslint-config` (TypeScript rules, Standard style, vertical slices) | — |
 | `jest` | toolchain, provides `test`; publishes `node-jest` | Node projects test with Jest (`ts-jest`) | — |
 | `vitest` | toolchain, provides `test`; publishes `node-vitest` | Node projects test with Vitest | — |
+| `playwright` | toolchain, provides `e2e`, and a convention (`[conventions.playwright]`); publishes `node-vitest-playwright` | the `e2e` task of every Node project with a Playwright suite: the Playwright test runner (a `playwright.config.*` or `@playwright/test`) runs `playwright test`, and a project that drives the `playwright` library from its own runner keeps its `e2e` script. Before it, an `e2e-browsers` task installs the browsers (`playwright install`, with `--with-deps` in CI on Linux), so nothing else downloads one. `"smith": {"playwright": {"display": true}}` runs the suite under `xvfb-run -a` on Linux, `"browsers"` names what to install (default `chromium`). The task is cached like `test`, with `dist/e2e/<project dir>` (where the starter's config writes reports and traces) as its outputs. Doctor checks Playwright is installed, `xvfb-run` for display suites, and that an e2e pipeline exists | — |
 | `docker` | deploy, a convention for every language (`[conventions.docker]`) | an `image` task (`docker build`, the workspace as context, after `build`) for every app with a `Dockerfile`; writes one for a new Go app (built in Docker, shipped on distroless) or static web app (nginx serving `dist/<app dir>`) | the release builds the image tagged with the version and `latest` and pushes both to `CONTAINER_REGISTRY` (`CONTAINER_USERNAME`, `CONTAINER_PASSWORD`); an app with a `Dockerfile` releases without a `[release]` section |
 | `vertical-slices` | structure | a `slice-check` task for Go, Python, Dart, Rust, Ruby, C++, .NET, JVM and PHP projects, run before `lint`, in each language's own file-naming style | — |
+
+### playwright
+
+- **Run the suites one at a time.** Suites usually share a fixture port and,
+  under `xvfb-run`, a display, so run them with `smith run e2e --parallel 1`,
+  as the `e2e` pipeline does. A plain `smith run e2e` runs them in parallel.
+- **Reports** go to `dist/e2e/<project dir>`, beside the build rather than in
+  `dist/<project dir>`: that directory is the build task's output and is
+  replaced whenever the build is restored from the cache, reports with it.
+- **Browsers** are installed by the `e2e-browsers` task. The `e2e` pipeline
+  caches them under a key made of the lockfile (the Playwright version) and the
+  manifests (the `browsers` lists); a cache that lacks one only makes
+  `playwright install` download it.
+- **Not yet:** a starter for the library flavour (`smith add` writes the runner
+  flavour), starting the app under test before the suite (#261), and doctor
+  checks that the browsers are installed and that the unit test runner leaves
+  `e2e/` alone (the starter's `*.e2e.ts` names keep Vitest and Jest away).
 
 Built-in plugins ship inside the `smith` binary but still run as separate
 processes (`smith plugin serve <name>`), speaking the same protocol an external

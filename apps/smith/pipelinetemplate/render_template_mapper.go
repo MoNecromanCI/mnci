@@ -2,6 +2,7 @@ package pipelinetemplate
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/monosmith-app/monosmith/apps/smith/cipipeline"
 )
@@ -39,14 +40,26 @@ func Render(name, provider string, m cipipeline.Model, app App) (string, bool) {
 	switch name + "/" + provider {
 	case "e2e/github":
 		return "name: e2e\n\n" + written(name, "") +
-			"# Runs every project's e2e task. It is not part of smith ci verify, because it\n" +
-			"# needs what verify does not install (a browser: add `npx playwright install\n" +
-			"# --with-deps` before it, for example).\n\n" + githubOn +
+			"# Runs every project's e2e task, on pull requests too. It is not part of smith ci\n" +
+			"# verify, because it needs what verify does not install: the playwright plugin's\n" +
+			"# e2e-browsers task installs the browsers, cached here between runs. The suites run\n" +
+			"# one at a time, since they share ports and, under xvfb-run, a display.\n\n" + githubOn + "  pull_request:\n" +
 			"\njobs:\n  e2e:\n    runs-on: ubuntu-latest\n    steps:\n" + cipipeline.GitHubSetup(m) +
-			"      - name: End-to-end tests\n        run: smith run e2e\n", true
+			"      - uses: actions/cache@v4\n        with:\n          path: ~/.cache/ms-playwright\n" +
+			// The lockfile fixes the Playwright version; the manifests name the browsers.
+			"          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json', '**/package.json', '!**/node_modules/**') }}\n" +
+			"      - name: End-to-end tests\n        run: smith run e2e --parallel 1\n", true
 	case "e2e/azure":
-		return written(name, "") + azureNote + "# Runs every project's e2e task, which smith ci verify leaves out.\n\n" + azureOn +
-			"\nsteps:\n" + cipipeline.AzureSetup(m) + "  - bash: smith run e2e\n    displayName: End-to-end tests\n", true
+		return written(name, "") + azureNote + "# Runs every project's e2e task, which smith ci verify leaves out, one at a time:\n" +
+			"# the suites share ports and, under xvfb-run, a display. The pr trigger works for a\n" +
+			"# GitHub repository; on Azure Repos, add this pipeline as a build validation policy.\n\n" +
+			strings.Replace(azureOn, "pr: none\n", "pr:\n  branches:\n    include:\n      - "+m.ReleaseBranch+"\n", 1) +
+			"\nvariables:\n  PLAYWRIGHT_BROWSERS_PATH: $(Pipeline.Workspace)/ms-playwright\n" +
+			"\nsteps:\n" + cipipeline.AzureSetup(m) +
+			"  - task: Cache@2\n    displayName: Cache the Playwright browsers\n    inputs:\n" +
+			"      key: 'playwright | \"$(Agent.OS)\" | package-lock.json | **/package.json, !**/node_modules/**'\n" +
+			"      path: $(PLAYWRIGHT_BROWSERS_PATH)\n" +
+			"  - bash: smith run e2e --parallel 1\n    displayName: End-to-end tests\n", true
 	case "package-zip/github":
 		return "name: package\n\n" + written(name, "") + "# Packs the projects into dist/drop and keeps it as the drop artifact.\n\n" + githubOn +
 			"\njobs:\n  package:\n    runs-on: ubuntu-latest\n    steps:\n" + cipipeline.GitHubSetup(m) +

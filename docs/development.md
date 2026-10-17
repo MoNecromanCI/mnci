@@ -10,7 +10,7 @@ released by the smith it contains.
 apps/smith/                     the CLI: the language-agnostic core, one package per slice
 packages/plugin-sdk/            the plugin protocol, framing, runtime, host client and helpers (published)
 libs/plugin-node/               the Node language plugin
-libs/plugin-node-toolchains/    the typescript, eslint, jest, vitest, vite, angular, astro and vscode plugins and their stacks
+libs/plugin-node-toolchains/    the typescript, eslint, jest, vitest, playwright, vite, angular, astro and vscode plugins and their stacks
 libs/plugin-go/                 the Go language plugin, and the go-smith-plugin scaffold
 libs/plugin-python/             the Python language plugin
 libs/plugin-rust/, plugin-dotnet/, plugin-ruby/, plugin-php/, plugin-cpp/,

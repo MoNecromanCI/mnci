@@ -11,7 +11,7 @@ func TestEveryTemplateRenders(t *testing.T) {
 	m := cipipeline.NewModel(cipipeline.Contributions{}, "1.2.3", "main")
 	app := App{Name: "web", Root: "apps/web", Output: "dist"}
 	does := map[string]string{
-		"e2e":                   "smith run e2e",
+		"e2e":                   "smith run e2e --parallel 1",
 		"package-zip":           "smith ci pack",
 		"deploy-pages":          "path: apps/web/dist",
 		"deploy-azure-function": "apps/web",
@@ -44,5 +44,24 @@ func TestEveryTemplateRenders(t *testing.T) {
 	}
 	if Path("e2e", "github") != ".github/workflows/e2e.yml" || Path("e2e", "azure") != "azure-pipelines/e2e.yml" {
 		t.Fatal("paths")
+	}
+}
+
+func TestTheE2ETemplatesCacheBrowsersAndRunOnPullRequests(t *testing.T) {
+	m := cipipeline.NewModel(cipipeline.Contributions{}, "1.2.3", "main")
+	gh, _ := Render("e2e", "github", m, App{})
+	az, _ := Render("e2e", "azure", m, App{})
+	for _, want := range []string{"  pull_request:\n", "path: ~/.cache/ms-playwright\n", "'**/package.json'"} {
+		if !strings.Contains(gh, want) {
+			t.Errorf("GitHub e2e lacks %q:\n%s", want, gh)
+		}
+	}
+	for _, want := range []string{"pr:\n  branches:\n    include:\n      - main\n", "PLAYWRIGHT_BROWSERS_PATH: $(Pipeline.Workspace)/ms-playwright\n", "  - task: Cache@2\n", "      path: $(PLAYWRIGHT_BROWSERS_PATH)\n"} {
+		if !strings.Contains(az, want) {
+			t.Errorf("Azure e2e lacks %q:\n%s", want, az)
+		}
+	}
+	if strings.Contains(az, "pr: none") {
+		t.Error("the Azure e2e pipeline runs on pull requests too")
 	}
 }

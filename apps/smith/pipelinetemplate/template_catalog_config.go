@@ -11,7 +11,7 @@ type Template struct {
 
 // Catalog lists the templates.
 var Catalog = []Template{
-	{Name: "e2e", Description: "run every project's e2e task on a push to the release branch and on demand", Providers: []string{"github", "azure"}},
+	{Name: "e2e", Description: "run every project's e2e task, one at a time, on a push to the release branch, on pull requests (GitHub) and on demand", Providers: []string{"github", "azure"}},
 	{Name: "package-zip", Description: "pack the projects (smith ci pack) and keep dist/drop as a build artifact, the input of a classic release pipeline", Providers: []string{"github", "azure"}},
 	{Name: "deploy-pages", Description: "build an app and deploy its build output to GitHub Pages", Providers: []string{"github"}, NeedsProject: true},
 	{Name: "deploy-azure-function", Description: "build a function app and deploy it to an Azure Function App", Providers: []string{"github", "azure"}, NeedsProject: true},

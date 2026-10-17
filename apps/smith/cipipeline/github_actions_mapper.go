@@ -130,12 +130,70 @@ func githubNativeJob(m Model) string {
 }
 
 // idToken lets the job request an OIDC token, which npm provenance signs
-// the published packages with.
+// the published packages with; actions: write lets the release start the
+// pub workflow.
 func idToken(m Model) string {
-	if !m.Provenance {
-		return ""
+	var b strings.Builder
+	if m.Pub {
+		b.WriteString("  actions: write\n")
 	}
-	return "  id-token: write\n"
+	if m.Provenance {
+		b.WriteString("  id-token: write\n")
+	}
+	return b.String()
+}
+
+// GitHubPubPath is the workflow that publishes to pub.dev.
+const GitHubPubPath = ".github/workflows/pub.yml"
+
+// RenderGitHubPub renders the pub workflow. The release starts it on an
+// app's pub tag (pub.dev's automated publishing accepts only a run on a tag
+// matching the package's pattern); setup-dart gives dart pub.dev's OIDC
+// token, and smith builds the package from the GitHub Release's archives.
+func RenderGitHubPub(m Model) string {
+	var b strings.Builder
+	b.WriteString(header("#"))
+	b.WriteString(`name: pub
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: The released app to publish
+        required: true
+      version:
+        description: Its released version
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  pub:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+`)
+	for _, t := range m.Toolchains {
+		b.WriteString(githubSetup(t))
+	}
+	fmt.Fprintf(&b, `      - uses: dart-lang/setup-dart@v1
+      - name: Install smith
+        run: curl -fsSL %s | sh -s -- "$SMITH_VERSION"
+        env:
+          SMITH_VERSION: %s
+          GITHUB_TOKEN: ${{ github.token }}
+`, InstallScriptURL, m.SmithVersion)
+	b.WriteString(slot("      ", "before-publish"))
+	b.WriteString(`      - name: Publish to pub.dev
+        run: smith release pub --project "$PROJECT" --version "$VERSION"
+        env:
+          PROJECT: ${{ inputs.project }}
+          VERSION: ${{ inputs.version }}
+          GITHUB_TOKEN: ${{ github.token }}
+`)
+	return b.String()
 }
 
 func header(comment string) string {

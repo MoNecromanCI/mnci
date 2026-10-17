@@ -170,6 +170,14 @@ type ProjectRelease struct {
 	// RubyGems is the gem the app is published as, one platform gem per
 	// platform. Publishing needs GEM_HOST_API_KEY.
 	RubyGems string `toml:"rubygems"`
+	// Pub is the pub.dev package the app is published as, holding every
+	// platform's binary. pub.dev accepts it only from a GitHub Actions run on
+	// a tag matching the package's tag pattern, so the release pushes PubTag
+	// and starts the generated pub workflow on it.
+	Pub string `toml:"pub"`
+	// PubTag is that tag, with {name} (the release tag prefix without its
+	// "@") and {version}. Default: {name}-v{version}.
+	PubTag string `toml:"pub_tag"`
 	// Description, Homepage and License describe the app in those manifests
 	// and packages.
 	Description string `toml:"description"`

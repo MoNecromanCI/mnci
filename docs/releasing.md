@@ -140,6 +140,48 @@ prerelease goes to npm's `next` tag, to NuGet as is, to PyPI as `1.0.0rc1`
 RubyGems as `1.0.0.pre.rc.1`. Native apps are not published
 this way.
 
+### pub.dev
+
+`pub = "acme"` publishes the app to pub.dev, so `dart pub global activate
+acme` (or `flutter pub global activate acme`) installs it. The package
+carries every platform's binary under `lib/src/bin/` and a launcher in
+`bin/` that runs the one for the running platform, so nothing is downloaded
+after activation.
+
+pub.dev takes no token from CI: its automated publishing accepts a package
+only from a GitHub Actions run on a tag that matches a pattern set on
+pub.dev, and its patterns cannot contain the `@` of smith's tags. So after
+the GitHub Release, the release:
+
+1. tags the release commit with the pub tag, `<name>-v<version>`
+   (`acme-v1.4.0` for `acme@1.4.0`; change it with `pub_tag`, using `{name}`
+   and `{version}`), and pushes it;
+2. starts `.github/workflows/pub.yml`, which `smith ci generate` writes, on
+   that tag. A tag pushed with the workflow's own token starts no workflow,
+   but a `workflow_dispatch` does, so the release job gets `actions: write`;
+3. the pub workflow runs `smith release pub --project <app> --version
+   <version>`: it downloads the archives from the GitHub Release, builds the
+   package and runs `dart pub publish`, authenticated by `setup-dart` with
+   GitHub's OIDC token.
+
+A version pub.dev already has is skipped, so a re-run completes a release.
+The release summary says when it started a publish; the pub workflow's run
+says how it went. It works only on GitHub Actions with `[release]
+github_releases = true`; on Azure Pipelines or GitLab the release says so
+and skips it.
+
+Once per package, on pub.dev:
+
+- Publish the first version by hand (`dart pub publish` asks you to sign in).
+- On the package's **Admin** tab, under **Automated publishing**, enable
+  publishing from GitHub Actions for the repository, with the tag pattern
+  `<name>-v{{version}}` (or your `pub_tag`), and tick **Enable publishing
+  from workflow_dispatch events**.
+
+pub.dev also needs a description of 60 to 180 characters (the release's
+`description`, cut at a word when longer) and a `LICENSE` at the workspace
+root.
+
 ## Tags
 
 | Language | Tag | Why |

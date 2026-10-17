@@ -162,6 +162,12 @@ from the tags, and C++ and Bicep projects release by their tag only. On GitHub, 
 has `contents: write` so it can push tags; on Azure the checkout keeps its
 credentials (`persistCredentials`).
 
+An app published to pub.dev needs no secret either. With one, GitHub gets a
+second workflow, `.github/workflows/pub.yml`, which the release starts on the
+app's pub tag (the ci workflow gets `actions: write` for that). It sets up
+Dart with pub.dev's OIDC token and runs `smith release pub`; see
+[Releasing](releasing.md#pubdev) for the one-time setup on pub.dev.
+
 ## Ready-made pipelines
 
 Beside the generated CI, `smith pipeline` adds a pipeline that does one thing:

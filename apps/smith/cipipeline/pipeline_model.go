@@ -28,6 +28,9 @@ type Model struct {
 	// Provenance is true when an app is published to npm: on GitHub the job
 	// may then request an OIDC token, which npm provenance signs with.
 	Provenance bool
+	// Pub is true when an app is published to pub.dev: on GitHub the release
+	// then starts the pub workflow (actions: write), which publishes it.
+	Pub bool
 }
 
 // DefaultNativeRunners build native projects on each OS.
@@ -47,6 +50,8 @@ type Contributions struct {
 	NativeLinuxPackages []string
 	// Provenance is true when an app is published to npm.
 	Provenance bool
+	// Pub is true when an app is published to pub.dev.
+	Pub bool
 }
 
 // Add merges one plugin's contribution, keeping the first of duplicates.
@@ -75,7 +80,7 @@ func NewModel(c Contributions, smithVersion, releaseBranch string) Model {
 		smithVersion = "latest"
 	}
 	m := Model{SmithVersion: smithVersion, ReleaseBranch: releaseBranch, Pack: c.Pack, Native: c.Native,
-		NativeRunners: c.NativeRunners, NativeLinuxPackages: c.NativeLinuxPackages, Provenance: c.Provenance}
+		NativeRunners: c.NativeRunners, NativeLinuxPackages: c.NativeLinuxPackages, Provenance: c.Provenance, Pub: c.Pub}
 	if len(m.NativeRunners) == 0 {
 		m.NativeRunners = DefaultNativeRunners
 	}

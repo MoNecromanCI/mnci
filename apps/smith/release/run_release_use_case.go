@@ -83,7 +83,10 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 		if err := pushTag(s, item, opts, res); err != nil {
 			return err
 		}
-		return publishGitHubRelease(s, p, item, res, say, nil)
+		if err := publishGitHubRelease(s, p, item, res, say, nil); err != nil {
+			return err
+		}
+		return dispatchPub(s, p, item, res, say)
 	}
 
 	deps := map[string]string{}
@@ -147,6 +150,9 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 		if attach := append(slices.Clone(pr.Assets), packages...); len(attach) > 0 {
 			say("would attach %s", strings.Join(attach, ", "))
 		}
+		if p.Release != nil && p.Release.Pub != "" && !Native(p) {
+			say("would publish %s %s to pub.dev from the tag %s", p.Release.Pub, item.Next, PubTag(p, item.Next))
+		}
 		return nil
 	}
 
@@ -160,7 +166,10 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 	}
 	if s.Config.Release.GitHubReleases {
 		assets := append(append(pr.Assets, packages...), packageManifests(s, p, item, pr, say)...)
-		return publishGitHubRelease(s, p, item, res, say, assets)
+		if err := publishGitHubRelease(s, p, item, res, say, assets); err != nil {
+			return err
+		}
+		return dispatchPub(s, p, item, res, say)
 	}
 	return nil
 }
@@ -274,6 +283,12 @@ func publish(s *session.Session, p *projectgraph.Project, item Item, dryRun bool
 		pr.Skipped = "published by its tag"
 	}
 	return pr, nil
+}
+
+// PlannedAssets lists an app's release assets for a version, with each
+// archive's platform and the binary inside, without building them.
+func PlannedAssets(s *session.Session, p *projectgraph.Project, version string) (protocol.PublishResult, error) {
+	return publish(s, p, Item{Project: p.Name, Next: version}, true)
 }
 
 // deploy publishes the project with each deploy plugin that ships it (a

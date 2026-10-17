@@ -38,7 +38,10 @@ type ReportResult struct {
 	ExistingPackages []string `json:"existingPackages,omitempty"`
 	// GitHubRelease is the URL of the tag's GitHub Release.
 	GitHubRelease string `json:"githubRelease,omitempty"`
-	Error         string `json:"error,omitempty"`
+	// PubDispatch names the pub.dev publish the release started (package,
+	// version and tag), which the pub workflow finishes.
+	PubDispatch string `json:"pubDispatch,omitempty"`
+	Error       string `json:"error,omitempty"`
 }
 
 // Markdown renders the report for a CI step summary or a PR comment.
@@ -59,6 +62,11 @@ func (r Report) Markdown() string {
 				from = "new"
 			}
 			fmt.Fprintf(&b, "| %s | %s → **%s** | %s | %s |\n", res.Project, from, res.Next, res.Reason, res.Status)
+		}
+	}
+	for _, res := range r.Results {
+		if res.PubDispatch != "" {
+			fmt.Fprintf(&b, "\nDispatched pub.dev publish for %s.\n", res.PubDispatch)
 		}
 	}
 	if len(r.Unchanged) > 0 {

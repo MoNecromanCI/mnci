@@ -35,6 +35,7 @@ type Release struct {
 
 // Asset is a file attached to a release.
 type Asset struct {
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -86,6 +87,45 @@ func (c *Client) UploadAsset(r Release, file string) error {
 		contentType = "text/plain"
 	}
 	_, err = c.do(http.MethodPost, target, contentType, raw, nil)
+	return err
+}
+
+// DownloadAsset writes a release asset's content to a file.
+func (c *Client) DownloadAsset(repo Repository, a Asset, to string) error {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/repos/%s/releases/assets/%d", c.API, repo, a.ID), nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.Token)
+	req.Header.Set("Accept", "application/octet-stream")
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode >= 300 {
+		raw, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("downloading %s: %s: %s", a.Name, resp.Status, strings.TrimSpace(string(raw)))
+	}
+	if err := os.MkdirAll(filepath.Dir(to), 0o755); err != nil {
+		return err
+	}
+	out, err := os.Create(to)
+	if err != nil {
+		return err
+	}
+	if _, err := io.Copy(out, resp.Body); err != nil {
+		_ = out.Close()
+		return err
+	}
+	return out.Close()
+}
+
+// DispatchWorkflow starts a workflow_dispatch run of a workflow file on a ref
+// (a branch or tag), with its inputs.
+func (c *Client) DispatchWorkflow(repo Repository, workflow, ref string, inputs map[string]string) error {
+	body, _ := json.Marshal(map[string]any{"ref": ref, "inputs": inputs})
+	_, err := c.do(http.MethodPost, c.API+"/repos/"+repo.String()+"/actions/workflows/"+url.PathEscape(workflow)+"/dispatches", "application/json", body, nil)
 	return err
 }
 

@@ -192,6 +192,12 @@ func (g *Git) CreateTag(name, message string) error {
 	return err
 }
 
+// CreateTagAt creates an annotated tag on a given commit.
+func (g *Git) CreateTagAt(name, message, commit string) error {
+	_, err := g.Run("tag", "--annotate", name, "--message", message, commit)
+	return err
+}
+
 // HasRemote reports whether a remote is configured.
 func (g *Git) HasRemote(name string) bool {
 	_, err := g.Run("remote", "get-url", name)

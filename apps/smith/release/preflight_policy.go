@@ -71,7 +71,7 @@ func Preflight(s *session.Session, plan Plan) error {
 }
 
 // DistributionCredentials are the secrets publishing an app's binaries to
-// npm, PyPI and NuGet needs.
+// npm, PyPI, NuGet and RubyGems needs.
 func DistributionCredentials(r *workspace.ProjectRelease) []protocol.Credential {
 	var creds []protocol.Credential
 	if r == nil {
@@ -85,6 +85,9 @@ func DistributionCredentials(r *workspace.ProjectRelease) []protocol.Credential 
 	}
 	if r.NuGet != "" {
 		creds = append(creds, protocol.Credential{Env: "NUGET_API_KEY", Description: "NuGet API key that can push " + r.NuGet + " and " + r.NuGet + ".*", Required: true})
+	}
+	if r.RubyGems != "" {
+		creds = append(creds, protocol.Credential{Env: "GEM_HOST_API_KEY", Description: "RubyGems API key that can push " + r.RubyGems, Required: true})
 	}
 	return creds
 }

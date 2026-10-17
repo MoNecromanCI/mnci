@@ -164,6 +164,9 @@ type ProjectRelease struct {
 	// <NuGet>.<rid> package per platform holding the binary. Publishing
 	// needs NUGET_API_KEY.
 	NuGet string `toml:"nuget"`
+	// RubyGems is the gem the app is published as, one platform gem per
+	// platform. Publishing needs GEM_HOST_API_KEY.
+	RubyGems string `toml:"rubygems"`
 	// Description, Homepage and License describe the app in those manifests
 	// and packages.
 	Description string `toml:"description"`

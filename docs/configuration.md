@@ -147,6 +147,7 @@ package_managers = ["homebrew", "scoop", "winget"]    # manifests attached to th
 npm = ["@acme/cli", "acme"]                           # npm packages; the first names the platform ones
 pypi = "acme"                                         # PyPI wheels
 nuget = "acme"                                        # .NET tool packages (dotnet tool install -g acme)
+rubygems = "acme"                                     # platform gems
 ```
 
 See [Releasing](releasing.md#apps).

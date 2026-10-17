@@ -11,7 +11,7 @@ func TestEveryTemplateRenders(t *testing.T) {
 	m := cipipeline.NewModel(cipipeline.Contributions{}, "1.2.3", "main")
 	app := App{Name: "web", Root: "apps/web", Output: "dist"}
 	does := map[string]string{
-		"e2e":                   "smith run e2e",
+		"e2e":                   "smith run e2e --parallel 1",
 		"package-zip":           "smith ci pack",
 		"deploy-pages":          "path: apps/web/dist",
 		"deploy-azure-function": "apps/web",

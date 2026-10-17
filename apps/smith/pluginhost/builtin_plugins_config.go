@@ -15,6 +15,7 @@ import (
 	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/astro"
 	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/eslint"
 	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/jest"
+	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/playwright"
 	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/typescript"
 	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/vite"
 	"github.com/monosmith-app/monosmith/libs/plugin-node-toolchains/vitest"
@@ -52,6 +53,7 @@ var BuiltinAddons = map[string]func(version string) serve.Plugin{
 	eslint.Name:     func(v string) serve.Plugin { return eslint.New(v) },
 	jest.Name:       func(v string) serve.Plugin { return jest.New(v) },
 	vitest.Name:     func(v string) serve.Plugin { return vitest.New(v) },
+	playwright.Name: func(v string) serve.Plugin { return playwright.New(v) },
 	typescript.Name: func(v string) serve.Plugin { return typescript.New(v) },
 	vite.Name:       func(v string) serve.Plugin { return vite.New(v) },
 	angular.Name:    func(v string) serve.Plugin { return angular.New(v) },

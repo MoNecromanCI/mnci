@@ -51,6 +51,8 @@ Thumbs.db
 
 # Added by monosmith-app: `npm run format`/`lint` run `eslint --cache`.
 .eslintcache
+# tsc's incremental state (tsconfig.base.json is composite).
+*.tsbuildinfo
 
 # smith
 .smith/

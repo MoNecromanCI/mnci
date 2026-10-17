@@ -19,6 +19,7 @@ import (
 	"github.com/monosmith-app/monosmith/apps/smith/packagemanifests"
 	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
 	"github.com/monosmith-app/monosmith/apps/smith/pypiwheels"
+	"github.com/monosmith-app/monosmith/apps/smith/rubygems"
 	"github.com/monosmith-app/monosmith/apps/smith/session"
 	"github.com/monosmith-app/monosmith/apps/smith/taskrun"
 	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
@@ -239,17 +240,17 @@ func deploy(s *session.Session, p *projectgraph.Project, item Item, dryRun bool,
 	return nil
 }
 
-// distribute publishes an app's binaries as npm packages, PyPI wheels and a
-// .NET tool, made from the archives its plugin built, before the app is
-// tagged: a failure stops the release, and the re-run skips what the
+// distribute publishes an app's binaries as npm packages, PyPI wheels, a
+// .NET tool and gems, made from the archives its plugin built, before the
+// app is tagged: a failure stops the release, and the re-run skips what the
 // registries have.
 func distribute(s *session.Session, p *projectgraph.Project, item Item, pr protocol.PublishResult, dryRun bool, res *ReportResult, say func(string, ...any)) error {
 	r := p.Release
-	if r == nil || (len(r.NPM) == 0 && r.PyPI == "" && r.NuGet == "") {
+	if r == nil || (len(r.NPM) == 0 && r.PyPI == "" && r.NuGet == "" && r.RubyGems == "") {
 		return nil
 	}
 	if Native(p) {
-		say("no npm, PyPI or NuGet packages: a native app's archives are built on separate runners")
+		say("no npm, PyPI, NuGet or RubyGems packages: a native app's archives are built on separate runners")
 		return nil
 	}
 	binary := pr.Binary
@@ -321,6 +322,17 @@ func distribute(s *session.Session, p *projectgraph.Project, item Item, pr proto
 		report("NuGet", result.Published, result.Existing, result.Skipped)
 		if err != nil {
 			return fmt.Errorf("NuGet: %w", err)
+		}
+	}
+	if r.RubyGems != "" {
+		release := rubygems.Release{Name: r.RubyGems, Binary: binary, Version: item.Next, Description: r.Description, License: r.License, Homepage: homepage, Repository: repository, OutDir: out + "/rubygems"}
+		for _, a := range archives {
+			release.Archives = append(release.Archives, rubygems.Archive{Path: a.path, OS: a.os, Arch: a.arch})
+		}
+		result, err := rubygems.Publish(s.Root, release, dryRun)
+		report("RubyGems", result.Published, result.Existing, result.Skipped)
+		if err != nil {
+			return fmt.Errorf("RubyGems: %w", err)
 		}
 	}
 	return nil

@@ -31,9 +31,9 @@ type ReportResult struct {
 	Pushed    bool     `json:"pushed"`
 	// Assets are the files built for an app's release.
 	Assets []string `json:"assets,omitempty"`
-	// Packages are the npm packages, PyPI wheels and NuGet packages an app
-	// was published as (name@version, wheel or .nupkg file name), and those
-	// the registries already had.
+	// Packages are the npm packages, PyPI wheels, NuGet packages and gems an
+	// app was published as (name@version, wheel, .nupkg or gem file name), and
+	// those the registries already had.
 	Packages         []string `json:"packages,omitempty"`
 	ExistingPackages []string `json:"existingPackages,omitempty"`
 	// GitHubRelease is the URL of the tag's GitHub Release.

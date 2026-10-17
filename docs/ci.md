@@ -168,7 +168,7 @@ Beside the generated CI, `smith pipeline` adds a pipeline that does one thing:
 
 | Template | Providers | What it does |
 |---|---|---|
-| `e2e` | GitHub, Azure | runs every project's `e2e` task, which `smith ci verify` leaves out, one at a time (`--parallel 1`: suites share ports and a display); on GitHub also on pull requests, with the Playwright browsers cached |
+| `e2e` | GitHub, Azure | runs every project's `e2e` task, which `smith ci verify` leaves out, one at a time (`--parallel 1`: suites share ports and a display), on pull requests too, with the Playwright browsers cached (on Azure Repos, the pull-request run needs a build validation policy) |
 | `package-zip` | GitHub, Azure | packs the projects (`smith ci pack`) and keeps `dist/drop` as the `drop` artifact |
 | `deploy-pages --project <app>` | GitHub | builds the app and deploys its build output to GitHub Pages |
 | `deploy-azure-function --project <app>` | GitHub, Azure | builds the app and deploys it to an Azure Function App (OIDC on GitHub, a service connection on Azure) |

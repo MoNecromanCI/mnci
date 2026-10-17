@@ -49,12 +49,6 @@ if [ "$VERSION" = "latest" ]; then
       | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1
   }
   VERSION=$(newest smith)
-  if [ -z "$VERSION" ]; then
-    # Until smith@1.0.0 is released, the newest release is the tool's
-    # former name, mnci; it is installed as smith.
-    VERSION=$(newest mnci)
-    tag=mnci product=mnci packed=mnci
-  fi
   [ -n "$VERSION" ] || fail "no smith release found"
 fi
 VERSION="${VERSION#v}"

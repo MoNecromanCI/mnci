@@ -19,6 +19,8 @@ func TestCommandFailsOnAnUndeclaredImport(t *testing.T) {
 	write("package.json", `{"private":true,"workspaces":["packages/*"]}`)
 	write("packages/ocr/package.json", `{"name":"@acme/ocr","dependencies":{"zod":"^4.0.0"}}`)
 	write("packages/ocr/src/read.ts", "import { z } from 'zod'\nimport type { Page } from '@acme/core'\n")
+	// smith run sets it for its tasks, this test among them.
+	t.Setenv("SMITH_WORKSPACE_ROOT", "")
 	t.Chdir(filepath.Join(ws, "packages", "ocr"))
 
 	var out bytes.Buffer

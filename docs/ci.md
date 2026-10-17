@@ -18,7 +18,7 @@ Each plugin contributes, for its own projects:
   slot.
 - **setup** — e.g. `npm ci`, the Python venv and editable installs, `go mod download`
 - **audit** — `npm audit` (blocking), `pip-audit` and `govulncheck` (reported)
-- **credentials** — the secrets publishing needs (`NODE_AUTH_TOKEN`, `PYPI_TOKEN`)
+- **credentials** — the secrets publishing needs (`NODE_AUTH_TOKEN`, `PYPI_TOKEN`, `NUGET_API_KEY`)
 
 smith merges them into one provider-neutral model, and a renderer per provider
 writes the YAML. Every provider carries the same phases, in the same order.
@@ -141,6 +141,7 @@ you regenerate it with a newer smith.
 |---|---|
 | `NODE_AUTH_TOKEN` | `npm publish` (the generated `.npmrc` reads it), and an app's npm packages |
 | `PYPI_TOKEN` | twine upload as `__token__` (or set `TWINE_USERNAME`/`TWINE_PASSWORD` and `TWINE_REPOSITORY_URL` for another index), and an app's wheels |
+| `NUGET_API_KEY` | an app's .NET tool packages; a nuget.org API key that can push the tool's package and `<name>.*` |
 | `GITHUB_TOKEN` | GitHub Releases and their assets, with `[release] github_releases`; GitHub Actions provides it |
 
 Go packages are published by their tag and need no secret. On GitHub, the job

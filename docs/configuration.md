@@ -146,6 +146,7 @@ version_variable = "main.version"                     # Go: stamped with -X
 package_managers = ["homebrew", "scoop", "winget"]    # manifests attached to the GitHub Release
 npm = ["@acme/cli", "acme"]                           # npm packages; the first names the platform ones
 pypi = "acme"                                         # PyPI wheels
+nuget = "acme"                                        # .NET tool packages (dotnet tool install -g acme)
 ```
 
 See [Releasing](releasing.md#apps).
@@ -163,3 +164,4 @@ See [Releasing](releasing.md#apps).
 | `SMITH_BASE` | base branch for `--affected` and `smith ci verify` |
 | `SMITH_RELEASE_ANY_BRANCH` | allow a real release from another branch |
 | `SMITH_PYPI_SIMPLE_URL` | the simple index to check before uploading to a custom Python index |
+| `NUGET_PUSH_URL` | the NuGet v2 push endpoint for an app's .NET tool packages (default nuget.org) |

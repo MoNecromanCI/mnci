@@ -44,6 +44,12 @@ func (m manifest) declares(name string) bool {
 	return false
 }
 
+// declaresLibrary reports whether the manifest declares the playwright
+// library (or playwright-core, which it is built on).
+func (m manifest) declaresLibrary() bool {
+	return m.declares("playwright") || m.declares("playwright-core")
+}
+
 // Suite is a project's Playwright suite as the plugin sees it.
 type Suite struct {
 	Flavour Flavour

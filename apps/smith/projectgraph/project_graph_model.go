@@ -31,6 +31,10 @@ type Project struct {
 	// Deployers are the deploy plugins that contributed to the project (an
 	// image to build): a release publishes it with each of them too.
 	Deployers []string `json:"deployers,omitempty"`
+	// Dropped maps a task to the dependencies a plugin gave it that a
+	// smith.toml depends_on override leaves out ("build (from plugin node)"),
+	// for doctor to name.
+	Dropped map[string][]string `json:"-"`
 	// contributed maps "task.field" to the plugin or convention that set it.
 	contributed map[string]string
 	// stackPlugins are the plugins of the project's stack, other than its

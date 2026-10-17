@@ -2,7 +2,9 @@ package projectgraph
 
 import (
 	"fmt"
+	"slices"
 	"sort"
+	"strings"
 
 	"github.com/monosmith-app/monosmith/apps/smith/splitrepo"
 	"github.com/monosmith-app/monosmith/apps/smith/workspace"
@@ -36,7 +38,7 @@ func ApplyOverrides(p *Project, cfg workspace.Config) error {
 	sort.Strings(names)
 	for _, name := range names {
 		if o, ok := cfg.Tasks[name]; ok {
-			p.Tasks[name] = apply(p.Tasks[name], o, p.Sources, name, fmt.Sprintf("smith.toml [tasks.%s]", name))
+			p.override(name, o, fmt.Sprintf("smith.toml [tasks.%s]", name))
 		}
 	}
 	if po, ok := cfg.Projects[p.Name]; ok {
@@ -61,10 +63,40 @@ func ApplyOverrides(p *Project, cfg workspace.Config) error {
 			if !exists && len(o.Command) == 0 {
 				return fmt.Errorf("smith.toml [projects.%s.tasks.%s]: %s has no %q task, so the override must give a command", p.Name, name, p.Name, name)
 			}
-			p.Tasks[name] = apply(t, o, p.Sources, name, fmt.Sprintf("smith.toml [projects.%s.tasks.%s]", p.Name, name))
+			p.Tasks[name] = t
+			p.override(name, o, fmt.Sprintf("smith.toml [projects.%s.tasks.%s]", p.Name, name))
 		}
 	}
 	return nil
+}
+
+// override applies one smith.toml override to a task. A depends_on override
+// replaces the list, but a dependency on a task the same plugin contributed
+// to the project stays: such a task (e2e-browsers before e2e) exists only for
+// the one that needs it, so dropping it breaks the task rather than changing
+// it. Any other dependency a plugin added and the override leaves out is
+// recorded in Dropped, for doctor to name.
+func (p *Project) override(name string, o workspace.TaskOverride, source string) {
+	before := p.Tasks[name]
+	from := p.Sources[name+".dependsOn"]
+	t := apply(before, o, p.Sources, name, source)
+	if o.DependsOn != nil && strings.HasPrefix(from, "plugin ") {
+		for _, d := range before.DependsOn {
+			if slices.Contains(t.DependsOn, d) {
+				continue
+			}
+			if p.contributed[name+".dependsOn"] == from && p.contributed[d+".command"] == from {
+				t.DependsOn = append(slices.Clone(t.DependsOn), d)
+				p.Sources[name+".dependsOn"] = source + ", with " + d + " from " + from
+				continue
+			}
+			if p.Dropped == nil {
+				p.Dropped = map[string][]string{}
+			}
+			p.Dropped[name] = append(p.Dropped[name], d+" (from "+from+")")
+		}
+	}
+	p.Tasks[name] = t
 }
 
 func apply(t protocol.Task, o workspace.TaskOverride, sources map[string]string, name, source string) protocol.Task {

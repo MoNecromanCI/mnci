@@ -112,10 +112,10 @@ func TestContributeOnLinux(t *testing.T) {
 func TestForcedFlavour(t *testing.T) {
 	ws := t.TempDir()
 	writeProject(t, ws, "apps/desktop", `{"devDependencies": {"@playwright/test": "^1.63.0"}, "smith": {"playwright": {"flavour": "library"}}}`)
-	if got := Detect(filepath.Join(ws, "apps", "desktop"), true).Flavour; got != Library {
+	if got := Detect(ws, "apps/desktop", true).Flavour; got != Library {
 		t.Errorf("forced flavour %q", got)
 	}
-	if got := Detect(filepath.Join(ws, "apps", "desktop"), false).Flavour; got != None {
+	if got := Detect(ws, "apps/desktop", false).Flavour; got != None {
 		t.Errorf("a library suite needs its e2e script, forced or not: %q", got)
 	}
 }

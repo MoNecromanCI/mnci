@@ -2,7 +2,6 @@ package playwright
 
 import (
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -46,7 +45,7 @@ func Contribute(workspaceRoot string, params protocol.ContributeParams) protocol
 	res := protocol.ContributeResult{Projects: map[string]protocol.Contribution{}}
 	for _, p := range params.Projects {
 		script, hasScript := p.Tasks[TaskName]
-		suite := Detect(filepath.Join(workspaceRoot, filepath.FromSlash(p.Root)), hasScript)
+		suite := Detect(workspaceRoot, p.Root, hasScript)
 		if suite.Flavour == None {
 			continue
 		}

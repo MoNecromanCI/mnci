@@ -9,28 +9,36 @@ import (
 // configFiles are the names the Playwright test runner reads its config from.
 var configFiles = []string{"playwright.config.ts", "playwright.config.mts", "playwright.config.cts", "playwright.config.js", "playwright.config.mjs", "playwright.config.cjs"}
 
-// Detect reads the project at dir (absolute) and says how it drives
+// Detect reads the project root (workspace-relative) and says how it drives
 // Playwright. A runner suite is recognised by its config or by
 // @playwright/test; a library suite needs the playwright library and an e2e
-// script to run, since nothing else says how its own runner is started.
-func Detect(dir string, hasE2EScript bool) Suite {
-	var m manifest
-	if data, err := os.ReadFile(filepath.Join(dir, "package.json")); err == nil {
-		_ = json.Unmarshal(data, &m)
-	}
+// script to run, since nothing else says how its own runner is started. The
+// library may be declared by the workspace's root package.json instead: npm
+// hoists shared dev tools there, and the suite resolves it from there too.
+func Detect(workspaceRoot, root string, hasE2EScript bool) Suite {
+	dir := filepath.Join(workspaceRoot, filepath.FromSlash(root))
+	m := readManifest(dir)
 	s := Suite{Options: m.Smith.Playwright}
 	switch {
 	case s.Options.Flavour == Runner || s.Options.Flavour == Library:
 		s.Flavour = s.Options.Flavour
 	case hasConfig(dir) || m.declares("@playwright/test"):
 		s.Flavour = Runner
-	case (m.declares("playwright") || m.declares("playwright-core")) && hasE2EScript:
+	case hasE2EScript && (m.declaresLibrary() || readManifest(workspaceRoot).declaresLibrary()):
 		s.Flavour = Library
 	}
 	if s.Flavour == Library && !hasE2EScript {
 		s.Flavour = None
 	}
 	return s
+}
+
+func readManifest(dir string) manifest {
+	var m manifest
+	if data, err := os.ReadFile(filepath.Join(dir, "package.json")); err == nil {
+		_ = json.Unmarshal(data, &m)
+	}
+	return m
 }
 
 func hasConfig(dir string) bool {

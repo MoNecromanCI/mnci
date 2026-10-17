@@ -1,13 +1,16 @@
 package doctor
 
 import (
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/monosmith-app/monosmith/apps/smith/cipipeline"
+	"github.com/monosmith-app/monosmith/apps/smith/projectgraph"
 	"github.com/monosmith-app/monosmith/apps/smith/release"
 	"github.com/monosmith-app/monosmith/apps/smith/releaselineage"
 	"github.com/monosmith-app/monosmith/apps/smith/session"
@@ -162,6 +165,22 @@ func CoreChecks(s *session.Session) []protocol.Finding {
 				Detail: p.Name + " has no " + missing[0] + " task, so CI never checks it", Remedy: "add the task to the project (or in smith.toml under [projects." + p.Name + ".tasks])",
 			})
 		}
+		out = append(out, droppedDependencies(p)...)
+	}
+	return out
+}
+
+// droppedDependencies names the dependencies a plugin gave a task that a
+// smith.toml depends_on override leaves out: an override replaces the list,
+// so a dependency it does not repeat is gone without a word.
+func droppedDependencies(p *projectgraph.Project) []protocol.Finding {
+	var out []protocol.Finding
+	for _, task := range slices.Sorted(maps.Keys(p.Dropped)) {
+		out = append(out, protocol.Finding{
+			Check: p.Name + ":" + task + " keeps the dependencies its plugins add", Warning: true,
+			Detail: "smith.toml's depends_on (" + p.Sources[task+".dependsOn"] + ") leaves out " + strings.Join(p.Dropped[task], ", "),
+			Remedy: "add them to depends_on, or leave them out if the task does not need them (`smith explain " + p.Name + ":" + task + "` shows where each field comes from)",
+		})
 	}
 	return out
 }

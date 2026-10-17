@@ -35,6 +35,11 @@ type Project struct {
 	Tags      []string        `json:"tags,omitempty"`
 	// Stack is the stack recorded in the project's manifest, if any.
 	Stack string `json:"stack,omitempty"`
+	// Settings are plugins' settings for this project from smith.toml, by
+	// plugin name: a convention's [conventions.<name>] settings with the
+	// project's [projects.<project>.<name>] on top. Set by the host; a plugin
+	// reads its own entry.
+	Settings map[string]map[string]any `json:"settings,omitempty"`
 }
 
 // ProjectKind is the universal kind vocabulary.

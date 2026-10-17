@@ -16,6 +16,10 @@ type CIResult struct {
 	Audit []Step `json:"audit,omitempty"`
 	// Credentials names the environment variables `smith ci release` needs.
 	Credentials []Credential `json:"credentials,omitempty"`
+	// Permissions are the GitHub Actions token permissions the release needs
+	// beyond the defaults ("packages: write" to push to ghcr.io). Other
+	// providers have no such permissions and ignore them.
+	Permissions []string `json:"permissions,omitempty"`
 }
 
 // Toolchain is a runtime the pipeline must install, and how. Plugins asking

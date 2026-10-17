@@ -3,7 +3,7 @@ import markdown from '@eslint/markdown'
 /** Markdown, as GitHub-flavoured. Every generated workspace ships READMEs. */
 export default [
   {
-    name:     'mnci/markdown',
+    name:     'monosmith/markdown',
     files:    ['**/*.md'],
     plugins:  { markdown },
     language: 'markdown/gfm',
@@ -27,7 +27,7 @@ export default [
        *
        * naming neither the file, nor the rule, nor the real method. The whole
        * `eslint .` invocation exits 2, so `npm run format`, `nx run-many -t
-       * lint` and `mnci upgrade`'s format pass all die on one line of prose in
+       * lint` and `smith upgrade`'s format pass all die on one line of prose in
        * one file.
        *
        * Measured, not inferred: a one-line fixture reproduces it identically on

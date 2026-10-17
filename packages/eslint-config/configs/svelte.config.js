@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module'
 import tsParser from '@typescript-eslint/parser'
-import { named } from './named.js'
+import { named } from './named.mapper.js'
 
 /**
  * Whether `svelte` resolves from where `eslint-plugin-svelte` is installed.
@@ -30,7 +30,7 @@ function svelteIsInstalled () {
  * `svelte-eslint-parser` reads the whole `.svelte` file and hands the script to the
  * TypeScript parser, so the generic JavaScript rules reach the script too. Only the
  * plugin's `recommended` rules are on (correctness and a11y); its stylistic family is
- * not, because `mnci/standard` is the one formatting opinion and `.svelte` markup is
+ * not, because `monosmith/standard` is the one formatting opinion and `.svelte` markup is
  * not Standard Style's to format. The blocks exist only when `svelte` is installed
  * (see `svelteIsInstalled`), and match `.svelte` files only.
  */
@@ -44,10 +44,10 @@ const blocks = recommended === undefined
   : [
       // The preset's rules block names no `files`, so left alone it would run its rules on every
       // file in the workspace, Markdown included, where they throw for want of a Svelte parser.
-      ...named('mnci/svelte/recommended', recommended)
+      ...named('monosmith/svelte/recommended', recommended)
         .map(block => ({ ...block, files: block.files ?? SVELTE_FILES })),
       {
-        name:            'mnci/svelte',
+        name:            'monosmith/svelte',
         files:           SVELTE_FILES,
         languageOptions: { parserOptions: { parser: tsParser } },
         // The compiler's own diagnostics: a11y (`<img>` with no `alt`, a link with no target)

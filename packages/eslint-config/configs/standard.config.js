@@ -59,7 +59,7 @@ import stylistic from '@stylistic/eslint-plugin'
  */
 export default [
   {
-    name:    'mnci/standard',
+    name:    'monosmith/standard',
     files:   ['**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx}'],
     plugins: { '@stylistic': stylistic },
     rules:   {

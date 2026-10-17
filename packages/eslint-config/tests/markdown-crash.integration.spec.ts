@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url'
 
 /**
  * `markdown/no-invalid-label-refs` CRASHES the whole `eslint` invocation on a
- * Confluence-style `[label|url]` link, so `mnci/markdown` keeps it off.
+ * Confluence-style `[label|url]` link, so `monosmith/markdown` keeps it off.
  *
  * @remarks
  * The failure mode is what makes this worth a test rather than a comment. The
@@ -16,10 +16,10 @@ import { pathToFileURL } from 'node:url'
  * tries to attach a line number to that error, calls `getLoc()` on the same
  * node and throws a SECOND time. The user sees only the second throw, which
  * names neither the file, nor the rule, nor the real method — and `eslint .`
- * exits 2, taking `npm run format`, `nx run-many -t lint` and `mnci upgrade`'s
+ * exits 2, taking `npm run format`, `nx run-many -t lint` and `smith upgrade`'s
  * format pass with it, over one line of prose in one file.
  *
- * Found in a real workspace: `mnci upgrade` died on a brief pasted from a wiki.
+ * Found in a real workspace: `smith upgrade` died on a brief pasted from a wiki.
  *
  * Content, not versions. The same one-line fixture reproduces identically on
  * eslint 10.9.1 and 10.11.0 and on `@eslint/plugin-kit` 0.7.2 and 0.7.3, and
@@ -48,8 +48,8 @@ function lintWikiLink (rules = '{}'): { status: number | null, output: string } 
   const entry = pathToFileURL(join(packageRoot, 'index.js')).href
   writeFileSync(
     join(workspace, 'eslint.config.mjs'),
-    `import mnci from ${JSON.stringify(entry)}\n` +
-    `export default [...mnci(), { files: ['**/*.md'], rules: ${rules} }]\n`,
+    `import monosmith from ${JSON.stringify(entry)}\n` +
+    `export default [...monosmith(), { files: ['**/*.md'], rules: ${rules} }]\n`,
   )
   writeFileSync(join(workspace, 'note.md'), WIKI_LINK)
   const result = spawnSync(eslintBin, ['note.md'], {
@@ -62,7 +62,7 @@ function lintWikiLink (rules = '{}'): { status: number | null, output: string } 
 }
 
 beforeEach(() => {
-  workspace = mkdtempSync(join(tmpdir(), 'mnci-markdown-crash-'))
+  workspace = mkdtempSync(join(tmpdir(), 'smith-markdown-crash-'))
   // A self-contained tsconfig, so the TypeScript resolver behind
   // `import-x/no-cycle` stops here instead of walking up into whatever the OS
   // temp directory happens to contain.
@@ -99,12 +99,12 @@ describe('markdown/no-invalid-label-refs', () => {
 
   it('keeps the markdown rules that do work', () => {
     // Turning one rule off must not quietly cost the block its purpose:
-    // `no-empty-links` is the other rule `mnci/markdown` enables.
+    // `no-empty-links` is the other rule `monosmith/markdown` enables.
     writeFileSync(join(workspace, 'note.md'), 'An [empty link]() here.\n')
     const entry = pathToFileURL(join(packageRoot, 'index.js')).href
     writeFileSync(
       join(workspace, 'eslint.config.mjs'),
-      `import mnci from ${JSON.stringify(entry)}\nexport default mnci()\n`,
+      `import monosmith from ${JSON.stringify(entry)}\nexport default monosmith()\n`,
     )
     const result = spawnSync(eslintBin, ['note.md'], {
       cwd:      workspace,

@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url'
  * Every block in the resolved config must carry a unique `name`.
  *
  * @remarks
- * A name is not decoration here. An mnci workspace's root `eslint.config.mjs` is
+ * A name is not decoration here. A smith workspace's root `eslint.config.mjs` is
  * three lines long, and the blocks behind it — currently 29 of them — live in
  * this package. When someone needs to know which block turned a rule on, or
  * which one to override, `eslint --inspect-config` is the tool and the block's
@@ -33,8 +33,8 @@ const packageRoot = join(__dirname, '..')
  */
 function blockNames (): (string | null)[] {
   const script = `
-    const mnci = (await import(${JSON.stringify(pathToFileURL(join(packageRoot, 'index.js')).href)})).default
-    const blocks = mnci({ workspaceRoot: ${JSON.stringify(packageRoot)} })
+    const monosmith = (await import(${JSON.stringify(pathToFileURL(join(packageRoot, 'index.js')).href)})).default
+    const blocks = monosmith({ workspaceRoot: ${JSON.stringify(packageRoot)} })
     process.stdout.write(JSON.stringify(blocks.map(block => block.name ?? null)))
   `
   const result = spawnSync(process.execPath, ['--input-type=module', '-e', script], {
@@ -62,7 +62,7 @@ describe('config block names', () => {
     // The presets are where this breaks: `eslint-plugin-yml`, `eslint-plugin-toml`
     // and `eslint-config-prettier` all ship unnamed blocks, so spreading one
     // directly puts an anonymous entry in a consumer's resolved config.
-    // `configs/named.js` exists for exactly that, and this is what says so.
+    // `configs/named.mapper.js` exists for exactly that, and this is what says so.
     expect(names.filter(name => name === null)).toEqual([])
   })
 
@@ -70,12 +70,12 @@ describe('config block names', () => {
     expect(new Set(names).size).toBe(names.length)
   })
 
-  it('namespaces its own blocks under `mnci/`, and leaves upstream names alone', () => {
+  it('namespaces its own blocks under `monosmith/`, and leaves upstream names alone', () => {
     // typescript-eslint names its own blocks (`typescript-eslint/recommended`
     // and friends). Renaming those would hide where a rule actually came from,
     // so `named()` fills a name in rather than replacing one.
     expect(names).toContain('typescript-eslint/recommended')
-    const own = names.filter(name => name?.startsWith('mnci/'))
+    const own = names.filter(name => name?.startsWith('monosmith/'))
     expect(own.length).toBeGreaterThan(names.length / 2)
   })
 })
@@ -92,8 +92,8 @@ describe('ignore list', () => {
     // Caught by the real Windows e2e, not by any fixture, because it needs a
     // workspace that has actually BUILT something.
     const script = `
-      const mnci = await import(${JSON.stringify(pathToFileURL(join(packageRoot, 'index.js')).href)})
-      process.stdout.write(JSON.stringify(mnci.ignores))
+      const monosmith = await import(${JSON.stringify(pathToFileURL(join(packageRoot, 'index.js')).href)})
+      process.stdout.write(JSON.stringify(monosmith.ignores))
     `
     const result = spawnSync(process.execPath, ['--input-type=module', '-e', script], {
       encoding: 'utf8',

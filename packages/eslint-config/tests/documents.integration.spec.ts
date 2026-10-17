@@ -21,13 +21,13 @@ interface BlockSummary {
 /**
  * Resolves the config and reports the Astro and MDX blocks.
  *
- * @returns The blocks whose name starts with `mnci/astro` or `mnci/mdx`.
+ * @returns The blocks whose name starts with `monosmith/astro` or `monosmith/mdx`.
  * @throws If the subprocess writes no JSON.
  */
 function documentBlocks (): BlockSummary[] {
   const script = `
-    const mnci = (await import(${JSON.stringify(pathToFileURL(join(packageRoot, 'index.js')).href)})).default
-    const blocks = mnci({}).filter(block => String(block.name).startsWith('mnci/astro') || String(block.name).startsWith('mnci/mdx'))
+    const monosmith = (await import(${JSON.stringify(pathToFileURL(join(packageRoot, 'index.js')).href)})).default
+    const blocks = monosmith({}).filter(block => String(block.name).startsWith('monosmith/astro') || String(block.name).startsWith('monosmith/mdx'))
     process.stdout.write(JSON.stringify(blocks.map(block => ({ name: block.name, files: block.files ?? null }))))
   `
   const result = spawnSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8' })
@@ -43,8 +43,8 @@ describe('the Astro and MDX blocks', () => {
   const blocks = documentBlocks()
 
   it('are composed', () => {
-    expect(blocks.some(block => block.name.startsWith('mnci/astro'))).toBe(true)
-    expect(blocks.some(block => block.name === 'mnci/mdx')).toBe(true)
+    expect(blocks.some(block => block.name.startsWith('monosmith/astro'))).toBe(true)
+    expect(blocks.some(block => block.name === 'monosmith/mdx')).toBe(true)
   })
 
   it('all name the files they apply to', () => {

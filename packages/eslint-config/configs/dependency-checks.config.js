@@ -1,7 +1,7 @@
 import { globSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
-// Namespace import — see the note in configs/json.js.
+// Namespace import — see the note in configs/json.config.js.
 import * as jsoncParser from 'jsonc-eslint-parser'
 
 // `@nx/eslint-plugin` owns the `@nx/dependency-checks` rule, so the plugin has
@@ -24,7 +24,7 @@ try {
 /**
  * `@nx/dependency-checks` for publishable packages, applied from the ROOT config.
  *
- * This used to be a per-project `eslint.config.mjs` that mnci wrote into every
+ * This used to be a per-project `eslint.config.mjs` that smith wrote into every
  * `packages/<name>` (`NPM_LIB_ESLINT_CONFIG`). It lives here instead so a
  * generated workspace has exactly one ESLint config. Verified empirically that
  * the rule resolves the owning project from the linted `package.json`'s path
@@ -63,7 +63,7 @@ try {
  * the other two are not.
  *
  * The cost is real and worth stating: an obsolete dependency now has to be
- * noticed by a human or by `mnci doctor`. That is the right trade. A lint rule
+ * noticed by a human or by `smith doctor`. That is the right trade. A lint rule
  * that silently deletes a runtime dependency from a package about to be
  * published is not a safety net, it is the hazard.
  *
@@ -96,10 +96,10 @@ try {
  * So an override spreads these rather than restating them:
  *
  * ```js
- * import mnci, { dependencyChecksOptions } from '@mnci/eslint-config'
+ * import monosmith, { dependencyChecksOptions } from '@monosmith/eslint-config'
  *
  * export default [
- *   ...mnci({ workspaceRoot: import.meta.dirname }),
+ *   ...monosmith({ workspaceRoot: import.meta.dirname }),
  *   {
  *     name:  'local/dependency-checks',
  *     files: ['packages/*\/package.json'],
@@ -158,7 +158,7 @@ export default function dependencyChecks (workspaceRoot) {
 
   return [
     {
-      name:            'mnci/nx-dependency-checks',
+      name:            'monosmith/nx-dependency-checks',
       files:           ['packages/*/package.json', 'libs/*/package.json'],
       languageOptions: { parser: jsoncParser },
       plugins:         { '@nx': nxPlugin },

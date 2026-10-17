@@ -1,11 +1,11 @@
 import toml from 'eslint-plugin-toml'
-import { named } from './named.js'
+import { named } from './named.mapper.js'
 
 /**
  * TOML — parsing only, deliberately.
  *
  * @remarks
- * `mnci` writes `pyproject.toml` for every Python project and nothing read those
+ * `smith` writes `pyproject.toml` for every Python project and nothing read those
  * files, so a malformed one was reported by no tool at all: `pip`/`hatchling`
  * would fail much later, during a build, with a worse message.
  *
@@ -29,4 +29,4 @@ import { named } from './named.js'
  * this means TOML formatting is unenforced — deliberately, since the alternative
  * measured worse.
  */
-export default named('mnci/toml/base', toml.configs['flat/base'])
+export default named('monosmith/toml/base', toml.configs['flat/base'])

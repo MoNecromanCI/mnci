@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint'
  *
  * Uses the non-type-checked recommended set: type-aware linting needs a
  * `project` pointing at every tsconfig in the workspace, which a generated
- * monorepo cannot know up front (projects are added later by `mnci add`).
+ * monorepo cannot know up front (projects are added later by `smith add`).
  * Consumers that want type-aware rules can layer them on per project.
  */
 export default [
@@ -14,7 +14,7 @@ export default [
     files: ['**/*.{ts,mts,cts,tsx}'],
   })),
   {
-    name:  'mnci/typescript',
+    name:  'monosmith/typescript',
     files: ['**/*.{ts,mts,cts,tsx}'],
     rules: {
       // The base rules misfire on TS overloads and declaration merging.
@@ -35,7 +35,7 @@ export default [
     },
   },
   {
-    name:  'mnci/typescript/declarations',
+    name:  'monosmith/typescript/declarations',
     // Declaration files legitimately re-declare and use `any` in vendor types.
     files: ['**/*.d.ts'],
     rules: {

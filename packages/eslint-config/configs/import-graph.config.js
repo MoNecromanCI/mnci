@@ -22,7 +22,7 @@ import importX from 'eslint-plugin-import-x'
  *
  * **The resolver is the whole difficulty here, and the reason a naive setup would
  * be worse than nothing.** With `import-x`'s default Node resolver this reported
- * **179** errors on the mnci monorepo, every one of them false: Node's algorithm
+ * **179** errors on the smith monorepo, every one of them false: Node's algorithm
  * cannot resolve an extensionless relative TypeScript import (`./pythonProject`
  * → `pythonProject.ts`), which is how essentially all TypeScript is written. A
  * rule that fires on correct code teaches people to switch it off, so the
@@ -32,12 +32,12 @@ import importX from 'eslint-plugin-import-x'
  * `createTypeScriptImportResolver` is deliberately given **no `project` option**.
  * It then discovers each file's nearest tsconfig itself, which is what a scaffold
  * needs: a generated workspace's tsconfigs cannot be enumerated up front, since
- * `mnci add` keeps adding them. Same reasoning as `projectService: true` in
- * `configs/typeAware.js`, and verified the same way — with the glob removed, the
+ * `smith add` keeps adding them. Same reasoning as `projectService: true` in
+ * `configs/type-aware.config.js`, and verified the same way — with the glob removed, the
  * monorepo still reports zero.
  *
  * **`no-unresolved` had to be dropped, and the reason is structural rather than a
- * matter of configuration.** In an mnci workspace a project consumes an internal
+ * matter of configuration.** In a smith workspace a project consumes an internal
  * lib by its scoped name (`@scope/core`), which npm workspaces symlinks into
  * `node_modules` — but that package's manifest points at `./dist/index.js`, and
  * `dist/` does not exist until the dependency is **built**. `lint` does not depend
@@ -62,7 +62,7 @@ import importX from 'eslint-plugin-import-x'
  */
 export default [
   {
-    name:  'mnci/import-graph',
+    name:  'monosmith/import-graph',
     files: [
       'apps/*/src/**/*.{ts,mts,cts,tsx}',
       'libs/*/src/**/*.{ts,mts,cts,tsx}',

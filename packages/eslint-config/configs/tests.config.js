@@ -1,16 +1,16 @@
 import jest from 'eslint-plugin-jest'
-import { TYPE_AWARE_FILES } from './typeAware.js'
+import { TYPE_AWARE_FILES } from './type-aware.config.js'
 
 /**
  * Test-file overrides.
  *
- * Applies to both Jest and Vitest specs: the two stacks mnci offers share the
+ * Applies to both Jest and Vitest specs: the two stacks smith offers share the
  * same `describe`/`it`/`expect` globals, so the relaxations below are correct
  * for either.
  */
 export default [
   {
-    name:  'mnci/tests',
+    name:  'monosmith/tests',
     // `jest.*.{js,mjs,cjs,ts}` covers the setup/teardown files a workspace
     // wires through `setupFilesAfterEach` — they use the same globals as a
     // spec but match none of the spec patterns, so without this they fail
@@ -56,7 +56,7 @@ export default [
     },
   },
   {
-    name:    'mnci/tests/mock-aware',
+    name:    'monosmith/tests/mock-aware',
     // Only the specs the type-aware parser covers. `jest/unbound-method` reads type
     // information exactly as its base rule does, so applying it to a spec outside
     // every tsconfig would be a fatal parse error rather than a finding.

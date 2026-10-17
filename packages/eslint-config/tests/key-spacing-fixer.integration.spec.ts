@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url'
 
 /**
  * `@stylistic/key-spacing` with `align: { on: 'value' }` — the departure
- * `mnci/house-style` adopts — has a FIXER bug: it corrupts a TypeScript type
+ * `monosmith/house-style` adopts — has a FIXER bug: it corrupts a TypeScript type
  * annotation that is wrapped entirely in parentheses.
  *
  * It rewrites the whitespace between the colon and the value, and on
@@ -37,7 +37,7 @@ import { pathToFileURL } from 'node:url'
  *   already unparseable. Verified, so nobody re-tries it.
  *
  * WHEN THESE TESTS START FAILING, the bug has been fixed upstream. That is the
- * signal to drop the warning in `configs/houseStyle.js` and invert these
+ * signal to drop the warning in `configs/house-style.config.js` and invert these
  * assertions.
  *
  * The blast radius is narrow, and the last two cases pin that too: only
@@ -78,7 +78,7 @@ function writeConfig (directory: string): void {
   const entry = pathToFileURL(join(packageRoot, 'index.js')).href
   writeFileSync(
     join(directory, 'eslint.config.mjs'),
-    `import mnci from ${JSON.stringify(entry)}\nexport default mnci()\n`,
+    `import monosmith from ${JSON.stringify(entry)}\nexport default monosmith()\n`,
   )
 }
 
@@ -115,7 +115,7 @@ function annotationLine (filename: string, needle: string): string {
 }
 
 beforeAll(() => {
-  workspace = mkdtempSync(join(tmpdir(), 'mnci-key-spacing-'))
+  workspace = mkdtempSync(join(tmpdir(), 'monosmith-key-spacing-'))
   writeConfig(workspace)
   for (const [filename, contents] of Object.entries(FIXTURES)) {
     writeFileSync(join(workspace, filename), contents)

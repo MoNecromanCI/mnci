@@ -13,7 +13,7 @@ import * as jsoncParser from 'jsonc-eslint-parser'
  */
 export default [
   {
-    name:            'mnci/json',
+    name:            'monosmith/json',
     files:           ['**/*.json'],
     languageOptions: { parser: jsoncParser },
     plugins:         { jsonc },
@@ -22,7 +22,7 @@ export default [
     },
   },
   {
-    name:            'mnci/jsonc',
+    name:            'monosmith/jsonc',
     files:           ['**/*.jsonc', '**/tsconfig*.json', '**/*.code-workspace', '**/.vscode/*.json'],
     languageOptions: { parser: jsoncParser },
     plugins:         { jsonc },
@@ -41,7 +41,7 @@ export default [
     },
   },
   {
-    name:            'mnci/json5',
+    name:            'monosmith/json5',
     files:           ['**/*.json5'],
     languageOptions: { parser: jsoncParser },
     plugins:         { jsonc },

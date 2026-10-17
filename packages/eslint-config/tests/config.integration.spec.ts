@@ -54,11 +54,11 @@ const FIXTURES: Record<string, string> = {
   // fixture was a single line, so it could not exercise `indent` at all while
   // the assertion's comment claimed it did.
   // The multi-space moved off the `const` deliberately: aligning a
-  // VariableDeclarator is now ALLOWED by `mnci/house-style`, so the old fixture
+  // VariableDeclarator is now ALLOWED by `monosmith/house-style`, so the old fixture
   // stopped exercising `no-multi-spaces` at all while still claiming to.
   // `return    a` is not an excepted node, so it still reports.
   'formatting.ts': 'export function f () {\n      const a =        "x";\n  return    a\n}\n',
-  // mnci/house-style: each rule below departs from Standard, so each is pinned.
+  // monosmith/house-style: each rule below departs from Standard, so each is pinned.
   // `aligned.ts` must lint CLEAN — it is the style being adopted, trailing
   // comma included; `unaligned.ts` must report.
   'aligned.ts':
@@ -190,7 +190,7 @@ function writeConfig (directory: string, options = '{ verticalSlices: false }'):
     // Windows path as an import specifier (ERR_UNSUPPORTED_ESM_URL_SCHEME,
     // "Received protocol 'c:'"), which eslint surfaced from 10.9.1 onward.
     // The bare path was always wrong here; it just used to be tolerated.
-    `import mnci from ${JSON.stringify(entry)}\nexport default mnci(${options})\n`,
+    `import monosmith from ${JSON.stringify(entry)}\nexport default monosmith(${options})\n`,
   )
 }
 
@@ -254,8 +254,23 @@ function printConfig (directory: string, filename: string): { rules: Record<stri
   return JSON.parse(stdout) as { rules: Record<string, unknown[]> }
 }
 
+/**
+ * `@nx/eslint-plugin` is an optional peer: without it the dependency-checks
+ * block is skipped by design, so the tests that need the rule itself run only
+ * where Nx is installed. This repository is Nx-free.
+ */
+const itWithNx = (() => {
+  try {
+    require.resolve('@nx/eslint-plugin')
+
+    return it
+  } catch {
+    return it.skip
+  }
+})()
+
 beforeAll(() => {
-  workspace = mkdtempSync(join(tmpdir(), 'mnci-eslint-config-'))
+  workspace = mkdtempSync(join(tmpdir(), 'monosmith-eslint-config-'))
   writeConfig(workspace)
   for (const [filename, contents] of Object.entries(FIXTURES)) {
     const target = join(workspace, filename)
@@ -269,7 +284,7 @@ afterAll(() => {
   rmSync(workspace, { recursive: true, force: true })
 })
 
-describe('@mnci/eslint-config', () => {
+describe('@monosmith/eslint-config', () => {
   it('loads through the real eslint binary and leaves clean code alone', () => {
     expect(rulesFor('ok.ts')).toEqual([])
   })
@@ -306,9 +321,9 @@ describe('@mnci/eslint-config', () => {
   it('does not demand the ES2023 array copy methods a generated tsconfig.base.json (lib: es2022) cannot typecheck', () => {
     // unicorn/no-array-sort and no-array-reverse both demand
     // toSorted()/toReversed() — real advice on a runtime that has them, but a
-    // generated workspace's own tsconfig.base.json is not a file mnci owns
+    // generated workspace's own tsconfig.base.json is not a file smith owns
     // (create-nx-workspace's, like .gitignore) and pins `lib` to es2022, one
-    // release short. Left on, `lint` and `typecheck` — both mnci-owned gates —
+    // release short. Left on, `lint` and `typecheck` — both smith-owned gates —
     // would contradict each other on the first `.sort()` any generated
     // project writes. `unicorn/no-array-splice` (the third ES2023-copy-method
     // rule, demanding `toSpliced()`) is off alongside them for the same
@@ -349,7 +364,7 @@ describe('@mnci/eslint-config', () => {
     expect(stylistic).toContain('@stylistic/no-multi-spaces')
   })
 
-  describe('mnci/house-style — the deliberate departures from Standard', () => {
+  describe('monosmith/house-style — the deliberate departures from Standard', () => {
     it('accepts aligned object values, and requires them', () => {
       // Two rules have to agree for this to work: key-spacing's `align` demands
       // the extra spaces and no-multi-spaces' `Property` exception permits
@@ -589,12 +604,12 @@ describe('@mnci/eslint-config', () => {
   })
 
   it('parses TOML and reports a malformed pyproject.toml as fatal', () => {
-    // mnci writes pyproject.toml for every Python project and nothing read them, so
+    // smith writes pyproject.toml for every Python project and nothing read them, so
     // a syntax error surfaced much later as a confusing hatchling/pip failure.
     expect(rulesFor('malformed.toml')).toContain('FATAL')
   })
 
-  it('leaves the pyproject.toml mnci itself generates completely alone', () => {
+  it('leaves the pyproject.toml smith itself generates completely alone', () => {
     // The regression guard that decided flat/base over flat/standard: standard
     // reports six toml/array-bracket-spacing errors on this exact content, so every
     // generated Python workspace would have failed `npm run lint` on a file the user
@@ -607,9 +622,9 @@ describe('@mnci/eslint-config', () => {
     expect(rulesFor('packages/thing/package.json')).not.toContain('@nx/dependency-checks')
   })
 
-  it('wires dependency-checks in when a workspaceRoot IS given', () => {
+  itWithNx('wires dependency-checks in when a workspaceRoot IS given', () => {
     // Separate workspace: this needs a different composition of the config.
-    const scoped = mkdtempSync(join(tmpdir(), 'mnci-eslint-config-dc-'))
+    const scoped = mkdtempSync(join(tmpdir(), 'monosmith-eslint-config-dc-'))
     try {
       writeConfig(scoped, `{ workspaceRoot: ${JSON.stringify(scoped)} }`)
       mkdirSync(join(scoped, 'packages/thing'), { recursive: true })
@@ -641,7 +656,7 @@ describe('@mnci/eslint-config', () => {
     // Asserted in BOTH directions: opting in must fix it, and not opting in
     // must leave the rule doing its job, or this is just the rule switched off
     // under a friendlier name.
-    const scoped = mkdtempSync(join(tmpdir(), 'mnci-eslint-browser-'))
+    const scoped = mkdtempSync(join(tmpdir(), 'monosmith-eslint-browser-'))
     try {
       const entry = pathToFileURL(join(packageRoot, 'index.js')).href
       writeFileSync(join(scoped, 'tsconfig.json'), FIXTURES['tsconfig.json'])
@@ -667,11 +682,11 @@ describe('@mnci/eslint-config', () => {
         return parsed.flatMap(file => file.messages.map(message => message.ruleId ?? 'FATAL'))
       }
 
-      expect(lintWith(`import mnci from ${JSON.stringify(entry)}\nexport default mnci()\n`))
+      expect(lintWith(`import monosmith from ${JSON.stringify(entry)}\nexport default monosmith()\n`))
         .toContain('unicorn/isolated-functions')
       expect(lintWith(
-        `import mnci from ${JSON.stringify(entry)}\n` +
-        'export default mnci({ browserAutomation: [\'**/*.ts\'] })\n',
+        `import monosmith from ${JSON.stringify(entry)}\n` +
+        'export default monosmith({ browserAutomation: [\'**/*.ts\'] })\n',
       )).toEqual([])
     } finally {
       rmSync(scoped, { recursive: true, force: true })
@@ -712,7 +727,7 @@ describe('@mnci/eslint-config', () => {
     expect(options.checkObsoleteDependencies).toBe(false)
   })
 
-  it('never lets dependency-checks DELETE or RE-PIN a published manifest', () => {
+  itWithNx('never lets dependency-checks DELETE or RE-PIN a published manifest', () => {
     // The blocker this configuration exists to prevent, observed on a real
     // workspace rather than imagined:
     //
@@ -732,7 +747,7 @@ describe('@mnci/eslint-config', () => {
     // Asserted on the resolved options rather than by running the fixer,
     // because the rule skips entirely without a cached project graph — the
     // very condition under which a `--fix` run would be least trustworthy.
-    const scoped = mkdtempSync(join(tmpdir(), 'mnci-eslint-config-dc-fix-'))
+    const scoped = mkdtempSync(join(tmpdir(), 'monosmith-eslint-config-dc-fix-'))
     try {
       writeConfig(scoped, `{ workspaceRoot: ${JSON.stringify(scoped)} }`)
       mkdirSync(join(scoped, 'packages/thing'), { recursive: true })

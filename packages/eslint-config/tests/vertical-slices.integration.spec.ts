@@ -94,9 +94,9 @@ function slicesFor (filename: string): string[] {
 }
 
 beforeAll(() => {
-  workspace = mkdtempSync(join(tmpdir(), 'mnci-eslint-slices-'))
+  workspace = mkdtempSync(join(tmpdir(), 'monosmith-eslint-slices-'))
   const entry = pathToFileURL(join(packageRoot, 'index.js')).href
-  writeFileSync(join(workspace, 'eslint.config.mjs'), `import mnci from ${JSON.stringify(entry)}\nexport default mnci({ verticalSlices: true })\n`)
+  writeFileSync(join(workspace, 'eslint.config.mjs'), `import monosmith from ${JSON.stringify(entry)}\nexport default monosmith({ verticalSlices: true })\n`)
   for (const [filename, contents] of Object.entries(FIXTURES)) {
     const target = join(workspace, filename)
     mkdirSync(dirname(target), { recursive: true })
@@ -109,7 +109,7 @@ afterAll(() => {
   rmSync(workspace, { recursive: true, force: true })
 })
 
-describe('mnci({ verticalSlices: { roles } })', () => {
+describe('monosmith({ verticalSlices: { roles } })', () => {
   // The default role list is the BACK-END vocabulary. The ADR these rules come
   // from also allows `.service` and `.middleware`, and its front-end amendment
   // adds `.route`, `.component`, `.hook`, `.section`, `.style`, `.content`,
@@ -119,11 +119,11 @@ describe('mnci({ verticalSlices: { roles } })', () => {
   let scoped: string
 
   beforeAll(() => {
-    scoped = mkdtempSync(join(tmpdir(), 'mnci-eslint-slices-roles-'))
+    scoped = mkdtempSync(join(tmpdir(), 'monosmith-eslint-slices-roles-'))
     const entry = pathToFileURL(join(packageRoot, 'index.js')).href
     writeFileSync(
       join(scoped, 'eslint.config.mjs'),
-      `import mnci from ${JSON.stringify(entry)}\nexport default mnci({ verticalSlices: { roles: ['component', 'hook'] } })\n`,
+      `import monosmith from ${JSON.stringify(entry)}\nexport default monosmith({ verticalSlices: { roles: ['component', 'hook'] } })\n`,
     )
     const files: Record<string, string> = {
       'tsconfig.json':                                FIXTURES['tsconfig.json'],
@@ -171,7 +171,7 @@ describe('mnci({ verticalSlices: { roles } })', () => {
   })
 })
 
-describe('mnci({ verticalSlices })', () => {
+describe('monosmith({ verticalSlices })', () => {
   it('passes a slice that follows the rules, and its test', () => {
     expect(slicesFor('packages/app/src/index.ts')).toEqual([])
     expect(slicesFor('packages/app/src/arithmetic/index.ts')).toEqual([])

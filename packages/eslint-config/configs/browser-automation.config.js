@@ -3,7 +3,7 @@ import globals from 'globals'
 /**
  * Browser globals for in-page callbacks, for Playwright and Puppeteer projects.
  *
- * `page.evaluate(() => document.body.scrollHeight)` fails `mnci/base` with:
+ * `page.evaluate(() => document.body.scrollHeight)` fails `monosmith/base` with:
  *
  * ```
  * Variable document not defined in scope of isolated function.
@@ -41,7 +41,7 @@ export default function browserAutomation (files = [
 ]) {
   return [
     {
-      name:            'mnci/browser-automation',
+      name:            'monosmith/browser-automation',
       files,
       languageOptions: { globals: { ...globals.browser } },
     },

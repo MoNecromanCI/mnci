@@ -1,10 +1,6 @@
-<p align="center">
-  <img src="../../assets/logo.svg" alt="mnci" width="160">
-</p>
+# @monosmith/eslint-config
 
-# @mnci/eslint-config
-
-> The lint **and** format opinion every `mnci`-generated monorepo uses. **One
+> The lint **and** format opinion every MonoSmith (`smith`) monorepo uses. **One
 > ESLint config, at the root, for every language in the workspace — code
 > quality, type-aware rules and JavaScript Standard Style formatting, in one
 > tool.**
@@ -17,23 +13,25 @@
 
 ## Why this exists
 
-`mnci` generates opinionated monorepos, and code quality is one of the opinions.
-It used to be delivered badly: `create-nx-workspace`'s bare `@nx/eslint-plugin`
-default landed at the root, each `nx g` generator dropped another
-`eslint.config.mjs` into its own project, and the richer rules the project
-actually wanted lived only in mnci's own repo — never in anything it generated.
+MonoSmith generates opinionated monorepos, and code quality is one of the
+opinions. Its Nx-based predecessor, mnci, delivered it badly at first:
+`create-nx-workspace`'s bare `@nx/eslint-plugin` default landed at the root,
+each `nx g` generator dropped another `eslint.config.mjs` into its own project,
+and the richer rules the project actually wanted lived only in mnci's own repo
+— never in anything it generated. This package began there as
+`@mnci/eslint-config` and continues here.
 
 This package is that opinion, packaged. A generated workspace gets **one** file:
 
 ```js
 // eslint.config.mjs
-import mnci from '@mnci/eslint-config'
+import monosmith from '@monosmith/eslint-config'
 
-export default mnci({ workspaceRoot: import.meta.dirname })
+export default monosmith({ workspaceRoot: import.meta.dirname })
 ```
 
 …and nothing else. No per-project configs, and no formatter config — there is no
-second tool to configure. mnci actively **deletes** `.prettierrc`,
+second tool to configure. smith actively **deletes** `.prettierrc`,
 `.prettierrc.json`, `.prettierrc.mjs`, `.prettierignore`, `.oxfmtrc.json` and
 `oxlint.config.ts` if an older version left one behind, because a config file no
 command line reads is still read by an editor extension.
@@ -67,36 +65,35 @@ as a comment, so it is readable without opening node_modules.
 
 | Block name                               | Covers                                                                                         |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `mnci/ignores`                           | paths never linted — `dist`, `coverage`, `.venv`, `__pycache__`, `.dart_tool`                  |
-| `mnci/base`                              | JS/TS correctness — `@eslint/js`, `eslint-plugin-unicorn`, `-promise`, `-n`, `-unused-imports` |
+| `monosmith/ignores`                           | paths never linted — `dist`, `coverage`, `.venv`, `__pycache__`, `.dart_tool`                  |
+| `monosmith/base`                              | JS/TS correctness — `@eslint/js`, `eslint-plugin-unicorn`, `-promise`, `-n`, `-unused-imports` |
 | `typescript-eslint/*`                    | `typescript-eslint`'s own recommended blocks (its names, not ours)                             |
-| `mnci/typescript`, `…/declarations`      | TS rules on top of them, no type information needed                                            |
-| `mnci/type-aware`, `…/declarations`      | the rules that DO read types — see below                                                       |
-| `mnci/import-graph`                      | import cycles — `eslint-plugin-import-x`                                                       |
-| `mnci/react`                             | JSX/TSX — `@eslint-react/eslint-plugin`, `-react-hooks`, `-react-refresh`, `-jsx-a11y`         |
-| `mnci/regexp/recommended`, `mnci/regexp` | regex correctness incl. catastrophic backtracking — `eslint-plugin-regexp`                     |
-| `mnci/json`, `mnci/jsonc`, `mnci/json5`  | `eslint-plugin-jsonc` — comments allowed in `.jsonc`/`tsconfig.json`, forbidden in `.json`     |
-| `mnci/yaml/recommended/*`, `mnci/yaml`   | `eslint-plugin-yml` — your CI pipeline files                                                   |
-| `mnci/toml/base/*`                       | `eslint-plugin-toml` — **parsing only**, see below                                             |
-| `mnci/markdown`                          | `@eslint/markdown` (GitHub-flavoured)                                                          |
-| `mnci/css`                               | `@eslint/css`                                                                                  |
-| `mnci/html`                              | `@html-eslint/eslint-plugin`, incl. its a11y rules                                             |
-| `mnci/svelte/*`, `mnci/svelte`           | `eslint-plugin-svelte` on `.svelte` files (recommended rules plus the compiler's a11y diagnostics) — only when `svelte` is installed, because the plugin imports it while loading |
-| `mnci/astro/*`                           | `eslint-plugin-astro` on `.astro` files and the scripts inside them (recommended rules)         |
-| `mnci/mdx`, `mnci/mdx/code-blocks`       | `eslint-plugin-mdx` on `.mdx` only (`.md` stays `mnci/markdown`), with the code fences linted as files and snippets exempt from unused-variable rules |
-| `mnci/tests`                             | `*.spec`/`*.test` relaxations — `eslint-plugin-jest`, plus Vitest's `vi`/`vitest` globals      |
-| `mnci/tests/mock-aware`                  | specs inside a project: `jest/unbound-method` replaces the base rule, which false-positives on every `expect(mock.method)` |
-| `mnci/nx-dependency-checks`              | `@nx/eslint-plugin` on publishable packages' manifests — only when `workspaceRoot` is passed   |
-| `mnci/vertical-slices`                   | Vertical feature slices: role-suffixed kebab-case files, a subfeature reached only through its index, no two subfeatures importing each other — unless `verticalSlices: false`. See below |
-| `mnci/standard`                          | JavaScript Standard Style as ~60 `@stylistic` rules — **this is the formatter.** See below     |
-| `mnci/house-style`                       | The deliberate departures from Standard: trailing commas, aligned object values, `consistent-as-needed` quote-props, a blank line before `return`, two statements per line. Composed after `mnci/standard`, so it wins |
+| `monosmith/typescript`, `…/declarations`      | TS rules on top of them, no type information needed                                            |
+| `monosmith/type-aware`, `…/declarations`      | the rules that DO read types — see below                                                       |
+| `monosmith/import-graph`                      | import cycles — `eslint-plugin-import-x`                                                       |
+| `monosmith/react`                             | JSX/TSX — `@eslint-react/eslint-plugin`, `-react-hooks`, `-react-refresh`, `-jsx-a11y`         |
+| `monosmith/regexp/recommended`, `monosmith/regexp` | regex correctness incl. catastrophic backtracking — `eslint-plugin-regexp`                     |
+| `monosmith/json`, `monosmith/jsonc`, `monosmith/json5`  | `eslint-plugin-jsonc` — comments allowed in `.jsonc`/`tsconfig.json`, forbidden in `.json`     |
+| `monosmith/yaml/recommended/*`, `monosmith/yaml`   | `eslint-plugin-yml` — your CI pipeline files                                                   |
+| `monosmith/toml/base/*`                       | `eslint-plugin-toml` — **parsing only**, see below                                             |
+| `monosmith/markdown`                          | `@eslint/markdown` (GitHub-flavoured)                                                          |
+| `monosmith/css`                               | `@eslint/css`                                                                                  |
+| `monosmith/html`                              | `@html-eslint/eslint-plugin`, incl. its a11y rules                                             |
+| `monosmith/svelte/*`, `monosmith/svelte`           | `eslint-plugin-svelte` on `.svelte` files (recommended rules plus the compiler's a11y diagnostics) — only when `svelte` is installed, because the plugin imports it while loading |
+| `monosmith/astro/*`                           | `eslint-plugin-astro` on `.astro` files and the scripts inside them (recommended rules)         |
+| `monosmith/mdx`, `monosmith/mdx/code-blocks`       | `eslint-plugin-mdx` on `.mdx` only (`.md` stays `monosmith/markdown`), with the code fences linted as files and snippets exempt from unused-variable rules |
+| `monosmith/tests`                             | `*.spec`/`*.test` relaxations — `eslint-plugin-jest`, plus Vitest's `vi`/`vitest` globals      |
+| `monosmith/tests/mock-aware`                  | specs inside a project: `jest/unbound-method` replaces the base rule, which false-positives on every `expect(mock.method)` |
+| `monosmith/nx-dependency-checks`              | `@nx/eslint-plugin` on publishable packages' manifests — only when `workspaceRoot` is passed   |
+| `monosmith/vertical-slices`                   | Vertical feature slices: role-suffixed kebab-case files, a subfeature reached only through its index, no two subfeatures importing each other — unless `verticalSlices: false`. See below |
+| `monosmith/standard`                          | JavaScript Standard Style as ~60 `@stylistic` rules — **this is the formatter.** See below     |
+| `monosmith/house-style`                       | The deliberate departures from Standard: trailing commas, aligned object values, `consistent-as-needed` quote-props, a blank line before `return`, two statements per line. Composed after `monosmith/standard`, so it wins |
 
-`configs/named.js` fills a name in for the blocks upstream presets ship
+`configs/named.mapper.js` fills a name in for the blocks upstream presets ship
 anonymously, keeping any name upstream does provide. A test resolves the real
-config and fails if any block is unnamed or if two share a name; another test, in
-`@mnci/cli`, fails if the generated comment and the real config disagree.
+config and fails if any block is unnamed or if two share a name.
 
-### Formatting (`configs/standard.js`)
+### Formatting (`configs/standard.config.js`)
 
 JavaScript Standard Style, as ~60 `@stylistic` **rules** rather than as a
 formatter's options. `npm run format` is `eslint . --fix`; there is no
@@ -129,7 +126,7 @@ lists all sixteen JSX node types in `indent`'s `ignoredNodes`. Both halves go, s
 stays, since it is not a JSX node and removing it false-positives inside template
 literals.
 
-### Type-aware rules (`configs/typeAware.js`)
+### Type-aware rules (`configs/type-aware.config.js`)
 
 A small curated set that reads **types**, so it catches what nothing else in the
 stack can — most importantly a dropped `await`, which type-checks cleanly, passes
@@ -137,7 +134,7 @@ any test that does not happen to race, and then loses an error in production:
 `no-floating-promises`, `no-misused-promises`, `await-thenable`,
 `no-unnecessary-type-assertion`, `unbound-method`, plus four narrow ones.
 
-Deliberately **not** `recommendedTypeChecked`. Measured against the mnci monorepo
+Deliberately **not** `recommendedTypeChecked`. Measured against the smith monorepo
 that preset reported 67 problems and most were not bugs — `require-await` fires on
 every Nx executor, which must be `async` to satisfy Nx's contract regardless of its
 body. The curated set reported 10, all real. A rule nobody can satisfy just teaches
@@ -163,7 +160,7 @@ Cost: roughly 5s → 8s on a whole-workspace lint, because it builds a real TS
 program. It therefore needs project references in order, which `nx sync:check`
 already guarantees in CI before the lint step.
 
-### Import-graph rules (`configs/importGraph.js`)
+### Import-graph rules (`configs/import-graph.config.js`)
 
 `no-cycle` and `no-self-import`, scoped to project source. Specifically the
 **intra-project** gap: `@nx/enforce-module-boundaries` polices edges _between_
@@ -180,7 +177,7 @@ Two things are load-bearing, and both fail _silently_ if changed:
   nothing — ever. `no-unresolved` does not need it, which is why the gap is easy to
   miss.
 - **The TypeScript resolver is not optional.** With import-x's default Node resolver
-  this reported 179 errors on the mnci monorepo, all false: Node cannot resolve an
+  this reported 179 errors on the smith monorepo, all false: Node cannot resolve an
   extensionless relative TypeScript import. `createTypeScriptImportResolver` gets no
   `project` option, so it finds each file's nearest tsconfig itself — a generated
   workspace's tsconfigs cannot be enumerated up front.
@@ -193,7 +190,7 @@ preset has no tsconfig `paths` to fall back on either. So a completely correct
 cross-project import resolves to nothing on disk. `tsc` already reports unresolved
 _typed_ imports, and the workspace runs `typecheck` in CI.
 
-### Browser automation (`configs/browserAutomation.js`) — opt-in
+### Browser automation (`configs/browser-automation.config.js`) — opt-in
 
 For Playwright and Puppeteer projects. `page.evaluate(() => document.title)`
 fails `unicorn/isolated-functions`:
@@ -211,9 +208,9 @@ Without the opt-in the choices are passing string scripts and losing type
 checking, disabling a rule that catches real scope bugs, or a red `lint`.
 
 ```js
-export default mnci({ browserAutomation: true })
+export default monosmith({ browserAutomation: true })
 // or only where the automation lives:
-export default mnci({ browserAutomation: ['packages/scraper/src/**/*.ts'] })
+export default monosmith({ browserAutomation: ['packages/scraper/src/**/*.ts'] })
 ```
 
 It declares browser globals; it does not make them true. A file in scope may
@@ -222,20 +219,20 @@ that throws in Node. TypeScript is what still catches it — `document` is not i
 scope unless the project's `lib` includes `dom` — which is why this is opt-in
 and scoped by glob rather than on by default.
 
-### Vertical feature slices (`configs/verticalSlices.js`) — on by default
+### Vertical feature slices (`configs/vertical-slices.config.js`) — on by default
 
 For workspaces organised as **vertical feature slices**: each project's `src/`
 holds subfeatures, each exposing an `index`, each holding flat, role-suffixed
-files. **On by default**: vertical slices are mnci's architecture, not an option, so a
+files. **On by default**: vertical slices are smith's architecture, not an option, so a
 new workspace is checked from its first commit. A workspace that is not built this
 way opts out with `verticalSlices: false` (it would otherwise fail every file).
 
 ```js
-export default mnci({ workspaceRoot: import.meta.dirname, verticalSlices: false }) // opt out
+export default monosmith({ workspaceRoot: import.meta.dirname, verticalSlices: false }) // opt out
 // or only for the projects that follow it:
-export default mnci({ verticalSlices: ['packages/*/src/**/*.ts'] })
+export default monosmith({ verticalSlices: ['packages/*/src/**/*.ts'] })
 // or with extra roles, for a vocabulary the default list does not cover:
-export default mnci({
+export default monosmith({
   verticalSlices: {
     files: ['apps/web/src/**/*.{ts,tsx}'],
     roles: ['route', 'component', 'hook', 'section', 'style', 'content'],
@@ -252,7 +249,7 @@ the list was fixed — every component it has would report.
 
 **A `.tsx` file needs no option for the JSX roles.** A file that holds JSX is a UI
 file by construction, so `.route`, `.component`, `.section`, `.hook` and `.content`
-are accepted on `.tsx` files out of the box (the `mnci/vertical-slices-tsx`
+are accepted on `.tsx` files out of the box (the `monosmith/vertical-slices-tsx`
 block). The non-JSX front-end roles (`.style`, `.mock`, `.fixture`, a `.hook.ts`)
 stay opt-in through `roles`, because a `.ts` file says nothing about being UI.
 
@@ -297,11 +294,11 @@ The four exclusions are a crash, not a preference. `no-legacy-features`,
 opportunistically reach for TypeScript type information and **throw** when the TS
 parser is present without type-aware services — which is the normal case for any
 `.ts` file outside `{apps,libs,packages}/<name>/src`, since that is the only scope
-`configs/typeAware.js` covers. A crash takes down linting for the whole file rather
-than reporting one problem. See `configs/regexp.js` for why they are off globally
+`configs/type-aware.config.js` covers. A crash takes down linting for the whole file rather
+than reporting one problem. See `configs/regexp.config.js` for why they are off globally
 rather than narrowing the block's scope.
 
-**`eslint-plugin-toml` is `flat/base` — the parser and no style rules.** mnci writes
+**`eslint-plugin-toml` is `flat/base` — the parser and no style rules.** smith writes
 `pyproject.toml` for every Python project and nothing read those files, so a syntax
 error only surfaced later as a confusing hatchling or pip failure. `flat/base` makes
 it a fatal parse error instead.
@@ -333,7 +330,7 @@ behaves identically.
 
 The resolution was not to find a better formatter but to stop having one.
 Turning the rule on reformatted 82 files and reported 306 problems in
-`@mnci/cli` alone, 99% of them auto-fixed.
+the old Nx-based `@mnci/cli` alone, 99% of them auto-fixed.
 
 This is the single clearest reason the stack collapsed onto one tool. A
 formatter and a linter that both hold style opinions must be kept in agreement,
@@ -344,9 +341,9 @@ stylistic opinion at all.
 
 ```js
 // eslint.config.mjs
-import mnci from '@mnci/eslint-config'
+import monosmith from '@monosmith/eslint-config'
 
-export default mnci({ workspaceRoot: import.meta.dirname })
+export default monosmith({ workspaceRoot: import.meta.dirname })
 ```
 
 `workspaceRoot` is optional. Passing it enables the `@nx/dependency-checks`
@@ -376,14 +373,14 @@ path is destructive now. Before that, the difference between the two commands
 was the difference between a report and a deleted runtime dependency.
 
 If you want the rule evaluated in `format` too, warm the graph first —
-`npx nx show projects > /dev/null && npm run format`. mnci does not do this by
+`npx nx show projects > /dev/null && npm run format`. smith does not do this by
 default: it makes every format run pay for a graph computation to enforce
 something `lint` already gates.
 
 ### Where this differs from Standard
 
-`mnci/standard` is a faithful port of `neostandard`. Five deliberate departures
-live in `mnci/house-style`, composed after it so they win:
+`monosmith/standard` is a faithful port of `neostandard`. Five deliberate departures
+live in `monosmith/house-style`, composed after it so they win:
 
 | Rule | Standard | Here |
 | --- | --- | --- |
@@ -398,7 +395,7 @@ Two of those interact, and it is the thing to know before touching either.
 `no-multi-spaces`** — alignment is more than one space, which `no-multi-spaces`
 otherwise rejects. Move one without the other and the config contradicts itself:
 one rule reports what the other requires, and no `--fix` can satisfy both.
-`mnci/house-style` also re-lists @stylistic's own default exceptions
+`monosmith/house-style` also re-lists @stylistic's own default exceptions
 (`Property`, `ImportAttribute`), because supplying `exceptions` **replaces** the
 default object rather than merging into it.
 
@@ -407,7 +404,7 @@ The blank line before `return` is `padding-line-between-statements`, not
 trap: deprecated since ESLint 4, with `availableUntil: "11.0.0"` in its own
 metadata. The two were compared on the same fixtures and report identically.
 
-There is no second file to add. Formatting comes from the `mnci/standard` block
+There is no second file to add. Formatting comes from the `monosmith/standard` block
 inside this same config.
 
 ## Overriding a rule
@@ -421,10 +418,10 @@ appended after the spread. Name it, so the config inspector shows where the chan
 came from:
 
 ```js
-import mnci from '@mnci/eslint-config'
+import monosmith from '@monosmith/eslint-config'
 
 export default [
-  ...mnci({ workspaceRoot: import.meta.dirname }),
+  ...monosmith({ workspaceRoot: import.meta.dirname }),
   {
     name: 'local/legacy-app-allows-any',
     files: ['apps/legacy/**/*.ts'],
@@ -449,10 +446,10 @@ from the `dependencies` of a package that must never declare it.
 So spread the exported options rather than restating them:
 
 ```js
-import mnci, { dependencyChecksOptions } from '@mnci/eslint-config'
+import monosmith, { dependencyChecksOptions } from '@monosmith/eslint-config'
 
 export default [
-  ...mnci({ workspaceRoot: import.meta.dirname }),
+  ...monosmith({ workspaceRoot: import.meta.dirname }),
   {
     name:  'local/dependency-checks',
     files: ['packages/*/package.json'],
@@ -480,7 +477,7 @@ npx eslint --print-config path/to/file   # the merged result for one file
 Individual blocks are exported too, if you need to recompose rather than append:
 
 ```js
-import { base, typescript, react, ignores } from '@mnci/eslint-config'
+import { base, typescript, react, ignores } from '@monosmith/eslint-config'
 ```
 
 Formatting is overridden the same way as anything else, because it is made of
@@ -488,7 +485,7 @@ rules. To widen the line limit, for instance:
 
 ```js
 export default [
-  ...mnci({ workspaceRoot: import.meta.dirname }),
+  ...monosmith({ workspaceRoot: import.meta.dirname }),
   {
     name: 'local/wider-lines',
     rules: { '@stylistic/max-len': ['error', { code: 120 }] }
@@ -499,14 +496,14 @@ export default [
 ### The one thing that cannot work
 
 **Adding a formatter.** Prettier, oxfmt, dprint — whichever is chosen will
-disagree with `mnci/standard`, and because a formatter runs on save it wins
+disagree with `monosmith/standard`, and because a formatter runs on save it wins
 silently, leaving `lint` to fail on files nobody edited by hand.
 
 Installing the editor extension is enough on its own: neither
 `esbenp.prettier-vscode` nor `oxc.oxc-vscode` needs a config file, and with none
 present they format against their own defaults — semicolons and double quotes,
-the exact inverse of Standard. That is why `mnci upgrade` deletes every retired
-formatter config rather than merely not writing one, and why `mnci doctor`
+the exact inverse of Standard. That is why `smith upgrade` deletes every retired
+formatter config rather than merely not writing one, and why `smith doctor`
 reports a leftover as a failure.
 
 ## ESLint 10
@@ -536,15 +533,15 @@ cap is **stale, not a real incompatibility**. Measured on `eslint@10.8.0`: with
 ```
 
 in the **root** manifest (npm ignores `overrides` anywhere else, which is why a
-config package cannot fix this for itself and mnci writes it), the plugin
-installs and its rules still fire. `mnci` generates that entry; remove it the
+config package cannot fix this for itself and smith writes it), the plugin
+installs and its rules still fire. `smith` generates that entry; remove it the
 moment jsx-a11y ships a release declaring ESLint 10.
 
 **Four unicorn v72 rules are off, and the reasons are counts, not taste.** The
 upgrade surfaced 92 problems on this repo and not one was a defect:
 `name-replacements` (35), `no-top-level-assignment-in-function` (19) and
 `consistent-boolean-name` (13) rename a team's own vocabulary or condemn the
-standard per-test fixture idiom — all three were predicted in `configs/base.js`
+standard per-test fixture idiom — all three were predicted in `configs/base.config.js`
 before they could fire. `no-incorrect-template-string-interpolation` (10) reads
 Nx's own `{workspaceRoot}` tokens as forgotten `${...}`, so it cannot be right
 about any code that writes Nx config. The remaining 25 findings were **fixed**,
@@ -554,7 +551,7 @@ Three unicorn rules this config would otherwise switch off —
 `name-replacements`, `consistent-boolean-name` and
 `no-top-level-assignment-in-function` — do not exist in v61, so they are not
 listed: ESLint rejects a config that names a rule its plugin does not have.
-`configs/base.js` says which, so a future upgrade re-adds them deliberately
+`configs/base.config.js` says which, so a future upgrade re-adds them deliberately
 instead of rediscovering why they suddenly fire.
 
 ## Notes
@@ -575,3 +572,18 @@ instead of rediscovering why they suddenly fire.
   ESLint owned formatting: the declaration is precisely what lets
   `esbenp.prettier-vscode` resolve a prettier and reformat on save against an
   opinion no gate checks.
+
+## Layout and its one exception
+
+Each block set is a `configs/<name>.config.js` file, published as the subpath
+`@monosmith/eslint-config/configs/<name>` (for example
+`@monosmith/eslint-config/configs/type-aware`); `configs/named.mapper.js` names
+upstream presets' blocks; `index.js` composes them and is the package's API.
+
+**Exception — `packages/eslint-config/tests/`.** The vertical-slice rule puts a
+test beside the file it tests. These tests do not test a file: each writes a
+fixture workspace, runs the real `eslint` binary over it with the composed
+config, and asserts on what it reports — the package's published behaviour,
+which no single `configs/` file owns. So they live in `tests/` and are named
+`<subject>.integration.spec.ts`. Permanent: it holds as long as the tests
+exercise the published config rather than one file.

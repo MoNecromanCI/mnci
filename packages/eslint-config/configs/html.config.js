@@ -9,7 +9,7 @@ import htmlParser from '@html-eslint/parser'
  */
 export default [
   {
-    name:            'mnci/html',
+    name:            'monosmith/html',
     files:           ['**/*.html'],
     languageOptions: { parser: htmlParser },
     plugins:         { '@html-eslint': html },

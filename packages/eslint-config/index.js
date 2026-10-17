@@ -1,51 +1,51 @@
-import astro from './configs/astro.js'
-import base from './configs/base.js'
-import css from './configs/css.js'
-import dependencyChecks from './configs/dependencyChecks.js'
-import houseStyle from './configs/houseStyle.js'
-import html from './configs/html.js'
-import importGraph from './configs/importGraph.js'
-import jest from './configs/jest.js'
-import json from './configs/json.js'
-import markdown from './configs/markdown.js'
-import mdx from './configs/mdx.js'
-import react from './configs/react.js'
-import regexp from './configs/regexp.js'
-import standard from './configs/standard.js'
-import svelte from './configs/svelte.js'
-import toml from './configs/toml.js'
-import typeAware from './configs/typeAware.js'
-import typescript from './configs/typescript.js'
-import browserAutomation from './configs/browserAutomation.js'
-import verticalSlices from './configs/verticalSlices.js'
-import yaml from './configs/yaml.js'
+import astro from './configs/astro.config.js'
+import base from './configs/base.config.js'
+import css from './configs/css.config.js'
+import dependencyChecks from './configs/dependency-checks.config.js'
+import houseStyle from './configs/house-style.config.js'
+import html from './configs/html.config.js'
+import importGraph from './configs/import-graph.config.js'
+import jest from './configs/tests.config.js'
+import json from './configs/json.config.js'
+import markdown from './configs/markdown.config.js'
+import mdx from './configs/mdx.config.js'
+import react from './configs/react.config.js'
+import regexp from './configs/regexp.config.js'
+import standard from './configs/standard.config.js'
+import svelte from './configs/svelte.config.js'
+import toml from './configs/toml.config.js'
+import typeAware from './configs/type-aware.config.js'
+import typescript from './configs/typescript.config.js'
+import browserAutomation from './configs/browser-automation.config.js'
+import verticalSlices from './configs/vertical-slices.config.js'
+import yaml from './configs/yaml.config.js'
 
-export { default as astro } from './configs/astro.js'
-export { default as base } from './configs/base.js'
-export { default as css } from './configs/css.js'
-export { default as dependencyChecks } from './configs/dependencyChecks.js'
+export { default as astro } from './configs/astro.config.js'
+export { default as base } from './configs/base.config.js'
+export { default as css } from './configs/css.config.js'
+export { default as dependencyChecks } from './configs/dependency-checks.config.js'
 // The rule's options, separately: ESLint REPLACES rule options rather than
 // merging them, so an override that does not spread these loses `ignoredFiles`
 // and starts reporting `@nx/rollup` as missing from every publishable
 // package's dependencies. See the remarks on the function.
-export { dependencyChecksOptions } from './configs/dependencyChecks.js'
-export { default as houseStyle } from './configs/houseStyle.js'
-export { default as html } from './configs/html.js'
-export { default as importGraph } from './configs/importGraph.js'
-export { default as jest } from './configs/jest.js'
-export { default as json } from './configs/json.js'
-export { default as markdown } from './configs/markdown.js'
-export { default as mdx } from './configs/mdx.js'
-export { default as react } from './configs/react.js'
-export { default as regexp } from './configs/regexp.js'
-export { default as standard } from './configs/standard.js'
-export { default as svelte } from './configs/svelte.js'
-export { default as toml } from './configs/toml.js'
-export { default as typeAware } from './configs/typeAware.js'
-export { default as typescript } from './configs/typescript.js'
-export { default as browserAutomation } from './configs/browserAutomation.js'
-export { default as verticalSlices } from './configs/verticalSlices.js'
-export { default as yaml } from './configs/yaml.js'
+export { dependencyChecksOptions } from './configs/dependency-checks.config.js'
+export { default as houseStyle } from './configs/house-style.config.js'
+export { default as html } from './configs/html.config.js'
+export { default as importGraph } from './configs/import-graph.config.js'
+export { default as jest } from './configs/tests.config.js'
+export { default as json } from './configs/json.config.js'
+export { default as markdown } from './configs/markdown.config.js'
+export { default as mdx } from './configs/mdx.config.js'
+export { default as react } from './configs/react.config.js'
+export { default as regexp } from './configs/regexp.config.js'
+export { default as standard } from './configs/standard.config.js'
+export { default as svelte } from './configs/svelte.config.js'
+export { default as toml } from './configs/toml.config.js'
+export { default as typeAware } from './configs/type-aware.config.js'
+export { default as typescript } from './configs/typescript.config.js'
+export { default as browserAutomation } from './configs/browser-automation.config.js'
+export { default as verticalSlices } from './configs/vertical-slices.config.js'
+export { default as yaml } from './configs/yaml.config.js'
 
 /** Paths never worth linting, in any generated workspace. */
 export const ignores = [
@@ -67,7 +67,7 @@ export const ignores = [
   // listed `tmp`, which is exactly why nothing noticed the asymmetry.
   '**/tmp',
   '**/vite.config.*.timestamp*',
-  // Non-JS ecosystems mnci supports; each has its own linter (ruff,
+  // Non-JS ecosystems smith supports; each has its own linter (ruff,
   // golangci-lint, flutter analyze) wired as that project's `lint` target.
   '**/.venv',
   '**/__pycache__',
@@ -80,14 +80,14 @@ export const ignores = [
   '**/app/views/pwa',
   // A VS Code extension's integration tests (#244): `@vscode/test-cli` downloads a whole VS Code
   // into `.vscode-test/` (thousands of bundled JS files), and `tsc` writes the compiled tests to
-  // `out-integration/`. Linting them hung `mnci upgrade`'s `eslint --fix` for minutes in a 6 GB
+  // `out-integration/`. Linting them hung `smith upgrade`'s `eslint --fix` for minutes in a 6 GB
   // process, found when the e2e first ran an extension's integration tests for real.
   '**/.vscode-test',
   '**/out-integration',
 ]
 
 /**
- * The complete mnci ESLint config: one root config for the whole workspace.
+ * The complete smith ESLint config: one root config for the whole workspace.
  *
  * @remarks
  * Composition order matters. `standard` is applied LAST because it IS the
@@ -105,20 +105,20 @@ export const ignores = [
  * Omit it in a workspace with no publishable npm packages. Pass
  * `verticalSlices: true` - the globs of the projects that follow it, or
  * `{ files, roles }` to extend the role vocabulary - to
- * change which projects the vertical-slice rules apply to (see `configs/verticalSlices.js`).
- * They are ON by default - mnci's architecture is vertical feature slices - and
+ * change which projects the vertical-slice rules apply to (see `configs/vertical-slices.config.js`).
+ * They are ON by default - smith's architecture is vertical feature slices - and
  * `verticalSlices: false` opts out. Pass
  * `browserAutomation: true` - or globs - in a Playwright or Puppeteer project,
  * so an in-page callback like `page.evaluate(() => document.title)` can see
  * browser globals; `unicorn/isolated-functions` reports every one of them
- * otherwise, and it is right to (see `configs/browserAutomation.js`).
+ * otherwise, and it is right to (see `configs/browser-automation.config.js`).
  * @returns The flat config array.
  */
-export default function mnci (options = {}) {
+export default function monosmith (options = {}) {
   const { workspaceRoot, verticalSlices: slices = true, browserAutomation: browser } = options
 
   return [
-    { name: 'mnci/ignores', ignores },
+    { name: 'monosmith/ignores', ignores },
     ...base,
     ...typescript,
     ...typeAware,

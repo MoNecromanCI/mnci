@@ -1,10 +1,10 @@
 import stylistic from '@stylistic/eslint-plugin'
 
 /**
- * mnci's deliberate departures from JavaScript Standard Style.
+ * smith's deliberate departures from JavaScript Standard Style.
  *
  * @remarks
- * A separate block, composed **after** `mnci/standard`, rather than edits made
+ * A separate block, composed **after** `monosmith/standard`, rather than edits made
  * inside it. That block is a faithful, programmatically extracted port of
  * `neostandard`, and its docblock says so; editing it in place would make that
  * claim false and would silently revert these choices the next time anyone
@@ -18,7 +18,7 @@ import stylistic from '@stylistic/eslint-plugin'
  * Each rule below is a decision, not a default:
  *
  * - **Trailing commas come back**, as `always-multiline`. Standard forbids them
- *   outright and `mnci/standard` therefore sets `never` in all eight contexts.
+ *   outright and `monosmith/standard` therefore sets `never` in all eight contexts.
  *   The trade is a real one: a trailing comma keeps a one-line diff to one line
  *   when an item is appended, which is most of why it is wanted. `never` is not
  *   wrong — this is a preference overriding it, which is exactly why it lives
@@ -87,7 +87,7 @@ import stylistic from '@stylistic/eslint-plugin'
  */
 export default [
   {
-    name:    'mnci/house-style',
+    name:    'monosmith/house-style',
     files:   ['**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx}'],
     plugins: { '@stylistic': stylistic },
     rules:   {
@@ -98,7 +98,7 @@ export default [
         exports:   'always-multiline',
         functions: 'always-multiline',
         // The TypeScript-only contexts are listed for the same reason
-        // `mnci/standard` lists them: @stylistic's defaults for them are not
+        // `monosmith/standard` lists them: @stylistic's defaults for them are not
         // the value we want, so omitting them leaves the setting inconsistent
         // in exactly the places a TS codebase writes.
         enums:     'always-multiline',

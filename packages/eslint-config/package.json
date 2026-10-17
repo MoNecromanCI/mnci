@@ -1,15 +1,15 @@
 {
-  "name": "@mnci/eslint-config",
-  "version": "0.1.0",
+  "name": "@monosmith/eslint-config",
+  "version": "0.0.0",
   "type": "module",
-  "description": "The shared ESLint flat config every mnci-generated monorepo uses — one root config, non-stylistic rules only, covering TS/JS, React, JSON/JSONC/JSON5, YAML, Markdown, CSS and HTML.",
+  "description": "The shared ESLint flat config every MonoSmith monorepo uses: one root config that lints and formats TS/JS, React, Svelte, Astro, JSON, YAML, TOML, Markdown, CSS and HTML, with vertical-slice rules.",
   "publishConfig": {
     "access": "public"
   },
   "main": "./index.js",
   "exports": {
     ".": "./index.js",
-    "./configs/*": "./configs/*.js",
+    "./configs/*": "./configs/*.config.js",
     "./package.json": "./package.json"
   },
   "files": [
@@ -25,18 +25,18 @@
     "eslint",
     "eslintconfig",
     "flat-config",
-    "mnci",
-    "nx"
+    "monosmith",
+    "vertical-slices"
   ],
   "author": "Eduardo Russo",
   "license": "MIT",
+  "homepage": "https://github.com/monosmith-app/monosmith/tree/main/packages/eslint-config#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MoNecromanCI/MoNecromanCi.git",
+    "url": "git+https://github.com/monosmith-app/monosmith.git",
     "directory": "packages/eslint-config"
   },
   "peerDependencies": {
-    "@nx/eslint-plugin": ">=21",
     "eslint": "^10.8.1"
   },
   "peerDependenciesMeta": {
@@ -75,5 +75,10 @@
     "jsonc-eslint-parser": "^3.3.0",
     "toml-eslint-parser": "^1.0.3",
     "typescript-eslint": "^8.69.0"
+  },
+  "devDependencies": {
+    "@types/jest": "~30.0.0",
+    "jest": "~30.4.2",
+    "ts-jest": "^29.4.14"
   }
 }

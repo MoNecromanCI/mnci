@@ -38,7 +38,7 @@ import tseslint from 'typescript-eslint'
  * It asks TypeScript to locate each file's own tsconfig instead of being handed
  * an enumerated `project` list. That distinction is the reason this block did not
  * exist before: a scaffold cannot know a workspace's tsconfigs up front, since
- * `mnci add` keeps adding them. `projectService` removes the need to.
+ * `smith add` keeps adding them. `projectService` removes the need to.
  *
  * **Why these rules are scoped to project source directories** rather than every
  * `.ts` file, which is the important safety decision here. A file belonging to no
@@ -54,7 +54,7 @@ import tseslint from 'typescript-eslint'
  * package's own tests report `FATAL`, because its fixture workspace has no
  * tsconfig — a one-line change away from being every consumer's experience.
  *
- * {@link TYPE_AWARE_FILES} instead covers the directories where `mnci add` puts
+ * {@link TYPE_AWARE_FILES} instead covers the directories where `smith add` puts
  * generated projects, all of which get a tsconfig covering their sources and
  * specs. Every real source file is therefore type-aware linted, and a stray
  * script at the workspace root simply keeps the non-type-aware rules rather than
@@ -79,7 +79,7 @@ import tseslint from 'typescript-eslint'
  * Where type-aware linting applies: the source of a generated project.
  *
  * @remarks
- * `mnci` puts every generated project in `apps/`, `libs/` or `packages/`, and
+ * `smith` puts every generated project in `apps/`, `libs/` or `packages/`, and
  * every one of those gets a tsconfig. Restricting the type-aware rules to those
  * trees is what makes a missing tsconfig impossible rather than merely unlikely —
  * see this module's remarks for why that matters more than broader coverage.
@@ -92,7 +92,7 @@ export const TYPE_AWARE_FILES = [
 
 export default [
   {
-    name:            'mnci/type-aware',
+    name:            'monosmith/type-aware',
     files:           TYPE_AWARE_FILES,
     // The script and code blocks a processor lifts out of a document (`page.mdx/1_0.ts`) are files
     // of no tsconfig, and the project service fails on each one ("was not found by the project service").
@@ -131,7 +131,7 @@ export default [
     },
   },
   {
-    name:  'mnci/type-aware/declarations',
+    name:  'monosmith/type-aware/declarations',
     // Declaration files describe types rather than execute, so the promise and
     // assertion rules have nothing to say about them, and `unbound-method`
     // misreads an interface's method signatures as unbound uses.

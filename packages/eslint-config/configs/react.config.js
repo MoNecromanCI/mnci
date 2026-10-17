@@ -24,7 +24,7 @@ const eslintReactRecommended = eslintReact.configs['recommended-typescript']
  * guide prescribes, and in 5.18.1 the two resolve to an identical rule set, so
  * the choice costs nothing today and follows upstream if they diverge. Neither
  * needs type-aware parser services — only `recommended-type-checked` does — so
- * this block carries none of `configs/typeAware.js`'s scoping hazard, where a
+ * this block carries none of `configs/type-aware.config.js`'s scoping hazard, where a
  * file outside a tsconfig becomes a fatal parse error.
  *
  * **Hooks stay with the React team's own plugin.** `@eslint-react` reimplements
@@ -36,7 +36,7 @@ const eslintReactRecommended = eslintReact.configs['recommended-typescript']
  * messages. Its *other* hook-adjacent rules — `purity`, `set-state-in-effect`,
  * `use-memo` and friends — have no counterpart enabled here and stay on.
  *
- * `jsx-a11y` is here rather than in `configs/html.js` because the two cover
+ * `jsx-a11y` is here rather than in `configs/html.config.js` because the two cover
  * genuinely different files: `@html-eslint`'s rules — `require-img-alt` and
  * friends — apply to `**\/*.html` only, so an `<img>` inside a component was
  * checked by nothing at all. With two React project kinds (`react-app`,
@@ -50,7 +50,7 @@ const eslintReactRecommended = eslintReact.configs['recommended-typescript']
  */
 export default [
   {
-    name:            'mnci/react',
+    name:            'monosmith/react',
     files:           ['**/*.{jsx,tsx}'],
     languageOptions: {
       globals:       { ...globals.browser },

@@ -5,7 +5,7 @@
  * @remarks
  * ESLint 9 added `name` and the config inspector (`eslint --inspect-config`)
  * reports it, so a name is how someone finds the block that turned a rule on.
- * That matters more here than in a hand-written config: an mnci workspace has
+ * That matters more here than in a hand-written config: a smith workspace has
  * ONE root config which is three lines long, and the ~29 blocks behind it come
  * from a package. Without names the inspector lists them by index, and
  * "config 17" is not something anyone can act on.
@@ -17,7 +17,7 @@
  * the resolved config. An upstream `name` is kept if one exists, so this stops
  * relabelling anything the day those projects add their own.
  *
- * @param prefix - Name to give the blocks, e.g. `'mnci/yaml/recommended'`.
+ * @param prefix - Name to give the blocks, e.g. `'monosmith/yaml/recommended'`.
  * A multi-block preset gets `prefix/0`, `prefix/1`, … since the blocks are
  * distinguishable only by position.
  * @param blocks - The preset's config blocks.

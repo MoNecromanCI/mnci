@@ -13,7 +13,7 @@ import globals from 'globals'
  */
 export default [
   {
-    name:            'mnci/base',
+    name:            'monosmith/base',
     files:           ['**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx}'],
     languageOptions: {
       ecmaVersion: 'latest',
@@ -86,12 +86,12 @@ export default [
       // These three demand the ES2023 non-mutating array copy methods
       // (`toSorted`/`toReversed`/`toSpliced`) — real advice on a runtime that
       // has them, and a rule the generated workspace's own `tsconfig.base.json`
-      // cannot satisfy: its `lib` is `es2022`, which mnci does not own or
-      // patch (see "Files mnci owns" in CLAUDE.md — that file is
+      // cannot satisfy: its `lib` is `es2022`, which smith does not own or
+      // patch (see "Files smith owns" in CLAUDE.md — that file is
       // create-nx-workspace's), so `toSorted()` is a real TS2550 in every
-      // generated project even though Node 20+ (mnci pins Node 24) supports it
+      // generated project even though Node 20+ (smith pins Node 24) supports it
       // at runtime. Satisfying the rule breaks `typecheck`; satisfying
-      // `typecheck` fails the rule — both mnci-owned gates, contradicting each
+      // `typecheck` fails the rule — both smith-owned gates, contradicting each
       // other over one line, on every project the moment it calls `.sort()`.
       'unicorn/no-array-sort':                              'off',
       'unicorn/no-array-reverse':                           'off',

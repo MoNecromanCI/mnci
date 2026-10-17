@@ -21,8 +21,8 @@ const packageRoot = join(__dirname, '..')
 function svelteBlocks (): { installed: boolean, names: string[], unscoped: string[] } {
   const script = `
     import { createRequire } from 'node:module'
-    const mnci = (await import(${JSON.stringify(pathToFileURL(join(packageRoot, 'index.js')).href)})).default
-    const blocks = mnci({}).filter(block => String(block.name).startsWith('mnci/svelte'))
+    const monosmith = (await import(${JSON.stringify(pathToFileURL(join(packageRoot, 'index.js')).href)})).default
+    const blocks = monosmith({}).filter(block => String(block.name).startsWith('monosmith/svelte'))
     let installed = true
     try { createRequire(${JSON.stringify(pathToFileURL(join(packageRoot, 'configs', 'svelte.js')).href)}).resolve('svelte/package.json') } catch { installed = false }
     process.stdout.write(JSON.stringify({

@@ -1,5 +1,5 @@
 import regexp from 'eslint-plugin-regexp'
-import { named } from './named.js'
+import { named } from './named.mapper.js'
 
 /**
  * Rules that crash rather than report when the TypeScript parser is present
@@ -40,8 +40,8 @@ const NEEDS_TYPE_SERVICES = [
  * ```
  *
  * That combination is the normal case here, not an exotic one:
- * `configs/typescript.js` gives every `.ts` file the TS parser, while
- * `configs/typeAware.js` adds `projectService` only under
+ * `configs/typescript.config.js` gives every `.ts` file the TS parser, while
+ * `configs/type-aware.config.js` adds `projectService` only under
  * `{apps,libs,packages}/<name>/src`. So any TypeScript outside a project's source — a
  * root `*.config.ts`, a package's `tests/` directory — hits it, and a crash takes
  * down linting for that entire file instead of reporting one problem. It fired in
@@ -60,9 +60,9 @@ const NEEDS_TYPE_SERVICES = [
  * missing — which is exactly why this needed the real thing to surface.
  */
 export default [
-  ...named('mnci/regexp/recommended', [regexp.configs['flat/recommended']]),
+  ...named('monosmith/regexp/recommended', [regexp.configs['flat/recommended']]),
   {
-    name:  'mnci/regexp',
+    name:  'monosmith/regexp',
     rules: {
       ...Object.fromEntries(NEEDS_TYPE_SERVICES.map(rule => [rule, 'off'])),
 

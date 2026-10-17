@@ -137,7 +137,7 @@ function onSpecifiers (check) {
 
 /** The rules, as a plugin. */
 export const plugin = {
-  meta:  { name: 'mnci-vertical-slices' },
+  meta:  { name: 'monosmith-vertical-slices' },
   rules: {
     'file-role': {
       meta: {
@@ -237,9 +237,9 @@ export const plugin = {
  * files - and no two subfeatures importing each other.
  *
  * @remarks
- * **On by default** (mnci's architecture is vertical feature slices), for every
+ * **On by default** (smith's architecture is vertical feature slices), for every
  * project's `src` under `apps/`, `libs/` and `packages/`. A workspace that is
- * not organised this way opts out with `mnci({ verticalSlices: false })`, or
+ * not organised this way opts out with `monosmith({ verticalSlices: false })`, or
  * passes the globs of the projects that follow it.
  *
  * Three rules:
@@ -308,7 +308,7 @@ export default function verticalSlices (options = {}) {
 
   return [
     {
-      name:    'mnci/vertical-slices',
+      name:    'monosmith/vertical-slices',
       files,
       plugins: { 'vertical-slices': plugin },
       rules:   {
@@ -322,7 +322,7 @@ export default function verticalSlices (options = {}) {
     {
       // JSX files take the front-end roles with no option (see TSX_ROLES). Nested
       // `files` arrays are an AND, so this narrows the user's globs to `.tsx`.
-      name:    'mnci/vertical-slices-tsx',
+      name:    'monosmith/vertical-slices-tsx',
       files:   files.map(glob => [glob, '**/*.tsx']),
       plugins: { 'vertical-slices': plugin },
       rules:   { 'vertical-slices/file-role': ['error', { roles: [...TSX_ROLES, ...roles] }] },

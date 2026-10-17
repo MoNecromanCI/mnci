@@ -76,7 +76,9 @@ workspaces.
 - [Plugins and the plugin protocol](docs/plugins.md)
 - [Editors: the --json contracts](docs/editors.md)
 - [Working on MonoSmith](docs/development.md)
-- Background: [decisions](docs/decisions.md) and [research](docs/research/)
+- [Architecture: how smith is built](docs/architecture.md)
+- [Decisions: what was decided and why](docs/decisions.md)
+- Background: [research](docs/research/)
 
 ## Status
 

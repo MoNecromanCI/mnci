@@ -124,6 +124,21 @@ func planNxRemoval(plan *Plan, w *nxworkspace.Workspace, files []string, read fu
 		case path.Dir(f) == "." && strings.HasPrefix(base, "jest.config.") && strings.Contains(text, "getJestProjects"):
 			plan.DeletePath(f)
 			plan.Add(Dropped, "", f, "listed every Jest project for Nx; smith runs each project's tests itself")
+		case strings.HasPrefix(base, "jest.config.") && strings.Contains(text, "@nx/react/"):
+			rewritten, ok := RewriteNxReactJest(text, path.Dir(f))
+			if !ok {
+				plan.Add(Manual, "", f, "imports Nx ("+nxImport(text)+"), which convert removes; rewrite it without Nx")
+				break
+			}
+			plan.WriteFile(f, rewritten)
+			plan.WriteFile(AssetTransformFile, AssetTransform)
+			if plan.AddDevDependencies == nil {
+				plan.AddDevDependencies = map[string]string{}
+			}
+			for _, d := range []string{"babel-jest", "@babel/preset-env", "@babel/preset-typescript", "@babel/preset-react"} {
+				plan.AddDevDependencies[d] = ""
+			}
+			plan.Add(Changed, "", f, "rewritten without @nx/react: its Jest transformer is "+AssetTransformFile+" at the workspace root, and @nx/react/babel becomes the Babel presets it stood for (without its decorator, macro and runtime plugins)")
 		case strings.HasPrefix(base, "rollup.config.") && strings.Contains(text, "with-nx"):
 			if !replaceRollup(plan, w, f, text) {
 				plan.Add(Manual, "", f, "builds with @nx/rollup's withNx, which needs Nx; rewrite the build without it")

@@ -56,6 +56,7 @@ something that behaves differently.
 |---|---|
 | `jest.preset.js` re-exporting `@nx/jest/preset` | the same preset values written out, with a mapper for `./x.js` imports of TypeScript files (the only thing Nx's resolver was needed for) |
 | a root `jest.config.ts` listing projects for Nx | removed; smith runs each project's tests |
+| a project's `jest.config` using `@nx/react/plugins/jest` and `@nx/react/babel` | the transformer written out as `jest.asset-transform.cjs` at the root, and the Babel presets `@nx/react/babel` stood for (`preset-env`, `preset-typescript`, `preset-react`) |
 | an ESLint config using `@nx/eslint-plugin` presets | `@eslint/js` and `typescript-eslint`, which those presets wrap; the module-boundary and dependency-check rules read the Nx graph, so they are removed |
 | a library built by `@nx/rollup`'s `withNx` (it needs the Nx graph) | `esbuild` for the bundle and `tsc` for the declarations, into the same files `package.json` already publishes |
 

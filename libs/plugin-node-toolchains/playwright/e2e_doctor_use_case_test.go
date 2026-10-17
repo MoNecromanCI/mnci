@@ -56,3 +56,16 @@ func TestDoctor(t *testing.T) {
 		}
 	}
 }
+
+func TestDoctorFindsPlaywrightInTheSuitesOwnNodeModules(t *testing.T) {
+	onPlatform(t, "darwin", false)
+	ws := t.TempDir()
+	writeProject(t, ws, "apps/web", `{"devDependencies": {"@playwright/test": "^1.63.0"}}`)
+	local := filepath.Join(ws, "apps", "web", "node_modules", "playwright-core")
+	_ = os.MkdirAll(local, 0o755)
+	_ = os.WriteFile(filepath.Join(local, "package.json"), []byte("{}"), 0o644)
+	res := Doctor(ws, protocol.DoctorParams{Projects: []protocol.Project{{Name: "web", Root: "apps/web"}}})
+	if f := finding(t, res, "Playwright is installed"); !f.OK {
+		t.Error("a version npm could not hoist is installed beside the suite")
+	}
+}

@@ -119,3 +119,20 @@ func TestForcedFlavour(t *testing.T) {
 		t.Errorf("a library suite needs its e2e script, forced or not: %q", got)
 	}
 }
+
+func TestInCIKnowsAzurePipelines(t *testing.T) {
+	t.Setenv("CI", "")
+	t.Setenv("TF_BUILD", "")
+	if inCI() {
+		t.Fatal("a developer's machine")
+	}
+	t.Setenv("TF_BUILD", "True")
+	if !inCI() {
+		t.Error("Azure Pipelines sets TF_BUILD, not CI")
+	}
+	t.Setenv("TF_BUILD", "")
+	t.Setenv("CI", "true")
+	if !inCI() {
+		t.Error("GitHub Actions sets CI")
+	}
+}

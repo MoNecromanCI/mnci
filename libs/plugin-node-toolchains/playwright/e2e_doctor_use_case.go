@@ -21,7 +21,7 @@ var pipelineFiles = []string{".github/workflows/e2e.yml", "azure-pipelines/e2e.y
 // and a pipeline that runs them, since smith ci verify leaves e2e out.
 func Doctor(workspaceRoot string, params protocol.DoctorParams) protocol.DoctorResult {
 	var display []string
-	suites := 0
+	suites, installed := 0, exists(workspaceRoot, "node_modules/playwright-core/package.json")
 	for _, p := range params.Projects {
 		_, hasScript := p.Tasks[TaskName]
 		suite := Detect(filepath.Join(workspaceRoot, filepath.FromSlash(p.Root)), hasScript)
@@ -29,6 +29,8 @@ func Doctor(workspaceRoot string, params protocol.DoctorParams) protocol.DoctorR
 			continue
 		}
 		suites++
+		// npm hoists playwright-core to the root, unless versions conflict.
+		installed = installed || exists(workspaceRoot, p.Root+"/node_modules/playwright-core/package.json")
 		if suite.Options.Display {
 			display = append(display, p.Name)
 		}
@@ -39,7 +41,7 @@ func Doctor(workspaceRoot string, params protocol.DoctorParams) protocol.DoctorR
 	}
 	findings = append(findings, protocol.Finding{
 		Check:  "Playwright is installed",
-		OK:     exists(workspaceRoot, "node_modules/playwright-core/package.json"),
+		OK:     installed,
 		Detail: "node_modules has no playwright-core, so the e2e tasks cannot start a browser",
 		Remedy: "npm ci (or npm install -D @playwright/test in the project)",
 	})

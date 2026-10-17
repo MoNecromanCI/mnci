@@ -36,8 +36,9 @@ func ReportsDirFromProject(root string) string {
 // platform is the OS tasks are built for; tests replace it.
 var platform = runtime.GOOS
 
-// inCI reports whether smith runs in a CI job; tests replace it.
-var inCI = func() bool { return os.Getenv("CI") != "" }
+// inCI reports whether smith runs in a CI job: CI is set by GitHub Actions,
+// GitLab and most others, TF_BUILD by Azure Pipelines. Tests replace it.
+var inCI = func() bool { return os.Getenv("CI") != "" || os.Getenv("TF_BUILD") != "" }
 
 // Contribute gives every project with a Playwright suite its e2e task and
 // the task that installs its browsers first.

@@ -2,6 +2,7 @@ package pipelinetemplate
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/monosmith-app/monosmith/apps/smith/cipipeline"
 )
@@ -45,12 +46,20 @@ func Render(name, provider string, m cipipeline.Model, app App) (string, bool) {
 			"# one at a time, since they share ports and, under xvfb-run, a display.\n\n" + githubOn + "  pull_request:\n" +
 			"\njobs:\n  e2e:\n    runs-on: ubuntu-latest\n    steps:\n" + cipipeline.GitHubSetup(m) +
 			"      - uses: actions/cache@v4\n        with:\n          path: ~/.cache/ms-playwright\n" +
-			"          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}\n" +
+			// The lockfile fixes the Playwright version; the manifests name the browsers.
+			"          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json', '**/package.json', '!**/node_modules/**') }}\n" +
 			"      - name: End-to-end tests\n        run: smith run e2e --parallel 1\n", true
 	case "e2e/azure":
 		return written(name, "") + azureNote + "# Runs every project's e2e task, which smith ci verify leaves out, one at a time:\n" +
-			"# the suites share ports and, under xvfb-run, a display.\n\n" + azureOn +
-			"\nsteps:\n" + cipipeline.AzureSetup(m) + "  - bash: smith run e2e --parallel 1\n    displayName: End-to-end tests\n", true
+			"# the suites share ports and, under xvfb-run, a display. The pr trigger works for a\n" +
+			"# GitHub repository; on Azure Repos, add this pipeline as a build validation policy.\n\n" +
+			strings.Replace(azureOn, "pr: none\n", "pr:\n  branches:\n    include:\n      - "+m.ReleaseBranch+"\n", 1) +
+			"\nvariables:\n  PLAYWRIGHT_BROWSERS_PATH: $(Pipeline.Workspace)/ms-playwright\n" +
+			"\nsteps:\n" + cipipeline.AzureSetup(m) +
+			"  - task: Cache@2\n    displayName: Cache the Playwright browsers\n    inputs:\n" +
+			"      key: 'playwright | \"$(Agent.OS)\" | package-lock.json | **/package.json, !**/node_modules/**'\n" +
+			"      path: $(PLAYWRIGHT_BROWSERS_PATH)\n" +
+			"  - bash: smith run e2e --parallel 1\n    displayName: End-to-end tests\n", true
 	case "package-zip/github":
 		return "name: package\n\n" + written(name, "") + "# Packs the projects into dist/drop and keeps it as the drop artifact.\n\n" + githubOn +
 			"\njobs:\n  package:\n    runs-on: ubuntu-latest\n    steps:\n" + cipipeline.GitHubSetup(m) +

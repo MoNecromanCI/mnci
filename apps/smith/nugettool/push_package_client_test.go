@@ -22,7 +22,7 @@ func TestPushSendsThePackageWithTheAPIKey(t *testing.T) {
 			return
 		}
 		raw, _ := io.ReadAll(f)
-		got = r.Method + " " + r.Header.Get("X-NuGet-ApiKey") + " " + header.Filename + " " + string(raw)
+		got = r.Method + " " + r.Header.Get("X-NuGet-ApiKey") + " " + r.Header.Get("X-NuGet-Client-Version") + " " + header.Filename + " " + string(raw)
 		w.WriteHeader(http.StatusCreated)
 	}))
 	defer server.Close()
@@ -30,7 +30,7 @@ func TestPushSendsThePackageWithTheAPIKey(t *testing.T) {
 	if err := p.Push(Package{ID: "acme", File: file}); err != nil {
 		t.Fatal(err)
 	}
-	if got != "PUT key acme.5.0.0.nupkg nupkg bytes" {
+	if got != "PUT key "+clientVersion+" acme.5.0.0.nupkg nupkg bytes" {
 		t.Errorf("request = %q", got)
 	}
 }

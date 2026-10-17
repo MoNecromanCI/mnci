@@ -302,6 +302,6 @@ func TestCheckWarnsAboutLargeSlices(t *testing.T) {
 
 func TestCheckRejectsOtherLanguages(t *testing.T) {
 	if _, err := Check(t.TempDir(), "node"); err == nil {
-		t.Fatal("node is checked by @mnci/eslint-config, not here")
+		t.Fatal("node is checked by @monosmith/eslint-config, not here")
 	}
 }

@@ -113,8 +113,8 @@ add: a file, script, setting or dependency that already exists is kept.
 | Stack | Language | Scaffold | Toolchain | Published by |
 |---|---|---|---|---|
 | `node-ts` | node | `typescript` | `typescript` | `typescript` |
-| `node-jest` | node | `typescript` | `typescript`, `eslint` (`@mnci/eslint-config`), `jest` | `jest` |
-| `node-vitest` | node | `typescript` | `typescript`, `eslint` (`@mnci/eslint-config`), `vitest` | `vitest` |
+| `node-jest` | node | `typescript` | `typescript`, `eslint` (`@monosmith/eslint-config`), `jest` | `jest` |
+| `node-vitest` | node | `typescript` | `typescript`, `eslint` (`@monosmith/eslint-config`), `vitest` | `vitest` |
 | `node-vitest-playwright` | node | `typescript` | `typescript`, `eslint`, `vitest`, `playwright` | `playwright`: adds `playwright.config.ts`, a smoke test in `e2e/` (named `*.e2e.ts`, so Vitest never runs it), an `e2e` script and `@playwright/test`; reports and traces go to `dist/e2e/<project dir>`, the `e2e` task's outputs, beside the build rather than in it (a cached build replaces its own directory) |
 | `react`, `react-p5`, `vue`, `svelte`, `html` | node | `vite` | `vite`, `eslint`, `vitest` | `vite`: a browser app built with Vite |
 | `angular` | node | `angular` | `angular`, `eslint`, `vitest` | `angular` |
@@ -134,7 +134,7 @@ scaffolds plain JavaScript (CommonJS), with nothing to compile. The
 the rest when a project is created:
 
 - `eslint` writes `eslint.config.mjs` at the root (once), adds `eslint` and
-  `@mnci/eslint-config` to the root devDependencies, and a `lint` script.
+  `@monosmith/eslint-config` to the root devDependencies, and a `lint` script.
 - `jest` adds `jest`, `ts-jest` and `@jest/globals`, a `test` script, the
   Jest settings in `package.json`, and the starter's spec.
 - `vitest` adds `vitest`, a `test` script (`vitest run`) and the starter's

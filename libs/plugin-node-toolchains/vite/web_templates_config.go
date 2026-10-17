@@ -85,7 +85,7 @@ func (a webApp) manifest() string {
 }
 
 // viteConfig builds into the workspace's dist/<app dir>, in the layout
-// @mnci/eslint-config formats (aligned values).
+// @monosmith/eslint-config formats (aligned values).
 func (a webApp) viteConfig() string {
 	imports, plugins, build := "", "", "build: {"
 	if a.PluginCall != "" {

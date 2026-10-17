@@ -11,7 +11,7 @@ const Name = "vitest"
 // stacks are the stacks this plugin publishes.
 var stacks = []protocol.Stack{{
 	Name:        "node-vitest",
-	Description: "TypeScript on Node, linted by @mnci/eslint-config, tested with Vitest",
+	Description: "TypeScript on Node, linted by @monosmith/eslint-config, tested with Vitest",
 	Language:    "node",
 	Scaffold:    "typescript",
 	Toolchain:   []string{"typescript", "eslint", Name},

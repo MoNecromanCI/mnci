@@ -32,6 +32,6 @@ func TestContribute(t *testing.T) {
 		t.Fatalf("app %+v", app)
 	}
 	if _, ok := res.Projects["web"]; ok {
-		t.Fatal("node projects are linted by @mnci/eslint-config")
+		t.Fatal("node projects are linted by @monosmith/eslint-config")
 	}
 }

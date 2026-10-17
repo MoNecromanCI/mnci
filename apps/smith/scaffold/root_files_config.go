@@ -27,7 +27,7 @@ devcontainer = true
 # them and ` + "`smith add app web --stack node-vitest`" + ` picks one. Projects that record
 # none use the default of their language. See docs/stacks.md.
 [default_stacks]
-node = "node-jest"     # ESLint with @mnci/eslint-config, and Jest
+node = "node-jest"     # ESLint with @monosmith/eslint-config, and Jest
 
 # [stacks.node-quick]
 # description = "Vitest only, no lint"

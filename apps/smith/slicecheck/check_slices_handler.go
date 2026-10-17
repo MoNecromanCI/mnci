@@ -2,7 +2,9 @@ package slicecheck
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/monosmith-app/monosmith/libs/plugin-vertical-slices/languages"
 	"github.com/monosmith-app/monosmith/libs/plugin-vertical-slices/layout"
 	"github.com/spf13/cobra"
 )
@@ -14,8 +16,8 @@ func Command() *cobra.Command {
 	check := &cobra.Command{
 		Use:   "check <project directory>...",
 		Short: "Check that files are role-named and no folder is a junk drawer",
-		Long: `Checks Go or Python projects against the vertical-slice rules: a file is
-<name>_<role> (roles: ` + fmt.Sprint(layout.Roles) + `),
+		Long: `Checks Go, Python, Dart, Rust, Ruby, C++, .NET, JVM or PHP projects against the vertical-slice rules: a file is
+<name>_<role> (roles: ` + fmt.Sprint(languages.Roles) + `),
 a module's or package's root holds only its entry files, and no folder is
 named util, helper, common, shared, manager, processor, data or misc. A slice
 with more than ` + fmt.Sprint(layout.SliceSize) + ` production files is reported for review.
@@ -45,7 +47,7 @@ runs this as each project's slice-check task.`,
 			return nil
 		},
 	}
-	check.Flags().StringVar(&lang, "lang", "go", "language of the projects: go or python")
+	check.Flags().StringVar(&lang, "lang", "go", "language of the projects: "+strings.Join(languages.Names(), ", "))
 	cmd.AddCommand(check)
 	return cmd
 }

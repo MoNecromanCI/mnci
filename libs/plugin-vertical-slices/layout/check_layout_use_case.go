@@ -6,62 +6,64 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/monosmith-app/monosmith/libs/plugin-vertical-slices/languages"
 )
 
-// Check walks a project and reports what breaks the vertical-slice rules.
-// language is "go" or "python"; dir is the project root (where go.mod or
-// pyproject.toml is).
+// Check walks a project and reports what breaks the vertical-slice rules of
+// its language; dir is the project root (where its manifest is).
 func Check(dir, language string) (Report, error) {
 	var r Report
-	switch language {
-	case "go", "python":
-	default:
-		return r, fmt.Errorf("the vertical-slices check knows go and python, not %q", language)
+	rules, ok := languages.For(language)
+	if !ok {
+		return r, fmt.Errorf("the vertical-slices check knows %s, not %q", strings.Join(languages.Names(), ", "), language)
 	}
-	err := walk(&r, dir, "", language, false)
+	err := walk(&r, dir, rules, "", nil)
 	return r, err
 }
 
-func walk(r *Report, root, rel, language string, inPackage bool) error {
+func walk(r *Report, root string, rules languages.Rules, rel string, parent *languages.Dir) error {
 	entries, err := os.ReadDir(filepath.Join(root, filepath.FromSlash(rel)))
 	if err != nil {
 		return err
 	}
+	here := languages.Dir{Rel: rel, Files: map[string]bool{}, Folders: map[string]bool{}, Parent: parent}
+	for _, e := range entries {
+		if e.IsDir() {
+			here.Folders[e.Name()] = true
+		} else {
+			here.Files[e.Name()] = true
+		}
+	}
 	shown := func(name string) string { return path.Join(rel, name) }
-	isPackage := language == "python" && has(entries, "__init__.py")
-	packageRoot := isPackage && !inPackage
 	files := 0
 	for _, e := range entries {
 		name := e.Name()
 		if e.IsDir() {
-			if strings.HasPrefix(name, ".") || skippedFolders[name] || strings.HasSuffix(name, ".egg-info") {
+			if strings.HasPrefix(name, ".") || skippedFolders[name] || (rules.Skip != nil && rules.Skip(name, here)) {
 				continue
 			}
-			if ForbiddenFolders[name] {
+			if languages.ForbiddenFolders[strings.ToLower(name)] {
 				r.problem(shown(name)+"/", fmt.Sprintf("%q is a junk drawer; name the folder for the outcome it serves", name))
 				continue
 			}
-			if language == "python" && isPackage && !snakeCase.MatchString(name) {
-				r.problem(shown(name)+"/", "a Python package is snake_case: its name is an import path")
+			if rules.Folder != nil {
+				if why := rules.Folder(name, here); why != "" {
+					r.problem(shown(name)+"/", why)
+				}
 			}
-			if err := walk(r, root, shown(name), language, inPackage || isPackage); err != nil {
+			if err := walk(r, root, rules, shown(name), &here); err != nil {
 				return err
 			}
 			continue
 		}
-		var why string
-		switch {
-		case language == "go" && strings.HasSuffix(name, ".go"):
-			why = GoFile(name, rel == "")
-		case language == "python" && strings.HasSuffix(name, ".py") && (isPackage || rel != ""):
-			why = PythonFile(name, packageRoot)
-		default:
+		if rules.Source != nil && !rules.Source(name, here) {
 			continue
 		}
-		if why != "" {
+		if why := rules.File(name, here); why != "" {
 			r.problem(shown(name), why)
 		}
-		if production(name) {
+		if rules.Production == nil || rules.Production(name, here) {
 			files++
 		}
 	}
@@ -69,13 +71,4 @@ func walk(r *Report, root, rel, language string, inPackage bool) error {
 		r.warn(strings.TrimPrefix(rel+"/", "/"), fmt.Sprintf("%d production files (more than %d): it usually holds two outcomes, so split it into two slices or write the exception down", files, SliceSize))
 	}
 	return nil
-}
-
-func has(entries []os.DirEntry, name string) bool {
-	for _, e := range entries {
-		if e.Name() == name && !e.IsDir() {
-			return true
-		}
-	}
-	return false
 }

@@ -67,7 +67,7 @@ func TestAndroidWorkspace(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(w.dir, "apps", "mobile", "build")); err == nil {
 		t.Error("apps/mobile/build exists: Gradle builds must go to dist/")
 	}
-	if out := w.smith(true, "run", "lint", "test"); !strings.Contains(out, "(2 from cache") {
+	if out := w.smith(true, "run", "lint", "test"); !strings.Contains(out, "(3 from cache") {
 		t.Fatalf("a re-run replays from the cache:\n%s", out)
 	}
 	if out := w.smith(true, "doctor"); !strings.Contains(out, "✔ the Android SDK is installed") {

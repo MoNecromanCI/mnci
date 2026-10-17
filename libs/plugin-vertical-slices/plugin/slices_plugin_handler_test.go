@@ -15,6 +15,7 @@ func TestContribute(t *testing.T) {
 	res, err := v.Contribute(protocol.ContributeParams{Projects: []protocol.Project{
 		{Name: "tool", Language: "go", Tasks: map[string]protocol.Task{"lint": {}}},
 		{Name: "kit", Language: "python"},
+		{Name: "app", Language: "dart"},
 		{Name: "web", Language: "node"},
 	}})
 	if err != nil {
@@ -26,6 +27,9 @@ func TestContribute(t *testing.T) {
 	}
 	if kit := res.Projects["kit"]; kit.Tasks[TaskName].Inputs[0] != "**/*.py" || kit.DependsOn != nil {
 		t.Fatalf("kit %+v", kit)
+	}
+	if app := res.Projects["app"]; app.Tasks[TaskName].Command[4] != "dart" || app.Tasks[TaskName].Inputs[0] != "lib/**/*.dart" {
+		t.Fatalf("app %+v", app)
 	}
 	if _, ok := res.Projects["web"]; ok {
 		t.Fatal("node projects are linted by @mnci/eslint-config")

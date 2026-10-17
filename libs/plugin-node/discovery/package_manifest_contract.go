@@ -10,6 +10,11 @@ type PackageManifest struct {
 	DevDependencies      map[string]string `json:"devDependencies"`
 	PeerDependencies     map[string]string `json:"peerDependencies"`
 	OptionalDependencies map[string]string `json:"optionalDependencies"`
+	// PeerDependenciesMeta marks peers optional; npm and Yarn also take a
+	// name listed only here as an optional peer of any version.
+	PeerDependenciesMeta map[string]struct {
+		Optional bool `json:"optional"`
+	} `json:"peerDependenciesMeta"`
 	Engines              struct {
 		VSCode string `json:"vscode"`
 	} `json:"engines"`

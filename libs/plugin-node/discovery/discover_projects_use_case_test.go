@@ -3,6 +3,8 @@ package discovery
 import (
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
@@ -89,5 +91,42 @@ func TestStartDependsOnBuildOnlyWhenThereIsOne(t *testing.T) {
 	}
 	if deps := TaskFor("test", "apps/web", scripts).DependsOn; len(deps) != 1 || deps[0] != "^build" {
 		t.Fatalf("upstream builds are always kept: %v", deps)
+	}
+}
+
+func TestDiscoverChecksWhatAPackageImports(t *testing.T) {
+	ws := t.TempDir()
+	for dir, body := range map[string]string{
+		"packages/sdk": `{"name":"@acme/sdk","scripts":{"lint":"eslint .","build":"tsc"}}`,
+		"packages/cli": `{"name":"@acme/cli","scripts":{"test":"node --test"}}`,
+		"libs/ui":      `{"name":"@acme/ui","private":true,"scripts":{"lint":"eslint ."}}`,
+	} {
+		_ = os.MkdirAll(filepath.Join(ws, filepath.FromSlash(dir)), 0o755)
+		_ = os.WriteFile(filepath.Join(ws, filepath.FromSlash(dir), "package.json"), []byte(body), 0o644)
+	}
+	res, err := Discover(ws, []string{"packages/sdk/package.json", "packages/cli/package.json", "libs/ui/package.json"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	byName := map[string]protocol.Project{}
+	for _, p := range res.Projects {
+		byName[p.Name] = p
+	}
+	sdk := byName["sdk"]
+	check, ok := sdk.Tasks[DepsCheckTask]
+	if !ok || !check.Cache || strings.Join(check.Command, " ") != "{smith} npm-deps-check packages/sdk" {
+		t.Fatalf("sdk deps-check: %+v", check)
+	}
+	if deps := sdk.Tasks["lint"].DependsOn; !slices.Contains(deps, DepsCheckTask) {
+		t.Fatalf("lint runs after deps-check: %v", deps)
+	}
+	if slices.Contains(sdk.Tasks["build"].DependsOn, DepsCheckTask) {
+		t.Fatal("only the first of lint, build, test waits for it")
+	}
+	if deps := byName["cli"].Tasks["test"].DependsOn; !slices.Contains(deps, DepsCheckTask) {
+		t.Fatalf("with no lint or build, test runs after it: %v", deps)
+	}
+	if _, ok := byName["ui"].Tasks[DepsCheckTask]; ok {
+		t.Fatal("an internal lib is not published, so it is not checked")
 	}
 }

@@ -71,6 +71,10 @@ func describe(workspaceRoot, root, manifest string) (protocol.Project, error) {
 	if _, own := pkg.Scripts["package"]; !own && (project.Kind == protocol.ProjectApp || pkg.Engines.VSCode != "") {
 		project.Tasks["package"] = PackageTask(root, pkg.Scripts)
 	}
+	// What a published package imports is resolved where it is installed.
+	if _, own := pkg.Scripts[DepsCheckTask]; !own && project.Kind == protocol.ProjectPackage {
+		AddDepsCheck(&project)
+	}
 	return project, nil
 }
 

@@ -57,6 +57,10 @@ func TestBuildPutsTheBinaryInTheWheelScripts(t *testing.T) {
 	defer func() { _ = zr.Close() }()
 	files := map[string]string{}
 	for _, f := range zr.File {
+		// PyPI rejects an entry followed by a data descriptor.
+		if f.Flags&0x8 != 0 {
+			t.Errorf("%s has a data descriptor", f.Name)
+		}
 		in, _ := f.Open()
 		raw, _ := io.ReadAll(in)
 		_ = in.Close()

@@ -3,9 +3,11 @@ package pypiwheels
 import (
 	"archive/zip"
 	"bytes"
+	"compress/flate"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"hash/crc32"
 	"io"
 	"os"
 	"path/filepath"
@@ -155,32 +157,50 @@ func buildOne(archive, file, binary, goos string, tags []string, meta Metadata) 
 	zw := zip.NewWriter(&buf)
 	var record strings.Builder
 	for _, e := range entries {
-		header := &zip.FileHeader{Name: e.name, Method: zip.Deflate, Modified: stamp}
-		header.SetMode(e.mode)
-		w, err := zw.CreateHeader(header)
-		if err != nil {
-			return err
-		}
-		if _, err := w.Write(e.data); err != nil {
+		if err := put(zw, e.name, e.data, e.mode); err != nil {
 			return err
 		}
 		sum := sha256.Sum256(e.data)
 		fmt.Fprintf(&record, "%s,sha256=%s,%d\n", e.name, base64.RawURLEncoding.EncodeToString(sum[:]), len(e.data))
 	}
 	fmt.Fprintf(&record, "%sRECORD,,\n", info)
-	header := &zip.FileHeader{Name: info + "RECORD", Method: zip.Deflate, Modified: stamp}
-	header.SetMode(0o644)
-	w, err := zw.CreateHeader(header)
-	if err != nil {
-		return err
-	}
-	if _, err := io.WriteString(w, record.String()); err != nil {
+	if err := put(zw, info+"RECORD", []byte(record.String()), 0o644); err != nil {
 		return err
 	}
 	if err := zw.Close(); err != nil {
 		return err
 	}
 	return os.WriteFile(file, buf.Bytes(), 0o644)
+}
+
+// put writes one deflated entry with its sizes and checksum in the local
+// header. PyPI rejects wheels whose entries end in a data descriptor, which
+// zip.Writer.CreateHeader always writes.
+func put(zw *zip.Writer, name string, data []byte, mode os.FileMode) error {
+	var deflated bytes.Buffer
+	fw, err := flate.NewWriter(&deflated, flate.DefaultCompression)
+	if err != nil {
+		return err
+	}
+	if _, err := fw.Write(data); err != nil {
+		return err
+	}
+	if err := fw.Close(); err != nil {
+		return err
+	}
+	header := &zip.FileHeader{
+		Name: name, Method: zip.Deflate, Modified: stamp,
+		CRC32:              crc32.ChecksumIEEE(data),
+		CompressedSize64:   uint64(deflated.Len()),
+		UncompressedSize64: uint64(len(data)),
+	}
+	header.SetMode(mode)
+	w, err := zw.CreateRaw(header)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(deflated.Bytes())
+	return err
 }
 
 // read returns one file of a zip archive.

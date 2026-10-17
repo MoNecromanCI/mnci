@@ -24,7 +24,7 @@ func Doctor(workspaceRoot string, params protocol.DoctorParams) protocol.DoctorR
 	suites, installed := 0, exists(workspaceRoot, "node_modules/playwright-core/package.json")
 	for _, p := range params.Projects {
 		_, hasScript := p.Tasks[TaskName]
-		suite := Detect(filepath.Join(workspaceRoot, filepath.FromSlash(p.Root)), hasScript)
+		suite := Detect(workspaceRoot, p.Root, hasScript)
 		if suite.Flavour == None {
 			continue
 		}

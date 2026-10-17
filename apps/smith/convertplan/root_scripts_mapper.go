@@ -60,7 +60,7 @@ func rewriteOne(words []string, names map[string]string) (string, bool) {
 			case "--projects", "-p":
 				var projects []string
 				for _, p := range strings.Split(value, ",") {
-					if n, ok := names[p]; ok {
+					if n, ok := smithName(p, names); ok {
 						projects = append(projects, n)
 					} else {
 						return "", false
@@ -81,7 +81,7 @@ func rewriteOne(words []string, names map[string]string) (string, bool) {
 		}
 		project, target, ok := strings.Cut(args[1], ":")
 		target, _, _ = strings.Cut(target, ":")
-		if n, known := names[project]; ok && known {
+		if n, known := smithName(project, names); ok && known {
 			return fmt.Sprintf("smith run %s -p %s", target, n), true
 		}
 		return "", false
@@ -101,11 +101,43 @@ func rewriteOne(words []string, names map[string]string) (string, bool) {
 	}
 	if len(args) == 2 {
 		// `nx build api` is `nx run api:build`.
-		if n, known := names[args[1]]; known {
+		if n, known := smithName(args[1], names); known {
 			return fmt.Sprintf("smith run %s -p %s", args[0], n), true
 		}
 	}
 	return "", false
+}
+
+// smithName finds the smith name of the project a script names the way Nx
+// resolves it: by its Nx name, or by that name without its npm scope (core
+// for @acme/core) when exactly one project has it.
+func smithName(project string, names map[string]string) (string, bool) {
+	if n, ok := names[project]; ok {
+		return n, true
+	}
+	found, matches := "", 0
+	for nx, n := range names {
+		if scope, bare, scoped := strings.Cut(nx, "/"); scoped && strings.HasPrefix(scope, "@") && bare == project {
+			found = n
+			matches++
+		}
+	}
+	return found, matches == 1
+}
+
+// ScriptGap says why a root script RewriteScript could not translate has no
+// smith equivalent, when the reason is more precise than "cannot translate".
+func ScriptGap(script string) string {
+	for _, part := range strings.Split(script, "&&") {
+		words := strings.Fields(part)
+		if len(words) > 0 && words[0] == "npx" {
+			words = words[1:]
+		}
+		if len(words) > 3 && words[0] == "nx" && words[1] == "run" && words[3] == "--" {
+			return "it passes arguments to the task (" + strings.Join(words[3:], " ") + "), and smith run does not pass arguments on; add a script with them to the project and run that task instead"
+		}
+	}
+	return ""
 }
 
 // targetsOf reads -t/--targets/--target values (comma or space separated)
@@ -124,6 +156,18 @@ func targetsOf(args []string) (targets, rest []string, ok bool) {
 				continue
 			}
 			targets = append(targets, strings.Split(value, ",")...)
+		case "-p", "--projects":
+			if hasValue {
+				rest = append(rest, a)
+				continue
+			}
+			// Nx takes the projects comma or space separated: -p core cli.
+			var projects []string
+			for i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
+				i++
+				projects = append(projects, args[i])
+			}
+			rest = append(rest, name+"="+strings.Join(projects, ","))
 		default:
 			if strings.HasPrefix(a, "-") && !hasValue && i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
 				a += "=" + args[i+1]

@@ -18,7 +18,26 @@ var (
 // ScanImports returns the bare package names imported anywhere under dir,
 // sorted and unique. Relative paths and node: built-ins are ignored.
 func ScanImports(dir string) ([]string, error) {
+	byFile, err := ScanFileImports(dir)
 	seen := map[string]bool{}
+	for _, names := range byFile {
+		for _, name := range names {
+			seen[name] = true
+		}
+	}
+	out := make([]string, 0, len(seen))
+	for name := range seen {
+		out = append(out, name)
+	}
+	sort.Strings(out)
+	return out, err
+}
+
+// ScanFileImports returns the bare package names each source file under dir
+// imports, by its slash path relative to dir. Build output, node_modules,
+// hidden folders and .d.ts files are left out.
+func ScanFileImports(dir string) (map[string][]string, error) {
+	byFile := map[string][]string{}
 	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -36,23 +55,23 @@ func ScanImports(dir string) ([]string, error) {
 		if err != nil {
 			return err
 		}
-		for _, name := range PackageNames(string(src)) {
-			seen[name] = true
+		if names := PackageNames(string(src)); len(names) > 0 {
+			rel, err := filepath.Rel(dir, path)
+			if err != nil {
+				return err
+			}
+			byFile[filepath.ToSlash(rel)] = names
 		}
 		return nil
 	})
-	out := make([]string, 0, len(seen))
-	for name := range seen {
-		out = append(out, name)
-	}
-	sort.Strings(out)
-	return out, err
+	return byFile, err
 }
 
 // PackageNames extracts bare package names from one source file's imports.
+// Comments are skipped: a doc comment quoting `require('x')` imports nothing.
 func PackageNames(src string) []string {
 	var out []string
-	for _, m := range specifierPattern.FindAllStringSubmatch(src, -1) {
+	for _, m := range specifierPattern.FindAllStringSubmatch(withoutComments(src), -1) {
 		if name := packageName(m[1]); name != "" {
 			out = append(out, name)
 		}
@@ -60,8 +79,54 @@ func PackageNames(src string) []string {
 	return out
 }
 
+// withoutComments blanks JavaScript's // and /* */ comments, leaving string
+// and template literals (where // is part of a URL) as they are. Each comment
+// becomes a space, so neither lines nor tokens join across it.
+func withoutComments(src string) string {
+	var b strings.Builder
+	b.Grow(len(src))
+	for i := 0; i < len(src); i++ {
+		c := src[i]
+		switch {
+		case c == '\'' || c == '"' || c == '`':
+			end := i + 1
+			for end < len(src) && src[end] != c && (c == '`' || src[end] != '\n') {
+				if src[end] == '\\' {
+					end++
+				}
+				end++
+			}
+			if end >= len(src) {
+				end = len(src) - 1
+			}
+			b.WriteString(src[i : end+1])
+			i = end
+		case c == '/' && i+1 < len(src) && src[i+1] == '/':
+			for i < len(src) && src[i] != '\n' {
+				i++
+			}
+			b.WriteByte(' ')
+			if i < len(src) {
+				b.WriteByte('\n')
+			}
+		case c == '/' && i+1 < len(src) && src[i+1] == '*':
+			end := strings.Index(src[i+2:], "*/")
+			if end < 0 {
+				return b.String()
+			}
+			b.WriteByte(' ')
+			i += end + 3
+		default:
+			b.WriteByte(c)
+		}
+	}
+	return b.String()
+}
+
 func packageName(specifier string) string {
-	if specifier == "" || strings.HasPrefix(specifier, ".") || strings.HasPrefix(specifier, "/") || strings.Contains(specifier, ":") {
+	// "#x" is one of the package's own subpath imports (package.json
+	// "imports"), not another package.
+	if specifier == "" || strings.HasPrefix(specifier, ".") || strings.HasPrefix(specifier, "/") || strings.HasPrefix(specifier, "#") || strings.Contains(specifier, ":") {
 		return ""
 	}
 	parts := strings.Split(specifier, "/")

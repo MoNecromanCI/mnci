@@ -46,7 +46,8 @@ func TestVscodeExtension(t *testing.T) {
 	if !found["extension/main.js"] || !strings.Contains(manifest, `"main": "./main.js"`) {
 		t.Fatalf("the .vsix has the bundle and its manifest points at it: %v\n%s", found, manifest)
 	}
-	if out := w.smith(true, "run", "lint", "typecheck", "test", "build"); !strings.Contains(out, "(4 from cache") {
+	// The four, and deps-check, which an extension's lint runs after.
+	if out := w.smith(true, "run", "lint", "typecheck", "test", "build"); !strings.Contains(out, "(5 from cache") {
 		t.Fatalf("a re-run replays from the cache:\n%s", out)
 	}
 

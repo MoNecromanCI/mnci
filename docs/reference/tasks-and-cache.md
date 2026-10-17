@@ -31,6 +31,28 @@ skips the tasks that depend on it; independent tasks keep going unless `--bail`.
 Ctrl+C stops every process tree smith started — on Windows through a Job Object,
 elsewhere through a process group.
 
+### deps-check
+
+A Node package (`kind = package`) gets a `deps-check` task, and its `lint` (or,
+without one, its `build` or `test`) runs after it, so CI's verify phase checks
+it. It fails when a file imports a package that the package.json does not
+declare where installing the package from npm installs it, which the
+workspace hides because npm hoists every dependency to the root:
+
+- a file that ships may import what `dependencies`, `peerDependencies`
+  (optional peers in `peerDependenciesMeta` too) and `optionalDependencies`
+  declare
+- a test, e2e suite, test double, tool or config file (`*.test.*`,
+  `*.spec.*`, `*.config.*`, and anything under `e2e/`, `tools/`, `test/`,
+  `tests/`, `__tests__/` or `testing/`) may also import `devDependencies` and
+  what the workspace root declares
+- Node's built-ins, the package's own name, `#` subpath imports and, in a VS
+  Code extension, `vscode` are always fine
+
+Versions are not compared, and a declaration nothing imports is not reported.
+`smith doctor` reports the same, per package. A project that defines its own
+`deps-check` script keeps it.
+
 ## Builds go to dist/
 
 Every build writes to one directory at the workspace root, `dist/`, in a path

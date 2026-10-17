@@ -57,6 +57,35 @@ func TaskFor(script, root string, scripts map[string]string) protocol.Task {
 	return t
 }
 
+// DepsCheckTask is the name of the task that checks a package declares what
+// it imports (smith npm-deps-check).
+const DepsCheckTask = "deps-check"
+
+// verifiedBy are the tasks, in order of preference, that a package's
+// deps-check runs before, so CI's verify phase (lint, typecheck, test, build)
+// runs it: it is the eslint toolchain's lint that a package usually has, and
+// the check is not lint's to own.
+var verifiedBy = []string{"lint", "build", "test"}
+
+// AddDepsCheck gives a package the deps-check task, cached on its files
+// (package.json among them), and makes its first of lint, build or test
+// depend on it.
+func AddDepsCheck(project *protocol.Project) {
+	project.Tasks[DepsCheckTask] = protocol.Task{
+		Command:     []string{"{smith}", "npm-deps-check", project.Root},
+		Cache:       true,
+		Inputs:      []string{"**/*", "{workspaceRoot}/package.json"},
+		Description: "Check the package declares every package it imports",
+	}
+	for _, name := range verifiedBy {
+		if t, ok := project.Tasks[name]; ok {
+			t.DependsOn = append(t.DependsOn, DepsCheckTask)
+			project.Tasks[name] = t
+			return
+		}
+	}
+}
+
 // PackageTask packs an app with npm pack into dist/drop, the deliverable
 // smith ci pack keeps. An app that builds is packed from its build directory,
 // staged with its package.json (smith npm-pack); one that does not, from its

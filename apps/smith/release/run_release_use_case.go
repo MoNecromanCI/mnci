@@ -23,6 +23,7 @@ import (
 	"github.com/monosmith-app/monosmith/apps/smith/pypiwheels"
 	"github.com/monosmith-app/monosmith/apps/smith/rubygems"
 	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/splitrepo"
 	"github.com/monosmith-app/monosmith/apps/smith/taskrun"
 	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
@@ -81,6 +82,9 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 			return nil
 		}
 		if err := pushTag(s, item, opts, res); err != nil {
+			return err
+		}
+		if err := mirror(s, p, item, opts, res, say); err != nil {
 			return err
 		}
 		if err := publishGitHubRelease(s, p, item, res, say, nil); err != nil {
@@ -153,7 +157,7 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 		if p.Release != nil && p.Release.Pub != "" && !Native(p) {
 			say("would publish %s %s to pub.dev from the tag %s", p.Release.Pub, item.Next, PubTag(p, item.Next))
 		}
-		return nil
+		return mirror(s, p, item, opts, res, say)
 	}
 
 	if err := s.Git.CreateTag(item.Tag, fmt.Sprintf("%s %s", item.Project, item.Next)); err != nil {
@@ -162,6 +166,9 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 	res.Status = "released"
 	say("tagged %s", item.Tag)
 	if err := pushTag(s, item, opts, res); err != nil {
+		return err
+	}
+	if err := mirror(s, p, item, opts, res, say); err != nil {
 		return err
 	}
 	if s.Config.Release.GitHubReleases {
@@ -425,6 +432,34 @@ func AssetSpec(p *projectgraph.Project) *protocol.AssetSpec {
 		VersionVariable: r.VersionVariable,
 		OutDir:          "dist/release/" + p.Name,
 	}
+}
+
+// mirror pushes a project with a split repository there, once its tag is
+// pushed: the mirror's history is taken from the monorepo's tag, so a tag
+// that only exists locally is not mirrored yet, and the re-run that pushes
+// it mirrors it too.
+func mirror(s *session.Session, p *projectgraph.Project, item Item, opts Options, res *ReportResult, say func(string, ...any)) error {
+	if p.SplitRepo == "" {
+		return nil
+	}
+	if !opts.DryRun && !res.Pushed {
+		say("not mirroring to %s: the tag was not pushed", p.SplitRepo)
+		return nil
+	}
+	out, err := splitrepo.Mirror(s.Git, splitrepo.Request{Prefix: p.Root, Ref: item.Tag, Repo: p.SplitRepo, Version: item.Next, Token: splitrepo.Token(), DryRun: opts.DryRun})
+	if err != nil {
+		return err
+	}
+	res.Mirror = out.Mirror
+	switch {
+	case opts.DryRun:
+		say("would push %s to %s", p.Root, out.Mirror)
+	case out.Skipped != "":
+		say("%s", out.Skipped)
+	default:
+		say("pushed %s to %s", p.Root, out.Mirror)
+	}
+	return nil
 }
 
 func pushTag(s *session.Session, item Item, opts Options, res *ReportResult) error {

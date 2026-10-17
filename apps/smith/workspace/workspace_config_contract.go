@@ -127,8 +127,13 @@ type ProjectOverride struct {
 	Stack string `toml:"stack"`
 	// Release makes an app releasable: it is versioned by its tag and its
 	// assets are built and attached to the release.
-	Release *ProjectRelease         `toml:"release"`
-	Tasks   map[string]TaskOverride `toml:"tasks"`
+	Release *ProjectRelease `toml:"release"`
+	// SplitRepo is a GitHub repository (owner/repo) each release of the
+	// project is mirrored to: its directory's history split out, pushed to
+	// the mirror's main branch and tagged vX.Y.Z there, for a registry that
+	// reads a package at a repository root (Packagist). Needs SPLIT_REPO_TOKEN.
+	SplitRepo string                  `toml:"split_repo"`
+	Tasks     map[string]TaskOverride `toml:"tasks"`
 }
 
 // DefaultPlatforms are the platforms an app's assets are built for.

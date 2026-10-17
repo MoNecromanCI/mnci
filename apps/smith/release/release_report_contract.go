@@ -41,7 +41,10 @@ type ReportResult struct {
 	// PubDispatch names the pub.dev publish the release started (package,
 	// version and tag), which the pub workflow finishes.
 	PubDispatch string `json:"pubDispatch,omitempty"`
-	Error       string `json:"error,omitempty"`
+	// Mirror is the split repository and tag the release was pushed to
+	// (owner/repo@vX.Y.Z), when the project has one.
+	Mirror string `json:"mirror,omitempty"`
+	Error  string `json:"error,omitempty"`
 }
 
 // Markdown renders the report for a CI step summary or a PR comment.
@@ -67,6 +70,13 @@ func (r Report) Markdown() string {
 	for _, res := range r.Results {
 		if res.PubDispatch != "" {
 			fmt.Fprintf(&b, "\nDispatched pub.dev publish for %s.\n", res.PubDispatch)
+		}
+		if res.Mirror != "" {
+			verb := "Mirrored"
+			if r.DryRun {
+				verb = "Would mirror"
+			}
+			fmt.Fprintf(&b, "\n%s %s to %s\n", verb, res.Project, res.Mirror)
 		}
 	}
 	if len(r.Unchanged) > 0 {

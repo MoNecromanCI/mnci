@@ -8,6 +8,7 @@ import (
 
 	"github.com/monosmith-app/monosmith/apps/smith/githubrelease"
 	"github.com/monosmith-app/monosmith/apps/smith/session"
+	"github.com/monosmith-app/monosmith/apps/smith/splitrepo"
 	"github.com/monosmith-app/monosmith/apps/smith/workspace"
 	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
 )
@@ -45,6 +46,10 @@ func Preflight(s *session.Session, plan Plan) error {
 					problems = append(problems, fmt.Sprintf("%s is not set: %s", c.Env, c.Description))
 				}
 			}
+		}
+		if p := s.Graph.Get(item.Project); p != nil && p.SplitRepo != "" && splitrepo.Token() == "" {
+			c := splitrepo.Credential(p.SplitRepo)
+			problems = append(problems, fmt.Sprintf("%s is not set: %s", c.Env, c.Description))
 		}
 	}
 	for name := range plugins {

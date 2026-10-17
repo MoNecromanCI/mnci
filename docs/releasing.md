@@ -198,6 +198,37 @@ package, in dependency order, smith:
 3. publishes it — skipping a version the registry already has
 4. restores the manifest
 5. tags the commit and pushes the tag
+6. pushes the package to its split repository, when it has one
+
+## Split repositories
+
+Some registries read a package at the root of a repository: Packagist reads
+`composer.json` there and follows the repository's tags. A package in a
+monorepo's subdirectory cannot be listed that way, so it is mirrored to a
+read-only repository of its own:
+
+```toml
+[projects.client-php]
+split_repo = "acme/client-php"   # a GitHub owner/repo
+```
+
+Each release splits the project's directory out of the history at its tag
+(`splitsh-lite` when it is on the PATH, it is much faster on a long history;
+otherwise `git subtree split`), pushes it to the mirror's `main` and tags it
+`v<version>` there, the spelling Composer expects. The monorepo keeps its own
+tag. Register the mirror with the registry once; later releases reach it by
+its tags.
+
+- `SPLIT_REPO_TOKEN` is a token that can push to the mirror (`GITHUB_TOKEN`
+  cannot: it is scoped to the repository the workflow runs in). It is sent
+  as an HTTP header through git's environment, never on a command line, and
+  the generated pipelines pass it to the release step. A release refuses to
+  start without it.
+- The split is taken from the pushed tag: a release whose tag was not pushed
+  is not mirrored yet, and the re-run that pushes the tag mirrors it.
+- A mirror that already has the tag is left alone, so a re-run resumes.
+- Splitting needs the full history, as a release does anyway (`fetch-depth: 0`).
+- The preview says what it would push (`Would mirror client-php to acme/client-php@v1.2.0`).
 
 ## Tag checks
 

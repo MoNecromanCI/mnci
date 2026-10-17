@@ -154,11 +154,12 @@ you regenerate it with a newer smith.
 | `MAVEN_REPOSITORY_URL`, `MAVEN_USERNAME`, `MAVEN_PASSWORD` | `mvn deploy` and Gradle's `maven-publish` of JVM packages |
 | `VSCE_PAT` | `vsce publish` of a VS Code extension to the Marketplace; the generated pipeline does not pass it yet |
 | `CONTAINER_REGISTRY`, `CONTAINER_USERNAME`, `CONTAINER_PASSWORD` | the docker convention's image push |
+| `SPLIT_REPO_TOKEN` | pushing a project with `split_repo` to its mirror repository; a token with write access to that repository (see releasing.md) |
 | `GITHUB_TOKEN` | GitHub Releases and their assets, with `[release] github_releases`; GitHub Actions provides it |
 
 The pipeline lists only the secrets its projects need. Go packages are
 published by their tag and need no secret; PHP packages are read by Packagist
-from the tags, and C++ and Bicep projects release by their tag only. On GitHub, the job
+from the tags (of a split repository, with `split_repo`, when the package lives in a subdirectory), and C++ and Bicep projects release by their tag only. On GitHub, the job
 has `contents: write` so it can push tags; on Azure the checkout keeps its
 credentials (`persistCredentials`).
 

@@ -35,6 +35,10 @@ npm = ["@monosmith/cli", "monosmith"]
 pypi = "monosmith"
 nuget = "monosmith"
 rubygems = "monosmith"
+# dart pub global activate monosmith: the release tags smith-v<version> and
+# starts .github/workflows/pub.yml on it, which pub.dev's automated
+# publishing accepts.
+pub = "monosmith"
 description = "Runs a monorepo in Node, Go, Python, Rust, .NET, Ruby, PHP, C++, Dart, the JVM and Bicep: tasks from a cache, CI and releases"
 license = "MIT"
 

@@ -157,3 +157,49 @@ func TestGitHubWorkflowMayRequestAnOIDCTokenForNPMProvenance(t *testing.T) {
 		t.Errorf("no id-token permission:\n%s", RenderGitHub(m))
 	}
 }
+
+func TestPubWorkflowOnlyWhenAnAppPublishesToPubDev(t *testing.T) {
+	root := t.TempDir()
+	github := workspace.Config{CI: workspace.CISection{Providers: []string{"github"}}}
+	m := model()
+	if _, ok := Rendered(github, m)[GitHubPubPath]; ok || strings.Contains(RenderGitHub(m), "actions: write") {
+		t.Fatal("a pub workflow without a pub.dev app")
+	}
+	m.Pub = true
+	files := Rendered(github, m)
+	pub, ok := files[GitHubPubPath]
+	if !ok {
+		t.Fatal("no pub workflow")
+	}
+	for _, want := range []string{
+		"on:\n  workflow_dispatch:\n    inputs:\n      project:",
+		"permissions:\n  contents: read\n  id-token: write\n",
+		"uses: dart-lang/setup-dart@v1",
+		"SMITH_VERSION: latest",
+		`run: smith release pub --project "$PROJECT" --version "$VERSION"`,
+		"PROJECT: ${{ inputs.project }}",
+		"# smith:slot before-publish",
+	} {
+		if !strings.Contains(pub, want) {
+			t.Errorf("pub.yml lacks %q:\n%s", want, pub)
+		}
+	}
+	if !strings.Contains(files[GitHubPath], "  pull-requests: write\n  actions: write\n") {
+		t.Errorf("ci.yml cannot start the pub workflow:\n%s", files[GitHubPath])
+	}
+	azure := workspace.Config{CI: workspace.CISection{Providers: []string{"azure"}}}
+	if _, ok := Rendered(azure, m)[GitHubPubPath]; ok {
+		t.Error("a GitHub workflow for an Azure-only workspace")
+	}
+
+	if _, _, err := Write(root, github, m); err != nil {
+		t.Fatal(err)
+	}
+	m.Pub = false
+	if changed, _, err := Write(root, github, m); err != nil || !strings.Contains(strings.Join(changed, ","), GitHubPubPath) {
+		t.Fatalf("dropping pub: changed %v %v", changed, err)
+	}
+	if _, err := os.Stat(filepath.Join(root, GitHubPubPath)); !os.IsNotExist(err) {
+		t.Error("the pub workflow outlives the pub.dev app")
+	}
+}

@@ -51,6 +51,15 @@ var published = func(name string) ([]string, error) {
 	return versions, nil
 }
 
+// Has reports whether pub.dev has a version of a package.
+func Has(name, version string) (bool, error) {
+	versions, err := published(name)
+	if err != nil {
+		return false, err
+	}
+	return slices.Contains(versions, version), nil
+}
+
 // Publish builds the package and publishes it with `dart pub publish`,
 // unless pub.dev has its version, so a re-run completes a release. It
 // publishes with whatever credentials dart has: a login (`dart pub publish`
@@ -65,11 +74,11 @@ func Publish(root string, r Release, dryRun bool) (Result, error) {
 		res.Published = id
 		return res, nil
 	}
-	versions, err := published(r.Name)
+	has, err := Has(r.Name, r.Version)
 	if err != nil {
 		return res, err
 	}
-	if slices.Contains(versions, r.Version) {
+	if has {
 		res.Existing = id
 		return res, nil
 	}

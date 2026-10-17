@@ -39,3 +39,18 @@ func TestLauncherMapsEachAbiToItsBinary(t *testing.T) {
 		}
 	}
 }
+
+func TestDescriptionFitsPubDevLimits(t *testing.T) {
+	if _, err := Description("too short"); err == nil {
+		t.Error("a short description is accepted")
+	}
+	exact := strings.Repeat("word ", 20)
+	if got, err := Description(exact); err != nil || got != strings.TrimSpace(exact) {
+		t.Errorf("Description(100 chars) = %q, %v", got, err)
+	}
+	long := strings.Repeat("monorepo tasks, ", 20)
+	got, err := Description(long)
+	if err != nil || len(got) > 180 || len(got) < 60 || !strings.HasSuffix(got, "...") || strings.Contains(got, ", ...") {
+		t.Errorf("Description(long) = %q (%d), %v", got, len(got), err)
+	}
+}

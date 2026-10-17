@@ -122,3 +122,21 @@ func Changelog(r Release) string {
 	}
 	return fmt.Sprintf("## %s\n\n- %s %s.%s\n", r.Version, r.Binary, r.Version, link)
 }
+
+// Description fits a description to pub.dev's 60 to 180 characters: a
+// longer one is cut at a word and ends with "...", a shorter one is an
+// error, since padding it would say nothing.
+func Description(s string) (string, error) {
+	s = strings.Join(strings.Fields(s), " ")
+	if len(s) < 60 {
+		return "", fmt.Errorf("pub.dev needs a description of 60 to 180 characters; the release description has %d", len(s))
+	}
+	if len(s) <= 180 {
+		return s, nil
+	}
+	cut := strings.LastIndex(s[:177], " ")
+	if cut < 60 {
+		cut = 177
+	}
+	return strings.TrimRight(s[:cut], " ,.;:") + "...", nil
+}

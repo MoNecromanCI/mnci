@@ -49,6 +49,9 @@ func Collect(s *session.Session) (Contributions, error) {
 		if p.Release != nil && len(p.Release.NPM) > 0 {
 			c.Provenance = true
 		}
+		if p.Release != nil && p.Release.Pub != "" {
+			c.Pub = true
+		}
 	}
 	c.NativeRunners, c.NativeLinuxPackages = s.Config.CI.NativeRunners, s.Config.CI.NativeLinuxPackages
 	if s.Config.Release.GitHubReleases {
@@ -64,6 +67,9 @@ func Rendered(cfg workspace.Config, m Model) map[string]string {
 		switch p {
 		case "github":
 			out[GitHubPath] = RenderGitHub(m)
+			if m.Pub {
+				out[GitHubPubPath] = RenderGitHubPub(m)
+			}
 		case "azure":
 			out[AzurePath] = RenderAzure(m)
 		case "gitlab":
@@ -112,7 +118,7 @@ func Write(root string, cfg workspace.Config, m Model) (changed, lost []string, 
 
 // OwnedPaths are the files smith generates and may rewrite or delete. A file
 // at one of them belongs to smith only while it starts with smith's header.
-var OwnedPaths = []string{GitHubPath, AzurePath, GitLabPath, DevcontainerPath}
+var OwnedPaths = []string{GitHubPath, GitHubPubPath, AzurePath, GitLabPath, DevcontainerPath}
 
 // Stale lists the files smith generated that the workspace no longer asks for
 // (a provider dropped from [ci] providers): they carry smith's header and are

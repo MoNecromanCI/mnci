@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/monosmith-app/monosmith/apps/smith/githubrelease"
+	"github.com/monosmith-app/monosmith/apps/smith/linuxpackages"
 	"github.com/monosmith-app/monosmith/apps/smith/npmbinaries"
 	"github.com/monosmith-app/monosmith/apps/smith/nugettool"
 	"github.com/monosmith-app/monosmith/apps/smith/packagemanifests"
@@ -136,10 +138,14 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 	if err := distribute(s, p, item, pr, opts.DryRun, res, say); err != nil {
 		return err
 	}
+	packages, err := linuxPackages(s, p, item, pr, opts.DryRun)
+	if err != nil {
+		return err
+	}
 	if opts.DryRun {
 		say("would release %s (%s)", item.Next, item.Reason)
-		if len(pr.Assets) > 0 {
-			say("would attach %s", strings.Join(pr.Assets, ", "))
+		if attach := append(slices.Clone(pr.Assets), packages...); len(attach) > 0 {
+			say("would attach %s", strings.Join(attach, ", "))
 		}
 		return nil
 	}
@@ -153,7 +159,7 @@ func releaseOne(ctx context.Context, s *session.Session, item Item, versions map
 		return err
 	}
 	if s.Config.Release.GitHubReleases {
-		assets := append(pr.Assets, packageManifests(s, p, item, pr, say)...)
+		assets := append(append(pr.Assets, packages...), packageManifests(s, p, item, pr, say)...)
 		return publishGitHubRelease(s, p, item, res, say, assets)
 	}
 	return nil
@@ -188,6 +194,56 @@ func packageManifests(s *session.Session, p *projectgraph.Project, item Item, pr
 		say("package manager manifests: %v", err)
 	}
 	return written
+}
+
+// linuxPackages builds the .deb and .rpm packages a release asks for from
+// its linux archives, before the app is tagged: a failure stops the release.
+// A dry run returns the files it would build.
+func linuxPackages(s *session.Session, p *projectgraph.Project, item Item, pr protocol.PublishResult, dryRun bool) ([]string, error) {
+	r, ok := linuxRelease(s, p, item, pr)
+	if !ok {
+		return nil, nil
+	}
+	built := linuxpackages.Built{Assets: pr.Assets, Platforms: pr.AssetPlatforms}
+	if dryRun {
+		dir := ""
+		for asset := range pr.AssetPlatforms {
+			dir = path.Dir(asset)
+		}
+		var names []string
+		for _, name := range linuxpackages.Expected(r, slices.Collect(maps.Values(pr.AssetPlatforms))) {
+			names = append(names, path.Join(dir, name))
+		}
+		return names, nil
+	}
+	packages, err := linuxpackages.Build(s.Root, built, r)
+	if err != nil {
+		return nil, fmt.Errorf("linux packages: %w", err)
+	}
+	return packages, nil
+}
+
+// linuxRelease is what a project's Linux packages hold, if it asks for any.
+func linuxRelease(s *session.Session, p *projectgraph.Project, item Item, pr protocol.PublishResult) (linuxpackages.Release, bool) {
+	if p.Release == nil || len(p.Release.LinuxPackages) == 0 || Native(p) || len(pr.AssetPlatforms) == 0 {
+		return linuxpackages.Release{}, false
+	}
+	product := p.Release.Product
+	if product == "" {
+		product = p.Name
+	}
+	binary := pr.Binary
+	if binary == "" {
+		binary = p.Name
+	}
+	homepage, maintainer := p.Release.Homepage, product
+	if repo, err := Repository(s); err == nil {
+		if homepage == "" {
+			homepage = "https://github.com/" + repo.String()
+		}
+		maintainer = repo.Owner + " <https://github.com/" + repo.String() + ">"
+	}
+	return linuxpackages.Release{Kinds: p.Release.LinuxPackages, Product: product, Binary: binary, Version: item.Next, Summary: p.Release.Description, Homepage: homepage, License: p.Release.License, Maintainer: maintainer}, true
 }
 
 // NativeTag marks a project built on each OS (smith ci native), whose release
@@ -392,13 +448,21 @@ func publishGitHubRelease(s *session.Session, p *projectgraph.Project, item Item
 		if err != nil {
 			return err
 		}
-		if !found || missing(existing, planned.Assets) {
+		packages, err := linuxPackages(s, p, item, planned, true)
+		if err != nil {
+			return err
+		}
+		if !found || missing(existing, append(planned.Assets, packages...)) {
 			say("building assets for %s", item.Next)
 			built, err := publish(s, p, item, false)
 			if err != nil {
 				return err
 			}
-			assets = built.Assets
+			packages, err := linuxPackages(s, p, item, built, false)
+			if err != nil {
+				return err
+			}
+			assets = append(built.Assets, packages...)
 		}
 	}
 	files := make([]string, len(assets))

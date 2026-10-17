@@ -36,6 +36,11 @@ rubygems = "monosmith"
 description = "Runs a monorepo in Node, Go and Python: tasks from a cache, CI and releases"
 license = "MIT"
 
+# The workspace's lint above is golangci-lint, for the Go projects; this Node
+# package lints with its own ESLint script.
+[projects.eslint-config.tasks.lint]
+command = ["npm", "run", "lint", "--silent"]
+
 [projects.smith.tasks.build-dev]
 command = ["go", "build", "-gcflags=all=-N -l", "-o", "../../dist/dev/apps/smith/smith", "."]
 outputs = ["../../dist/dev/apps/smith"]

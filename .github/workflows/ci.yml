@@ -28,6 +28,9 @@ jobs:
         with:
           go-version: '1.26'
           cache: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Install smith
         run: curl -fsSL https://raw.githubusercontent.com/monosmith-app/monosmith/main/install.sh | sh -s -- "$SMITH_VERSION"
         env:

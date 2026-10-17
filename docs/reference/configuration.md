@@ -48,8 +48,8 @@ module_prefix = "github.com/acme/acme"  # Go module path prefix
 
 [ci]
 providers = ["github"]                # "github", "azure", "gitlab", or several
-devcontainer = true                   # write .devcontainer/devcontainer.json with CI's toolchains (docs/ci.md)
-native_runners = ["ubuntu-latest", "windows-latest", "macos-latest"]  # where native projects build (docs/ci.md)
+devcontainer = true                   # write .devcontainer/devcontainer.json with CI's toolchains (docs/reference/ci.md)
+native_runners = ["ubuntu-latest", "windows-latest", "macos-latest"]  # where native projects build (docs/reference/ci.md)
 native_linux_packages = []            # apt packages the native job installs on Linux
 
 [release]
@@ -60,13 +60,13 @@ github_releases = false               # a GitHub Release per tag (needs GITHUB_T
 [cache]
 dir = ".smith/cache"                   # workspace-relative, or absolute
 max_size_mb = 2048
-remote = "s3://acme-smith-cache/main"  # a shared remote cache: https://, s3://, azblob:// (docs/tasks-and-cache.md)
+remote = "s3://acme-smith-cache/main"  # a shared remote cache: https://, s3://, azblob:// (docs/reference/tasks-and-cache.md)
 remote_read_only = false               # read the remote without writing to it
 
 [plugins]
 enabled = ["node", "go", "python"]    # default: every built-in plugin
 
-[default_stacks]                      # a project's stack when it records none (docs/stacks.md)
+[default_stacks]                      # a project's stack when it records none (docs/reference/stacks.md)
 node = "node-jest"
 
 [stacks.ts-func]                      # declare a stack: the plugins a project is built with
@@ -80,12 +80,12 @@ deploy = []
 [projects.web]
 stack = "node-vitest"                 # replaces the stack web's manifest records
 
-[conventions.vertical-slices]         # apply a convention (docs/conventions.md)
+[conventions.vertical-slices]         # apply a convention (docs/reference/conventions.md)
 languages = ["go"]                    # default: every language it supports
 exclude = ["legacy"]                  # projects it leaves alone
 
 [plugins.external.kiwi]
-version = "^1"                        # installed on the plugin search path (docs/plugins.md)
+version = "^1"                        # installed on the plugin search path (docs/reference/plugins.md)
 
 [plugins.external.rust]
 command = ["smith-plugin-rust"]        # any executable speaking the protocol
@@ -179,7 +179,7 @@ See [Releasing](releasing.md#apps).
 | `SMITH_BASE` | base branch for `--affected` and `smith ci verify` |
 | `SMITH_RELEASE_ANY_BRANCH` | allow a real release from another branch |
 | `SMITH_PYPI_SIMPLE_URL` | the simple index to check before uploading to a custom Python index |
-| `SMITH_PLUGIN_PATH` | directories to look for installed plugins in, after the workspace's `.smith/plugins` (docs/plugins.md) |
+| `SMITH_PLUGIN_PATH` | directories to look for installed plugins in, after the workspace's `.smith/plugins` (docs/reference/plugins.md) |
 | `SMITH_HOME` | smith's own directory, `~/.smith` by default; installed plugins go in its `plugins/` |
 | `SMITH_NO_UPDATE_CHECK` | stop `smith info` asking GitHub for the newest release |
 | `TWINE_REPOSITORY_URL` | upload Python packages and an app's wheels to another index |

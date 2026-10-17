@@ -48,7 +48,7 @@ dart pub global activate monosmith
 Or download a zip from the [releases](https://github.com/monosmith-app/monosmith/releases).
 From the release after PR #243, each release also carries a `.deb` and an
 `.rpm`. Linux, macOS and Windows on x64 and arm64 are supported.
-[Installing](docs/installing.md) covers each channel, upgrading, checking a
+[Installing](docs/guides/installing.md) covers each channel, upgrading, checking a
 download, and the unsigned-binary prompts a browser download gets.
 
 MonoSmith continues mnci, which was built on Nx; `smith convert` converts Nx
@@ -72,28 +72,28 @@ workspaces and those made by mnci.
 
 ## Documentation
 
-- [Installing](docs/installing.md)
-- [Getting started](docs/getting-started.md)
-- [Converting from Nx](docs/converting.md)
-- [Configuration (`smith.toml`)](docs/configuration.md)
-- [Tasks, cache and affected](docs/tasks-and-cache.md)
-- [CI pipelines](docs/ci.md)
-- [Releasing](docs/releasing.md)
-- [Stacks: the plugins each project is built with](docs/stacks.md)
-- [Conventions (vertical slices)](docs/conventions.md)
-- [Plugins and the plugin protocol](docs/plugins.md)
-- [Editors: the --json contracts](docs/editors.md)
-- [Working on MonoSmith](docs/development.md)
-- [Architecture: how smith is built](docs/architecture.md)
-- [Decisions: what was decided and why](docs/decisions.md)
-- Background: [research](docs/research/)
+Everything is in [docs/](docs/README.md), in four sections:
+
+- **Guides:** [installing](docs/guides/installing.md),
+  [getting started](docs/guides/getting-started.md),
+  [converting from Nx](docs/guides/converting.md),
+  [editors](docs/guides/editors.md)
+- **Reference:** [configuration (`smith.toml`)](docs/reference/configuration.md),
+  [tasks, cache and affected](docs/reference/tasks-and-cache.md),
+  [CI pipelines](docs/reference/ci.md), [releasing](docs/reference/releasing.md),
+  [stacks](docs/reference/stacks.md), [conventions](docs/reference/conventions.md),
+  [plugins and the protocol](docs/reference/plugins.md)
+- **Design:** [architecture](docs/design/architecture.md),
+  [decisions](docs/design/decisions.md), [research](docs/design/research/)
+- **Contributing:** [working on MonoSmith](docs/contributing/development.md)
 
 ## Status
 
 The golden path — a new workspace, projects in every built-in language,
 build, test, run, CI and release — is tested end to end on Windows, macOS and
 Linux, and MonoSmith builds and releases itself. Plans and bugs are
-tracked in [issues](https://github.com/monosmith-app/monosmith/issues).
+tracked in [issues](https://github.com/monosmith-app/monosmith/issues), and
+their progress on the [MonoSmith board](https://github.com/orgs/monosmith-app/projects/1).
 
 ## License
 

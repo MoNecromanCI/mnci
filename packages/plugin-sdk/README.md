@@ -49,5 +49,5 @@ func main() { serve.Main(&kiwi{}) }
 
 `smith add app my-plugin --stack go-smith-plugin` scaffolds a working plugin
 with a conformance test. The protocol, the plugin roles and how a workspace
-declares a plugin are in [docs/plugins.md](../../docs/plugins.md);
+declares a plugin are in [docs/reference/plugins.md](../../docs/reference/plugins.md);
 `apps/smith/goldenpath/testdata/kiwiplugin` is a complete language plugin.

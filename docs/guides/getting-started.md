@@ -74,7 +74,7 @@ smith add package sdk --lang node
 `ruby`, `php`, `cpp`, `dart`, `jvm` or `bicep`. Once a workspace has only one
 language, it is the default. `--stack` picks the plugins the project is built
 with instead (`smith add app web --stack react`); `smith stacks` lists them,
-and [stacks](stacks.md) explains them.
+and [stacks](../reference/stacks.md) explains them.
 
 Each project starts with one worked example slice (`greeting`) laid out as
 vertical slices, and passes lint, type-check, test and build immediately.
@@ -199,7 +199,7 @@ each line prefixed with its project. With no names it lets you pick from the
 apps that have a `start` task; `--all` starts every one of them.
 
 A task whose inputs did not change replays from the cache. See
-[tasks and cache](tasks-and-cache.md).
+[tasks and cache](../reference/tasks-and-cache.md).
 
 ## Commit and release
 
@@ -211,7 +211,7 @@ smith release --dry-run
 ```
 
 On `main`, CI runs `smith ci release`, which publishes every package with
-releasable commits. See [releasing](releasing.md).
+releasable commits. See [releasing](../reference/releasing.md).
 
 ## Check the workspace
 

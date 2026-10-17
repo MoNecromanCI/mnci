@@ -19,7 +19,7 @@ are first-class and everything is generated.
 - **Plugin flow.** How a user discovers, adds and upgrades plugins and stacks
   end to end.
 
-The plugin protocol and roles described in [plugins.md](plugins.md) are what
+The plugin protocol and roles described in [plugins.md](../reference/plugins.md) are what
 exists today, not a settled design.
 
 ---
@@ -42,7 +42,7 @@ did for mnci has to be rebuilt, and converting from Nx becomes a feature
 
 ## 2. A language-agnostic core with out-of-process plugins
 
-2026-10-15 · [research 03](research/03-prior-art-and-stack.md) · [plugins.md](plugins.md)
+2026-10-15 · [research 03](research/03-prior-art-and-stack.md) · [plugins.md](../reference/plugins.md)
 
 **Context.** The tool has to cover many languages without the core knowing any
 of them, and plugin authors should not have to write Go.
@@ -62,7 +62,7 @@ open (see above).
 
 ## 3. A content-addressed cache behind a Storage interface
 
-2026-10-15 · [research 03](research/03-prior-art-and-stack.md) · [tasks and cache](tasks-and-cache.md)
+2026-10-15 · [research 03](research/03-prior-art-and-stack.md) · [tasks and cache](../reference/tasks-and-cache.md)
 
 **Context.** The cache must be correct across machines and operating systems,
 and shareable later.
@@ -88,7 +88,7 @@ edits settings without losing comments.
 
 ## 5. Generated CI pipelines
 
-2026-10-15 · [ci.md](ci.md)
+2026-10-15 · [ci.md](../reference/ci.md)
 
 **Decision.** Pipelines are generated from the workspace. Plugins contribute
 toolchains, setup and audit steps and credentials. smith builds one
@@ -98,7 +98,7 @@ CI runs. Steps a team adds between `smith:slot` markers survive regeneration.
 
 ## 6. Conventional commits and tag-only releases
 
-2026-10-15 · [releasing.md](releasing.md)
+2026-10-15 · [releasing.md](../reference/releasing.md)
 
 **Context.** Release commits back to the branch race with other merges and
 clutter history.
@@ -203,7 +203,7 @@ through package managers and the install scripts are not affected.
 
 ## 13. Vertical slices in every language's own naming
 
-2026-10-16 → 2026-10-17 · #87 · #236 · [conventions.md](conventions.md)
+2026-10-16 → 2026-10-17 · #87 · #236 · [conventions.md](../reference/conventions.md)
 
 **Decision.** The vertical-slices check uses the most common naming of each
 language:

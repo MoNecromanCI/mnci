@@ -22,7 +22,8 @@ func main() { serve.Main(plugin.New(version)) }
 `,
 	"[[.Dir]]/plugin/doc.go": `// Package plugin is the [[.Name]] smith plugin. It starts as a structure plugin
 // that gives every project a hello task; change its roles and methods to make
-// it what you need (docs/plugins.md in the smith repository lists them).
+// it what you need. They are listed in
+// https://github.com/monosmith-app/monosmith/blob/main/docs/reference/plugins.md.
 package plugin
 `,
 	"[[.Dir]]/plugin/[[.Package]]_plugin_handler.go": `package plugin

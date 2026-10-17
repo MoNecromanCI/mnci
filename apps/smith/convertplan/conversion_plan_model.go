@@ -77,6 +77,9 @@ type Plan struct {
 	Write map[string]string `json:"-"`
 	// WriteFiles lists the keys of Write, for the report.
 	WriteFiles []string `json:"write,omitempty"`
+	// names maps each Nx project name to its smith name, so a target's
+	// dependency on another project's target can name it.
+	names map[string]string
 }
 
 // Add records a finding.

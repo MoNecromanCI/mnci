@@ -40,7 +40,9 @@ It is tested with Nx 23. With another major the report says so.
 | a Node target running in the project root | a `package.json` script, run by the Node plugin (npm runs scripts through a shell, so nothing is lost) |
 | any other `nx:run-commands` target | an `[projects.<name>.tasks.<target>]` task in `smith.toml`: argv, cwd, inputs, outputs, `depends_on` and cache carried over |
 | Go and Python executors (`@nx-go/nx-go`, the old mnci's Python executors) | the Go and Python plugins' own tasks; settings that differ (golangci-lint instead of `go vet`, an extra `dependsOn`) are kept in `smith.toml` |
+| a `dependsOn` on another project's target (`"@acme/cli:build"`, `{projects, target}`) | `depends_on = ["cli:build"]`, with the project's smith name; one smith cannot name (a pattern or a tag) is reported |
 | `@nx/esbuild:esbuild`, `@nx/js:tsc`, `@nx/jest:jest`, `@nx/vite:*`, `@nx/eslint:lint`, `@nx/js:node` | the command each stands for, as a script; a build's `assets` are copied after it by a `node -e` one-liner (Node 22 or later) |
+| `@nx/esbuild:esbuild` with `bundle: false` | a `node -e` one-liner that transpiles, as Nx does, the main file and every file the tsconfig includes into the same place under the output, with TypeScript reading the tsconfig and esbuild's API building; for Node CommonJS, Nx also writes a loader for the workspace libraries, so that build is reported for a hand edit |
 | `{projectName}@{version}` tags | the same tags: a project whose Nx name differs from its directory gets `tag_prefix`, so the next release continues from the last tag |
 | `release.changelog…createRelease: "github"` | `[release] github_releases = true` |
 | a root target | a root `package.json` script (smith runs projects, not the root) |

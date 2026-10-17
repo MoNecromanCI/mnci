@@ -113,12 +113,10 @@ func executorCommand(w *nxworkspace.Workspace, p *nxworkspace.Project, t nxworks
 		if main == "" || out == "" {
 			return "", nil, false
 		}
-		platform, formats := "node", []string{"cjs"}
-		t.Option("platform", &platform)
-		t.Option("format", &formats)
-		format := "cjs"
-		if len(formats) > 0 {
-			format = formats[0]
+		platform, format := esbuildTarget(t)
+		if !esbuildBundles(t) {
+			line, ok := EsbuildTranspile(rel("tsConfig"), main, out, platform, format)
+			return line, []string{"esbuild", "typescript"}, ok
 		}
 		return fmt.Sprintf("esbuild %s --bundle --packages=external --platform=%s --format=%s --outdir=%s --sourcemap", main, platform, format, out), []string{"esbuild"}, true
 	case "@nx/js:node":
@@ -160,6 +158,37 @@ func executorCommand(w *nxworkspace.Workspace, p *nxworkspace.Project, t nxworks
 		return "vitest run", nil, true
 	}
 	return "", nil, false
+}
+
+// esbuildTarget is an @nx/esbuild build's platform and its first format
+// (Nx's defaults: node, cjs).
+func esbuildTarget(t nxworkspace.Target) (platform, format string) {
+	platform, formats := "node", []string{"cjs"}
+	t.Option("platform", &platform)
+	t.Option("format", &formats)
+	format = "cjs"
+	if len(formats) > 0 {
+		format = formats[0]
+	}
+	return platform, format
+}
+
+// esbuildBundles reports whether an @nx/esbuild build bundles (Nx's default).
+func esbuildBundles(t nxworkspace.Target) bool {
+	bundle := true
+	t.Option("bundle", &bundle)
+	return bundle
+}
+
+// executorGap says why a target's executor cannot become a plain command,
+// when convert knows more than "no smith equivalent".
+func executorGap(t nxworkspace.Target) string {
+	if t.Executor == "@nx/esbuild:esbuild" && !esbuildBundles(t) {
+		if platform, format := esbuildTarget(t); platform == "node" && format == "cjs" {
+			return "with bundle: false for Node CommonJS, Nx also transpiles the workspace libraries the app uses and writes a loader that maps their imports; convert this build by hand (bundling, or tsc)"
+		}
+	}
+	return ""
 }
 
 // relativeTo makes a workspace-relative path relative to a project root.

@@ -104,6 +104,10 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 			commandTarget(plan, pp, name, t, line, cwd, env)
 			continue
 		}
+		if why := executorGap(t); why != "" {
+			plan.Add(Manual, pp.Name, name, why)
+			continue
+		}
 		if line, needs, ok := executorCommand(w, p, t); ok && pp.Language == "node" {
 			for _, n := range needs {
 				if plan.AddDevDependencies == nil {
@@ -130,6 +134,9 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 			}
 			setScript(plan, pp, script, line, t, nil)
 			plan.Add(Changed, pp.Name, name, fmt.Sprintf("%s becomes the script %q: %s", t.Executor, script, line))
+			if t.Executor == "@nx/esbuild:esbuild" && !esbuildBundles(t) {
+				plan.Add(Changed, pp.Name, name, "bundle: false: like Nx, it transpiles each file the tsconfig includes into the same place under the output, bundling nothing")
+			}
 			if copied {
 				plan.Add(Changed, pp.Name, name, "its assets are copied after the build by a node one-liner, as Nx copied them (fs.globSync: Node 22 or later)")
 			}
@@ -142,7 +149,7 @@ func mapTargets(plan *Plan, w *nxworkspace.Workspace, p *nxworkspace.Project, pp
 // pluginTarget keeps a target with the language plugin, carrying over what
 // the plugin's default does not already do.
 func pluginTarget(plan *Plan, pp *ProjectPlan, name string, t nxworkspace.Target) {
-	o := workspace.TaskOverride{DependsOn: extraDependsOn(t)}
+	o := workspace.TaskOverride{DependsOn: extraDependsOn(plan, pp, name, t)}
 	if t.Executor == "@nx-go/nx-go:lint" {
 		var linter string
 		if t.Option("linter", &linter) && linter != "" && linter != "go vet" {
@@ -216,7 +223,7 @@ func commandTarget(plan *Plan, pp *ProjectPlan, name string, t nxworkspace.Targe
 
 // customTask writes a smith.toml task with everything Nx knew about it.
 func customTask(plan *Plan, pp *ProjectPlan, name string, t nxworkspace.Target, argv []string, cwd string) {
-	o := workspace.TaskOverride{Command: argv, Cwd: cwd, DependsOn: dependsOn(t), Inputs: inputs(pp.Root, t), Outputs: outputs(pp.Root, t)}
+	o := workspace.TaskOverride{Command: argv, Cwd: cwd, DependsOn: dependsOn(plan, pp, name, t), Inputs: inputs(pp.Root, t), Outputs: outputs(pp.Root, t)}
 	cache := t.Cache != nil && *t.Cache && !t.Continuous
 	if cache {
 		o.Cache = &cache
@@ -232,7 +239,7 @@ func setScript(plan *Plan, pp *ProjectPlan, name, line string, t nxworkspace.Tar
 		pp.Scripts = map[string]string{}
 	}
 	pp.Scripts[name] = line
-	o := workspace.TaskOverride{DependsOn: extraDependsOn(t)}
+	o := workspace.TaskOverride{DependsOn: extraDependsOn(plan, pp, name, t)}
 	if len(env) > 0 {
 		o.Env = env
 	}
@@ -241,28 +248,82 @@ func setScript(plan *Plan, pp *ProjectPlan, name, line string, t nxworkspace.Tar
 	}
 }
 
-// dependsOn translates Nx dependsOn; a dependency on named other projects
-// cannot be expressed and is left out.
-func dependsOn(t nxworkspace.Target) []string {
-	var out []string
-	for _, d := range t.DependsOn {
-		if len(d.Projects) > 0 || d.Target == "" {
-			continue
+// dependsOn translates Nx dependsOn. A target of another project
+// ({projects, target} or "project:target") becomes "<smith name>:<target>";
+// a project smith cannot name (a pattern, a tag, an unknown project) is
+// reported, since leaving it out changes the order tasks run in.
+func dependsOn(plan *Plan, pp *ProjectPlan, task string, t nxworkspace.Target) []string {
+	var out, others []string
+	add := func(dep string) {
+		for _, have := range out {
+			if have == dep {
+				return
+			}
 		}
-		if d.Dependencies {
-			out = append(out, "^"+d.Target)
-		} else {
-			out = append(out, d.Target)
+		out = append(out, dep)
+	}
+	other := func(dep string, cross bool) {
+		add(dep)
+		if cross && !contains(others, dep) {
+			others = append(others, dep)
+		}
+	}
+	defer func() {
+		if len(others) > 0 {
+			plan.Add(Mapped, pp.Name, task, "runs after "+strings.Join(others, ", ")+", as Nx did (depends_on)")
+		}
+	}()
+	for _, d := range t.DependsOn {
+		switch {
+		case d.Target == "":
+		case len(d.Projects) > 0:
+			for _, project := range d.Projects {
+				if dep, cross, ok := projectTarget(plan, pp, project, d.Target); ok {
+					other(dep, cross)
+				} else {
+					plan.Add(Manual, pp.Name, task, fmt.Sprintf("Nx ran %s's %s first; smith cannot name that project, so add it to depends_on by hand (\"<project>:%s\")", project, d.Target, d.Target))
+				}
+			}
+		case d.Dependencies:
+			add("^" + d.Target)
+		default:
+			if project, target, found := strings.Cut(d.Target, ":"); found {
+				if dep, cross, ok := projectTarget(plan, pp, project, target); ok {
+					other(dep, cross)
+					continue
+				}
+			}
+			add(d.Target)
 		}
 	}
 	return out
 }
 
+// projectTarget names another project's target the way smith's depends_on
+// does (<project>:<target>, cross), or the target alone for the project
+// itself. ok is false when the Nx project resolves to no smith project.
+func projectTarget(plan *Plan, pp *ProjectPlan, project, target string) (dep string, cross, ok bool) {
+	if project == "self" || project == pp.Nx {
+		return target, false, true
+	}
+	if project == "dependencies" {
+		return "^" + target, false, true
+	}
+	name, ok := smithName(project, plan.names)
+	if !ok {
+		return "", false, false
+	}
+	if name == pp.Name {
+		return target, false, true
+	}
+	return name + ":" + target, true, true
+}
+
 // extraDependsOn is dependsOn unless it is only "^build", which the
 // plugins' tasks already depend on. Anything else is kept: a typecheck that
 // Nx ran after the project's own build must not race that build.
-func extraDependsOn(t nxworkspace.Target) []string {
-	deps := dependsOn(t)
+func extraDependsOn(plan *Plan, pp *ProjectPlan, task string, t nxworkspace.Target) []string {
+	deps := dependsOn(plan, pp, task, t)
 	for _, d := range deps {
 		if d != "^build" {
 			return deps

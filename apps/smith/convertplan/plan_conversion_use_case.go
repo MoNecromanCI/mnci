@@ -62,6 +62,7 @@ func MakePlan(w *nxworkspace.Workspace, in Input) *Plan {
 		byName[name] = p.Root
 		names[p.Name] = name
 	}
+	plan.names = names
 
 	released := nxworkspace.ReleaseSet(w)
 	if plan.Legacy {

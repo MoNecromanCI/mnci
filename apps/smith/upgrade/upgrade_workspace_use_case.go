@@ -72,7 +72,7 @@ func hints(s *session.Session) []string {
 	}
 	for _, p := range s.Graph.Projects {
 		if p.Plugin == "node" && p.Stack == "" {
-			return []string{`Node projects record no stack and smith.toml sets no default: new ones get no lint or tests. Add [default_stacks] node = "node-jest" (docs/stacks.md).`}
+			return []string{`Node projects record no stack and smith.toml sets no default: new ones get no lint or tests. Add [default_stacks] node = "node-jest" (https://github.com/monosmith-app/monosmith/blob/main/docs/reference/stacks.md).`}
 		}
 	}
 	return nil

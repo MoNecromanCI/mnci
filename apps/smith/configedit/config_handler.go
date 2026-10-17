@@ -85,7 +85,7 @@ file itself.`,
 				return err
 			}
 			if !set {
-				return fmt.Errorf("%s is not set; it has its default (see docs/configuration.md)", args[0])
+				return fmt.Errorf("%s is not set; it has its default (see https://github.com/monosmith-app/monosmith/blob/main/docs/reference/configuration.md)", args[0])
 			}
 			fmt.Fprintln(cmd.OutOrStdout(), value)
 			return nil

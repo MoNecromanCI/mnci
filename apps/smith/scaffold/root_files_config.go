@@ -4,7 +4,7 @@ import "github.com/monosmith-app/monosmith/apps/smith/workspace"
 
 const configTemplate = `#:schema ` + workspace.SchemaURL + `
 # smith workspace configuration. Every setting below has a default; most
-# workspaces need nothing more than a name. See docs/configuration.md.
+# workspaces need nothing more than a name. See https://github.com/monosmith-app/monosmith/blob/main/docs/reference/configuration.md.
 schema = 1
 
 [workspace]
@@ -25,7 +25,7 @@ devcontainer = true
 # and the toolchain, structure, scaffold and deploy plugins on top. Each
 # project records its own, so one monorepo can mix them; ` + "`smith stacks`" + ` lists
 # them and ` + "`smith add app web --stack node-vitest`" + ` picks one. Projects that record
-# none use the default of their language. See docs/stacks.md.
+# none use the default of their language. See https://github.com/monosmith-app/monosmith/blob/main/docs/reference/stacks.md.
 [default_stacks]
 node = "node-jest"     # ESLint with @monosmith/eslint-config, and Jest
 
@@ -36,7 +36,7 @@ node = "node-jest"     # ESLint with @monosmith/eslint-config, and Jest
 
 # Conventions apply a plugin to every project of the languages it supports.
 # vertical-slices gives Go and Python projects a slice-check task, run before
-# lint: role-named files, no junk-drawer folders. See docs/conventions.md.
+# lint: role-named files, no junk-drawer folders. See https://github.com/monosmith-app/monosmith/blob/main/docs/reference/conventions.md.
 [conventions.vertical-slices]
 
 # [release]

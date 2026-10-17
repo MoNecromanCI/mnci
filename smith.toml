@@ -1,6 +1,6 @@
 #:schema https://raw.githubusercontent.com/monosmith-app/monosmith/main/apps/smith/workspace/smith.schema.json
 # smith workspace configuration. Written by `smith convert`; edit it freely or with the TUI.
-# Every setting is optional except [workspace] name; see docs/configuration.md.
+# Every setting is optional except [workspace] name; see https://github.com/monosmith-app/monosmith/blob/main/docs/reference/configuration.md.
 schema = 1
 
 [workspace]
@@ -12,7 +12,7 @@ module_prefix = "github.com/monosmith-app/monosmith"
 providers = ["github"]
 
 # Every Go project gets a slice-check task, run before lint: role-named files,
-# no junk-drawer folders (see docs/conventions.md).
+# no junk-drawer folders (see docs/reference/conventions.md).
 [conventions.vertical-slices]
 
 [tasks.lint]

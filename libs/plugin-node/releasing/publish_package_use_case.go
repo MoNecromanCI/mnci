@@ -19,9 +19,18 @@ var npm = struct {
 }
 
 // Publish publishes one package with npm, or a VS Code extension to the
-// Marketplace. A version the registry already has is skipped, which is what
-// makes a re-run after a partial release safe.
+// Marketplace, or builds an app's release asset. A version the registry
+// already has is skipped, which is what makes a re-run after a partial
+// release safe.
 func Publish(workspaceRoot string, params protocol.PublishParams) (protocol.PublishResult, error) {
+	if params.Assets != nil {
+		return BuildAssets(workspaceRoot, params)
+	}
+	// An app is deployed, never published to npm: it releases by its tag,
+	// its assets and its deploy plugins (an image).
+	if params.Project.Kind == protocol.ProjectApp {
+		return protocol.PublishResult{Skipped: "released by its tag"}, nil
+	}
 	if len(params.Project.Exports) == 0 {
 		return protocol.PublishResult{}, errors.New("package.json has no name")
 	}

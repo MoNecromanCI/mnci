@@ -23,8 +23,9 @@ var Tasks = []string{"lint", "test", "build", "package"}
 
 // Run builds the native projects on this machine. On a Linux CI runner it
 // first installs [ci] native_linux_packages. On a push to the release branch
-// in GitHub Actions it then attaches this platform's build of every native app
-// released at HEAD to the app's GitHub Release.
+// in GitHub Actions it then publishes this platform's build of every native
+// package released at HEAD, and attaches this platform's build of every
+// native app released at HEAD to the app's GitHub Release.
 func Run(ctx context.Context, s *session.Session, out io.Writer) error {
 	var native []*projectgraph.Project
 	for _, p := range s.Graph.Projects {
@@ -58,7 +59,64 @@ func Run(ctx context.Context, s *session.Session, out io.Writer) error {
 	if !releasePush(s) {
 		return nil
 	}
+	if err := publishPackages(s, native, out); err != nil {
+		return err
+	}
 	return attach(s, native, out)
+}
+
+// publishPackages publishes this platform's build of every native package
+// released at HEAD (a VS Code extension per target). The release job tagged
+// it without publishing; the version is stamped into its manifest here, as
+// the release job stamps it, and restored after.
+func publishPackages(s *session.Session, native []*projectgraph.Project, out io.Writer) error {
+	head, err := s.Git.RevParse("HEAD")
+	if err != nil {
+		return err
+	}
+	platform := runtime.GOOS + "/" + runtime.GOARCH
+	for _, p := range native {
+		if p.Kind != protocol.ProjectPackage {
+			continue
+		}
+		tag, version := taggedAt(s, p, head)
+		if tag == "" {
+			fmt.Fprintf(out, "%s was not released by this commit; nothing to publish\n", p.Name)
+			continue
+		}
+		if err := publishPlatform(s, p, version, platform, out); err != nil {
+			return fmt.Errorf("publishing %s %s for %s: %w", p.Name, version, platform, err)
+		}
+	}
+	return nil
+}
+
+func publishPlatform(s *session.Session, p *projectgraph.Project, version, platform string, out io.Writer) error {
+	var vr protocol.VersionResult
+	if _, err := s.Plugins.Call(p.Plugin, protocol.MethodVersion, protocol.VersionParams{Project: p.Project, Version: version}, &vr, time.Minute); err != nil {
+		return fmt.Errorf("writing version: %w", err)
+	}
+	if len(vr.Files) > 0 {
+		defer func() {
+			if err := s.Git.RestoreFiles(vr.Files...); err != nil {
+				fmt.Fprintf(out, "could not restore %v: %v\n", vr.Files, err)
+			}
+		}()
+	}
+	var pr protocol.PublishResult
+	params := protocol.PublishParams{Project: p.Project, Version: version, Platform: platform}
+	if ok, err := s.Plugins.Call(p.Plugin, protocol.MethodPublish, params, &pr, 30*time.Minute); err != nil {
+		return err
+	} else if !ok {
+		pr.Skipped = "published by its tag"
+	}
+	switch {
+	case pr.Published:
+		fmt.Fprintf(out, "published %s %s for %s to %s\n", p.Name, version, platform, pr.Registry)
+	case pr.Skipped != "":
+		fmt.Fprintf(out, "%s %s for %s: %s\n", p.Name, version, platform, pr.Skipped)
+	}
+	return nil
 }
 
 // attach adds this platform's assets to the GitHub Release of every native

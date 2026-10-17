@@ -48,6 +48,27 @@ func TestDiscover(t *testing.T) {
 	}
 }
 
+func TestDiscoverTagsNativeProjects(t *testing.T) {
+	ws := t.TempDir()
+	for dir, body := range map[string]string{
+		"apps/driver": `{"name":"@acme/driver","private":true,"smith":{"kind":"app","native":true}}`,
+		"apps/web":    `{"name":"@acme/web","private":true}`,
+	} {
+		_ = os.MkdirAll(filepath.Join(ws, filepath.FromSlash(dir)), 0o755)
+		_ = os.WriteFile(filepath.Join(ws, filepath.FromSlash(dir), "package.json"), []byte(body), 0o644)
+	}
+	res, err := Discover(ws, []string{"apps/driver/package.json", "apps/web/package.json"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range res.Projects {
+		native := len(p.Tags) == 1 && p.Tags[0] == NativeTag
+		if native != (p.Name == "driver") {
+			t.Errorf("%s tags %v", p.Name, p.Tags)
+		}
+	}
+}
+
 func TestDiscoverReportsBadJSON(t *testing.T) {
 	ws := t.TempDir()
 	_ = os.MkdirAll(filepath.Join(ws, "apps", "x"), 0o755)

@@ -53,6 +53,25 @@ func TestPublishExtension(t *testing.T) {
 	if !strings.Contains(string(staged), `"main": "./main.js"`) {
 		t.Fatalf("the staged manifest points at the bundle beside it:\n%s", staged)
 	}
+	if strings.Contains(last, "--target") {
+		t.Errorf("without a platform, one extension for every platform: %s", last)
+	}
+}
+
+func TestPublishExtensionForOnePlatform(t *testing.T) {
+	ws := extensionWorkspace(t)
+	calls := fakeNpm(t, "")
+	project := protocol.Project{Name: "tools", Root: "packages/tools", Exports: []string{"tools"}, Kind: protocol.ProjectPackage}
+	t.Setenv("VSCE_PAT", "token")
+	if _, err := Publish(ws, protocol.PublishParams{Project: project, Version: "0.1.0", Platform: "darwin/arm64"}); err != nil {
+		t.Fatal(err)
+	}
+	if last := (*calls)[len(*calls)-1]; !strings.Contains(last, "--target darwin-arm64") {
+		t.Errorf("a native job publishes its own platform's build: %s", last)
+	}
+	if _, err := Publish(ws, protocol.PublishParams{Project: project, Version: "0.1.0", Platform: "freebsd/amd64"}); err == nil || !strings.Contains(err.Error(), "freebsd/amd64") {
+		t.Errorf("a platform the Marketplace has no target for: %v", err)
+	}
 }
 
 func TestPublishedExtension(t *testing.T) {

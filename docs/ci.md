@@ -114,7 +114,10 @@ golangci-lint warns, since results may then differ from CI's.
 
 A project tagged `native` must be built on each operating system rather than
 cross-compiled: a Go app using cgo, marked with a `// smith:native` line at the
-top of its `go.mod` (its tasks then build with `CGO_ENABLED=1`). `smith ci
+top of its `go.mod` (its tasks then build with `CGO_ENABLED=1`), or a Node
+project whose build differs per platform (prebuilt addons, a bundled runtime,
+a VS Code extension with a build per target), marked with `"smith": {"native":
+true}` in its `package.json`. `smith ci
 verify` and `smith ci pack` leave native projects out; the generated pipelines
 add a `native` job that runs after the ci job on each OS and calls `smith ci
 native`, which lints, tests, builds and packages them there and keeps
@@ -123,7 +126,17 @@ native`, which lints, tests, builds and packages them there and keeps
 A native app that releases (`[projects.<name>.release]`) gets no
 cross-compiled assets from the release: on a push that released it, each
 native job builds the app for its own platform and attaches the archive to
-the app's GitHub Release (GitHub Actions; the job needs `GITHUB_TOKEN`).
+the app's GitHub Release (GitHub Actions; the job needs `GITHUB_TOKEN`). A
+Node app's archive is its build directory, `dist/<project dir>`, zipped and
+named by `asset_name`.
+
+A native package is tagged by the release but not published there: on the
+push that released it, each native job stamps the version, publishes its own
+platform's build and restores the manifest. A VS Code extension is published
+with `vsce publish --target` (`win32-x64`, `darwin-arm64`, `linux-x64`, …), so
+the Marketplace gets one build per platform. The native job is given the
+release credentials (`VSCE_PAT`, `NODE_AUTH_TOKEN`, …) for this. This happens
+on GitHub Actions only, as attaching assets does.
 
 ```toml
 [ci]

@@ -48,6 +48,14 @@ func TestPublishNewVersion(t *testing.T) {
 	}
 }
 
+func TestPublishNeverSendsAnAppToNpm(t *testing.T) {
+	calls := fakeNpm(t, "")
+	res, err := Publish("/ws", protocol.PublishParams{Project: protocol.Project{Root: "apps/driver", Kind: protocol.ProjectApp, Exports: []string{"@acme/driver"}}, Version: "1.0.0"})
+	if err != nil || res.Published || res.Skipped != "released by its tag" || len(*calls) != 0 {
+		t.Fatalf("an app releases by its tag and assets, not npm: %+v %v %v", res, *calls, err)
+	}
+}
+
 func TestPublishDryRunTouchesNothing(t *testing.T) {
 	calls := fakeNpm(t, "")
 	res, err := Publish("/ws", protocol.PublishParams{Project: protocol.Project{Root: "p", Exports: []string{"x"}}, Version: "1.0.0", DryRun: true})

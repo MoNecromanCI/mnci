@@ -1,10 +1,16 @@
 package pipeline
 
-import "github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+import (
+	"path/filepath"
+
+	"github.com/monosmith-app/monosmith/libs/plugin-node/releasing"
+	"github.com/monosmith-app/monosmith/packages/plugin-sdk/protocol"
+)
 
 // CI returns the Node contribution to every pipeline, or nothing when the
-// workspace has no Node project.
-func CI(params protocol.CIParams, nodeVersion string) protocol.CIResult {
+// workspace has no Node project. Publishing needs NODE_AUTH_TOKEN for an npm
+// package and VSCE_PAT for a VS Code extension.
+func CI(workspaceRoot string, params protocol.CIParams, nodeVersion string) protocol.CIResult {
 	if len(params.Projects) == 0 {
 		return protocol.CIResult{}
 	}
@@ -15,11 +21,22 @@ func CI(params protocol.CIParams, nodeVersion string) protocol.CIResult {
 		// can fix; the rest are notes.
 		Audit: []protocol.Step{{Name: "npm audit (runtime dependencies)", Command: []string{"{smith}", "npm-audit"}, Blocking: true}},
 	}
+	npm, marketplace := false, false
 	for _, p := range params.Projects {
-		if p.Kind == protocol.ProjectPackage {
-			result.Credentials = []protocol.Credential{{Env: "NODE_AUTH_TOKEN", Description: "npm token that can publish the workspace's packages", Required: true}}
-			break
+		if p.Kind != protocol.ProjectPackage {
+			continue
 		}
+		if _, ok := releasing.Extension(filepath.Join(workspaceRoot, filepath.FromSlash(p.Root))); ok {
+			marketplace = true
+		} else {
+			npm = true
+		}
+	}
+	if npm {
+		result.Credentials = append(result.Credentials, protocol.Credential{Env: "NODE_AUTH_TOKEN", Description: "npm token that can publish the workspace's packages", Required: true})
+	}
+	if marketplace {
+		result.Credentials = append(result.Credentials, protocol.Credential{Env: "VSCE_PAT", Description: "Visual Studio Marketplace token that can publish the workspace's extensions", Required: true})
 	}
 	return result
 }

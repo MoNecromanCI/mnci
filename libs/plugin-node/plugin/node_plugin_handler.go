@@ -56,7 +56,7 @@ func (n *Node) Published(params protocol.PublishedParams) (protocol.PublishedRes
 
 // CI implements serve.CIContributor.
 func (n *Node) CI(params protocol.CIParams) (protocol.CIResult, error) {
-	return pipeline.CI(params, scaffolding.NodeVersion), nil
+	return pipeline.CI(n.root, params, scaffolding.NodeVersion), nil
 }
 
 // Doctor implements serve.DoctorContributor.
